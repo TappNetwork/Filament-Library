@@ -66,7 +66,7 @@ trait HasLibraryAccess
      */
     public function getAccessibleRootLibraryItems()
     {
-        if (!$this->canViewRootLibraryItems()) {
+        if (! $this->canViewRootLibraryItems()) {
             return collect();
         }
 

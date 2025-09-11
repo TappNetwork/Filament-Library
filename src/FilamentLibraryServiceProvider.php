@@ -2,7 +2,6 @@
 
 namespace Tapp\FilamentLibrary;
 
-use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
@@ -48,7 +47,6 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
         if (file_exists($package->basePath('/../database/migrations'))) {
             $package->hasMigrations($this->getMigrations());
         }
-
 
         if (file_exists($package->basePath('/../resources/lang'))) {
             $package->hasTranslations();
@@ -158,5 +156,4 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
             '2024_01_01_000001_create_library_item_permissions_table',
         ];
     }
-
 }

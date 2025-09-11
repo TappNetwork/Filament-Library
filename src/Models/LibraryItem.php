@@ -14,7 +14,9 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class LibraryItem extends Model implements HasMedia
 {
-    use HasFactory, SoftDeletes, InteractsWithMedia;
+    use HasFactory;
+    use InteractsWithMedia;
+    use SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -44,7 +46,7 @@ class LibraryItem extends Model implements HasMedia
         });
 
         static::updating(function (self $item) {
-            if ($item->isDirty('name') && !$item->isDirty('slug')) {
+            if ($item->isDirty('name') && ! $item->isDirty('slug')) {
                 $item->slug = static::generateUniqueSlug($item->name, $item->parent_id, $item->id);
             }
         });
@@ -105,9 +107,9 @@ class LibraryItem extends Model implements HasMedia
     {
         return $query->where(function ($q) use ($user) {
             $q->where('created_by', $user->id)
-              ->orWhereHas('permissions', function ($permissionQuery) use ($user) {
-                  $permissionQuery->where('user_id', $user->id);
-              });
+                ->orWhereHas('permissions', function ($permissionQuery) use ($user) {
+                    $permissionQuery->where('user_id', $user->id);
+                });
         });
     }
 
@@ -160,6 +162,7 @@ class LibraryItem extends Model implements HasMedia
         }
 
         $media = $this->getFirstMedia('files');
+
         return $media ? $media->size : null;
     }
 
@@ -190,7 +193,7 @@ class LibraryItem extends Model implements HasMedia
     /**
      * Register media conversions.
      */
-    public function registerMediaConversions(Media $media = null): void
+    public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('thumb')
             ->width(300)
@@ -210,7 +213,7 @@ class LibraryItem extends Model implements HasMedia
 
         while (static::where('slug', $slug)
             ->where('parent_id', $parentId)
-            ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+            ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
             ->exists()) {
             $slug = $baseSlug . '-' . $counter;
             $counter++;
