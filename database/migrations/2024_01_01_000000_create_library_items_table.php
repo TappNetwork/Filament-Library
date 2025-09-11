@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
             $table->softDeletes();
-            
+
             $table->index(['parent_id', 'type']);
             $table->unique(['parent_id', 'slug'], 'lib_items_parent_slug_unique');
         });

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->enum('permission', ['view', 'edit']);
             $table->timestamps();
-            
+
             $table->unique(['library_item_id', 'user_id', 'permission'], 'lib_item_perms_unique');
         });
     }

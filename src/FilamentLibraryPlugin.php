@@ -14,7 +14,10 @@ class FilamentLibraryPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
-        // Register resources, pages, widgets, etc.
+        $panel
+            ->resources([
+                \Tapp\FilamentLibrary\Resources\LibraryItemResource::class,
+            ]);
     }
 
     public function boot(Panel $panel): void
