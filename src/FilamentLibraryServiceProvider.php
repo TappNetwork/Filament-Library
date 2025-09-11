@@ -2,7 +2,6 @@
 
 namespace Tapp\FilamentLibrary;
 
-use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
@@ -48,7 +47,6 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
         if (file_exists($package->basePath('/../database/migrations'))) {
             $package->hasMigrations($this->getMigrations());
         }
-
 
         if (file_exists($package->basePath('/../resources/lang'))) {
             $package->hasTranslations();
@@ -101,16 +99,16 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
     protected function getAssets(): array
     {
         $assets = [];
-        
+
         // Only register assets if they exist
         if (file_exists(__DIR__ . '/../resources/dist/filament-library.css')) {
             $assets[] = Css::make('filament-library-styles', __DIR__ . '/../resources/dist/filament-library.css');
         }
-        
+
         if (file_exists(__DIR__ . '/../resources/dist/filament-library.js')) {
             $assets[] = Js::make('filament-library-scripts', __DIR__ . '/../resources/dist/filament-library.js');
         }
-        
+
         return $assets;
     }
 
@@ -158,5 +156,4 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
             '2024_01_01_000001_create_library_item_permissions_table',
         ];
     }
-
 }

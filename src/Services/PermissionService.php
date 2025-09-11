@@ -25,7 +25,7 @@ class PermissionService
     public function hasPermission($user, LibraryItem $item, string $permission): bool
     {
         $cacheKey = $this->getCacheKey($user->id, $item->id, $permission);
-        
+
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($user, $item, $permission) {
             return $this->checkPermissionRecursive($user, $item, $permission);
         });

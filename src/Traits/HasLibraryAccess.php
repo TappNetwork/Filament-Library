@@ -15,7 +15,7 @@ trait HasLibraryAccess
         if ($this->isLibraryAdmin()) {
             return true;
         }
-        
+
         return $item->created_by === $this->id || $item->hasPermission($this, 'view');
     }
 
@@ -28,7 +28,7 @@ trait HasLibraryAccess
         if ($this->isLibraryAdmin()) {
             return true;
         }
-        
+
         return $item->created_by === $this->id || $item->hasPermission($this, 'edit');
     }
 
@@ -43,7 +43,7 @@ trait HasLibraryAccess
 
     /**
      * Check if the user is a library admin.
-     * 
+     *
      * Override this method to add role-based logic.
      */
     public function isLibraryAdmin(): bool
@@ -66,7 +66,7 @@ trait HasLibraryAccess
      */
     public function getAccessibleRootLibraryItems()
     {
-        if (!$this->canViewRootLibraryItems()) {
+        if (! $this->canViewRootLibraryItems()) {
             return collect();
         }
 

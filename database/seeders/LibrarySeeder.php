@@ -15,9 +15,10 @@ class LibrarySeeder extends Seeder
     {
         // Get the first user as the creator
         $user = \App\Models\User::first();
-        
-        if (!$user) {
+
+        if (! $user) {
             $this->command->warn('No users found. Please create a user first.');
+
             return;
         }
 
@@ -116,10 +117,10 @@ class LibrarySeeder extends Seeder
 
         // Create some sample permissions if there are other users
         $otherUsers = \App\Models\User::where('id', '!=', $user->id)->take(2)->get();
-        
+
         if ($otherUsers->count() > 0) {
             $this->command->info('Creating sample permissions...');
-            
+
             // Give first other user view access to Documents folder
             if ($otherUsers->count() >= 1) {
                 LibraryItemPermission::create([
@@ -128,7 +129,7 @@ class LibrarySeeder extends Seeder
                     'permission' => 'view',
                 ]);
             }
-            
+
             // Give second other user edit access to Project A
             if ($otherUsers->count() >= 2) {
                 LibraryItemPermission::create([
@@ -150,7 +151,7 @@ class LibrarySeeder extends Seeder
         $this->command->info('- Images/');
         $this->command->info('  - Photos/');
         $this->command->info('  - Graphics/');
-        
+
         if ($otherUsers->count() > 0) {
             $this->command->info('Sample permissions created for other users.');
         }
