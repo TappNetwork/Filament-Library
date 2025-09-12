@@ -84,17 +84,17 @@ class ListLibraryItems extends ListRecords
             ])
             ->action(function (array $data): void {
                 $filePath = $data['file'];
-                
+
                 // Extract filename from the path
                 $fileName = basename($filePath);
-                
+
                 LibraryItem::create([
                     'name' => $fileName,
                     'type' => 'file',
                     'parent_id' => $this->parentId,
                     'created_by' => auth()->user()?->id,
                 ]);
-                
+
                 $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
             });
 

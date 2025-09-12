@@ -19,11 +19,10 @@ class EditLibraryItem extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        // Remove fields that shouldn't be editable
-        unset($data['type']);
+        // Remove fields that shouldn't be editable, but preserve type
         unset($data['parent_id']);
         unset($data['created_by']);
-
+        
         return $data;
     }
 
@@ -37,5 +36,13 @@ class EditLibraryItem extends EditRecord
                     ->model($this->getRecord())
             ),
         ];
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        // Preserve the original type - don't let it be changed
+        $data['type'] = $this->getRecord()->type;
+        
+        return $data;
     }
 }
