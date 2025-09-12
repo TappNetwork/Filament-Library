@@ -128,8 +128,8 @@ class LibraryItemResource extends Resource
             ])
             ->actions([
                 ViewAction::make()
-                    ->url(fn (LibraryItem $record): string => 
-                        $record->type === 'folder' 
+                    ->url(fn (LibraryItem $record): string =>
+                        $record->type === 'folder'
                             ? static::getUrl('index', ['parent' => $record->id])
                             : static::getUrl('view', ['record' => $record])
                     ),
@@ -142,7 +142,7 @@ class LibraryItemResource extends Resource
                             ->label('Move to folder')
                             ->options(function (LibraryItem $record) {
                                 $currentId = $record->id;
-                                
+
                                 return LibraryItem::where('type', 'folder')
                                     ->where('id', '!=', $currentId)
                                     ->where(function ($query) use ($currentId) {

@@ -25,7 +25,7 @@ class EditLibraryItem extends EditRecord
                         ->label('Move to folder')
                         ->options(function () {
                             $currentId = $this->getRecord()->id;
-                            
+
                             return LibraryItem::where('type', 'folder')
                                 ->where('id', '!=', $currentId)
                                 ->where(function ($query) use ($currentId) {
@@ -44,7 +44,7 @@ class EditLibraryItem extends EditRecord
                     $this->getRecord()->update([
                         'parent_id' => $data['parent_id'],
                     ]);
-                    
+
                     $this->redirect(static::getResource()::getUrl('index', $data['parent_id'] ? ['parent' => $data['parent_id']] : []));
                 }),
             DeleteAction::make(),
@@ -57,7 +57,7 @@ class EditLibraryItem extends EditRecord
         unset($data['type']);
         unset($data['parent_id']);
         unset($data['created_by']);
-        
+
         return $data;
     }
 
@@ -66,7 +66,11 @@ class EditLibraryItem extends EditRecord
         return [
             'form' => $this->form(
                 $this->makeForm()
-                    ->schema(static::getResource()::editForm($this->makeFormSchema())->getComponents())
+                    ->schema([
+                        \Filament\Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255),
+                    ])
                     ->statePath('data')
                     ->model($this->getRecord())
             ),
