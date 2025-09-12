@@ -31,17 +31,8 @@ class LibraryItemResource extends Resource
 
     public static function getModelLabel(): string
     {
-        // Check if we're in a context where we can determine the type
-        $record = static::getRecord();
-        
-        if ($record && $record->type) {
-            return match($record->type) {
-                'folder' => 'Folder',
-                'file' => 'File',
-                default => 'Library Item'
-            };
-        }
-        
+        // For now, return a generic label since we can't access record context here
+        // The dynamic labels will be handled at the page level where we have record access
         return static::$modelLabel ?? 'Library Item';
     }
 
