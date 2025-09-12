@@ -70,7 +70,7 @@ class LibraryItemResource extends Resource
                 \Filament\Forms\Components\FileUpload::make('file')
                     ->label('Upload File')
                     ->required()
-                    ->acceptedFileTypes(['*'])
+                    ->acceptedFileTypes([]) // Allow all file types
                     ->maxSize(10240) // 10MB
                     ->disk('public')
                     ->directory('library-files')

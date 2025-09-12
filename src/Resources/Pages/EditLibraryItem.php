@@ -23,7 +23,7 @@ class EditLibraryItem extends EditRecord
         unset($data['type']);
         unset($data['parent_id']);
         unset($data['created_by']);
-        
+
         return $data;
     }
 

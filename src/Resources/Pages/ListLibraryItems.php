@@ -31,20 +31,20 @@ class ListLibraryItems extends ListRecords
     protected function getHeaderActions(): array
     {
         $actions = [];
-        
+
         // Add "Up One Level" action if we're in a subfolder
         if ($this->parentId && $this->parentFolder) {
             $actions[] = Action::make('up_one_level')
                 ->label('Up One Level')
                 ->icon('heroicon-o-arrow-up')
-                ->url(fn (): string => 
-                    $this->parentFolder->parent_id 
+                ->url(fn (): string =>
+                    $this->parentFolder->parent_id
                         ? static::getResource()::getUrl('index', ['parent' => $this->parentFolder->parent_id])
                         : static::getResource()::getUrl('index')
                 )
                 ->color('gray');
         }
-        
+
         // Add "Create Folder" modal action
         $actions[] = Action::make('create_folder')
             ->label('Create Folder')
@@ -64,10 +64,10 @@ class ListLibraryItems extends ListRecords
                     'parent_id' => $this->parentId,
                     'created_by' => auth()->user()?->id,
                 ]);
-                
+
                 $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
             });
-        
+
         // Add "Upload File" modal action
         $actions[] = Action::make('upload_file')
             ->label('Upload File')
@@ -77,7 +77,7 @@ class ListLibraryItems extends ListRecords
                 FileUpload::make('file')
                     ->label('Upload File')
                     ->required()
-                    ->acceptedFileTypes(['*'])
+                    ->acceptedFileTypes([]) // Allow all file types
                     ->maxSize(10240) // 10MB
                     ->disk('public')
                     ->directory('library-files')
@@ -85,17 +85,17 @@ class ListLibraryItems extends ListRecords
             ])
             ->action(function (array $data): void {
                 $file = $data['file'];
-                
+
                 LibraryItem::create([
                     'name' => $file->getClientOriginalName(),
                     'type' => 'file',
                     'parent_id' => $this->parentId,
                     'created_by' => auth()->user()?->id,
                 ]);
-                
+
                 $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
             });
-        
+
         return $actions;
     }
 

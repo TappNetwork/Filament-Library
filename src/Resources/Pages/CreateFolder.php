@@ -14,7 +14,7 @@ class CreateFolder extends CreateRecord
     public function mount(): void
     {
         parent::mount();
-        
+
         $this->parentId = request()->get('parent');
     }
 
@@ -23,13 +23,13 @@ class CreateFolder extends CreateRecord
         $data['type'] = 'folder';
         $data['parent_id'] = $this->parentId;
         $data['created_by'] = auth()->user()?->id;
-        
+
         return $data;
     }
 
     protected function getRedirectUrl(): string
     {
-        return $this->parentId 
+        return $this->parentId
             ? static::getResource()::getUrl('index', ['parent' => $this->parentId])
             : static::getResource()::getUrl('index');
     }
