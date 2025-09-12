@@ -18,11 +18,11 @@ class LibraryItemResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-folder';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Library';
+    protected static string|\UnitEnum|null $navigationGroup = 'Resource Library';
 
     protected static ?int $navigationSort = 10;
 
-    protected static ?string $navigationLabel = 'Library';
+    protected static ?string $navigationLabel = 'All Folders';
 
     protected static ?string $modelLabel = 'Library Item';
 
@@ -106,9 +106,9 @@ class LibraryItemResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListLibraryItems::route('/'),
-            'create' => Pages\CreateLibraryItem::route('/create'),
-            'edit' => Pages\EditLibraryItem::route('/{record}/edit'),
+            'index' => Pages\ListLibraryItems::route('/library'),
+            'create' => Pages\CreateLibraryItem::route('/library/create'),
+            'edit' => Pages\EditLibraryItem::route('/library/{record}/edit'),
         ];
     }
 }
