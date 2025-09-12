@@ -24,6 +24,7 @@ class LibraryItem extends Model implements HasMedia
         'type',
         'parent_id',
         'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
@@ -74,6 +75,14 @@ class LibraryItem extends Model implements HasMedia
     public function creator(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by');
+    }
+
+    /**
+     * Get the user who last updated this item.
+     */
+    public function updater(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'updated_by');
     }
 
     /**

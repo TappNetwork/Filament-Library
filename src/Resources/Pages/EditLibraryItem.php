@@ -43,6 +43,7 @@ class EditLibraryItem extends EditRecord
                 ->action(function (array $data): void {
                     $this->getRecord()->update([
                         'parent_id' => $data['parent_id'],
+                        'updated_by' => auth()->user()?->id,
                     ]);
 
                     $this->redirect(static::getResource()::getUrl('index', $data['parent_id'] ? ['parent' => $data['parent_id']] : []));
@@ -57,6 +58,14 @@ class EditLibraryItem extends EditRecord
         unset($data['type']);
         unset($data['parent_id']);
         unset($data['created_by']);
+
+        return $data;
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        // Set the updated_by field
+        $data['updated_by'] = auth()->user()?->id;
 
         return $data;
     }

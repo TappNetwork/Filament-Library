@@ -63,6 +63,7 @@ class ListLibraryItems extends ListRecords
                     'type' => 'folder',
                     'parent_id' => $this->parentId,
                     'created_by' => auth()->user()?->id,
+                    'updated_by' => auth()->user()?->id,
                 ]);
 
                 $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
@@ -93,6 +94,7 @@ class ListLibraryItems extends ListRecords
                     'type' => 'file',
                     'parent_id' => $this->parentId,
                     'created_by' => auth()->user()?->id,
+                    'updated_by' => auth()->user()?->id,
                 ]);
 
                 $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
