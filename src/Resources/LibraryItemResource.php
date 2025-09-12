@@ -97,7 +97,10 @@ class LibraryItemResource extends Resource
                     )
                     ->iconColor(fn (LibraryItem $record): string => 
                         $record->type === 'folder' ? 'success' : 'gray'
-                    ),
+                    )
+                    ->iconPosition('before')
+                    ->iconSize('sm')
+                    ->extraAttributes(['class' => 'flex items-center gap-2']),
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Created By')
                     ->searchable()
@@ -125,7 +128,12 @@ class LibraryItemResource extends Resource
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->recordUrl(fn (LibraryItem $record): string => 
+                $record->type === 'folder' 
+                    ? static::getUrl('index', ['parent' => $record->id])
+                    : static::getUrl('view', ['record' => $record])
+            );
     }
 
     public static function getRelations(): array
