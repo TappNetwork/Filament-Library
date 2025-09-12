@@ -11,6 +11,8 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 
 class LibraryItemResource extends Resource
@@ -126,11 +128,40 @@ class LibraryItemResource extends Resource
             ])
             ->actions([
                 ViewAction::make()
-                    ->url(fn (LibraryItem $record): string =>
-                        $record->type === 'folder'
+                    ->url(fn (LibraryItem $record): string => 
+                        $record->type === 'folder' 
                             ? static::getUrl('index', ['parent' => $record->id])
                             : static::getUrl('view', ['record' => $record])
                     ),
+                Action::make('move')
+                    ->label('Move')
+                    ->icon('heroicon-o-arrow-right-circle')
+                    ->color('warning')
+                    ->form([
+                        Select::make('parent_id')
+                            ->label('Move to folder')
+                            ->options(function (LibraryItem $record) {
+                                $currentId = $record->id;
+                                
+                                return LibraryItem::where('type', 'folder')
+                                    ->where('id', '!=', $currentId)
+                                    ->where(function ($query) use ($currentId) {
+                                        // Prevent moving into self or descendants
+                                        $query->whereNull('parent_id')
+                                              ->orWhere('parent_id', '!=', $currentId);
+                                    })
+                                    ->pluck('name', 'id')
+                                    ->prepend('Root (No parent)', null);
+                            })
+                            ->searchable()
+                            ->preload()
+                            ->default(fn (LibraryItem $record) => $record->parent_id),
+                    ])
+                    ->action(function (LibraryItem $record, array $data): void {
+                        $record->update([
+                            'parent_id' => $data['parent_id'],
+                        ]);
+                    }),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

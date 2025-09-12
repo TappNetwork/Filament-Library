@@ -5,6 +5,9 @@ namespace Tapp\FilamentLibrary\Resources\Pages;
 use Filament\Resources\Pages\EditRecord;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
+use Tapp\FilamentLibrary\Models\LibraryItem;
 
 class EditLibraryItem extends EditRecord
 {
@@ -13,13 +16,45 @@ class EditLibraryItem extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('move')
+                ->label('Move')
+                ->icon('heroicon-o-arrow-right-circle')
+                ->color('warning')
+                ->form([
+                    Select::make('parent_id')
+                        ->label('Move to folder')
+                        ->options(function () {
+                            $currentId = $this->getRecord()->id;
+                            
+                            return LibraryItem::where('type', 'folder')
+                                ->where('id', '!=', $currentId)
+                                ->where(function ($query) use ($currentId) {
+                                    // Prevent moving into self or descendants
+                                    $query->whereNull('parent_id')
+                                          ->orWhere('parent_id', '!=', $currentId);
+                                })
+                                ->pluck('name', 'id')
+                                ->prepend('Root (No parent)', null);
+                        })
+                        ->searchable()
+                        ->preload()
+                        ->default($this->getRecord()->parent_id),
+                ])
+                ->action(function (array $data): void {
+                    $this->getRecord()->update([
+                        'parent_id' => $data['parent_id'],
+                    ]);
+                    
+                    $this->redirect(static::getResource()::getUrl('index', $data['parent_id'] ? ['parent' => $data['parent_id']] : []));
+                }),
             DeleteAction::make(),
         ];
     }
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        // Remove fields that shouldn't be editable, but preserve type
+        // Remove fields that shouldn't be editable
+        unset($data['type']);
         unset($data['parent_id']);
         unset($data['created_by']);
         
@@ -38,11 +73,4 @@ class EditLibraryItem extends EditRecord
         ];
     }
 
-    protected function mutateFormDataBeforeSave(array $data): array
-    {
-        // Preserve the original type - don't let it be changed
-        $data['type'] = $this->getRecord()->type;
-        
-        return $data;
-    }
 }
