@@ -29,6 +29,27 @@ class LibraryItemResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Library Items';
 
+    public static function getModelLabel(): string
+    {
+        // Check if we're in a context where we can determine the type
+        $record = static::getRecord();
+        
+        if ($record && $record->type) {
+            return match($record->type) {
+                'folder' => 'Folder',
+                'file' => 'File',
+                default => 'Library Item'
+            };
+        }
+        
+        return static::$modelLabel ?? 'Library Item';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Library';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema
@@ -36,16 +57,6 @@ class LibraryItemResource extends Resource
                 \Filament\Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                \Filament\Forms\Components\Select::make('type')
-                    ->options([
-                        'folder' => 'Folder',
-                        'file' => 'File',
-                    ])
-                    ->required(),
-                \Filament\Forms\Components\Select::make('parent_id')
-                    ->relationship('parent', 'name')
-                    ->searchable()
-                    ->preload(),
             ]);
     }
 
