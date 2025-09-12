@@ -99,7 +99,6 @@ class LibraryItemResource extends Resource
                         $record->type === 'folder' ? 'success' : 'gray'
                     )
                     ->iconPosition('before')
-                    ->iconSize('sm')
                     ->extraAttributes(['class' => 'flex items-center gap-2']),
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Created By')
@@ -129,8 +128,8 @@ class LibraryItemResource extends Resource
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->recordUrl(fn (LibraryItem $record): string => 
-                $record->type === 'folder' 
+            ->recordUrl(fn (LibraryItem $record): string =>
+                $record->type === 'folder'
                     ? static::getUrl('index', ['parent' => $record->id])
                     : static::getUrl('view', ['record' => $record])
             );
