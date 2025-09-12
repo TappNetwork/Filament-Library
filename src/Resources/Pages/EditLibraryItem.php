@@ -64,16 +64,14 @@ class EditLibraryItem extends EditRecord
     protected function getForms(): array
     {
         return [
-            'form' => $this->form(
-                $this->makeForm()
-                    ->schema([
-                        \Filament\Forms\Components\TextInput::make('name')
-                            ->required()
-                            ->maxLength(255),
-                    ])
-                    ->statePath('data')
-                    ->model($this->getRecord())
-            ),
+            'form' => $this->makeForm()
+                ->schema([
+                    \Filament\Forms\Components\TextInput::make('name')
+                        ->required()
+                        ->maxLength(255),
+                ])
+                ->statePath('data')
+                ->model($this->getRecord()),
         ];
     }
 
