@@ -83,15 +83,18 @@ class ListLibraryItems extends ListRecords
                     ->visibility('private'),
             ])
             ->action(function (array $data): void {
-                $file = $data['file'];
-
+                $filePath = $data['file'];
+                
+                // Extract filename from the path
+                $fileName = basename($filePath);
+                
                 LibraryItem::create([
-                    'name' => $file->getClientOriginalName(),
+                    'name' => $fileName,
                     'type' => 'file',
                     'parent_id' => $this->parentId,
                     'created_by' => auth()->user()?->id,
                 ]);
-
+                
                 $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
             });
 
