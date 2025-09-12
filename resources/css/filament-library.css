@@ -11,8 +11,3 @@
 .library-item-name-column .fi-icon {
     color: rgb(75 85 99) !important; /* gray-600 - darker than default gray */
 }
-
-/* Ensure proper spacing between icon and text */
-.library-item-name-column .fi-icon {
-    margin-right: 0.5rem; /* 8px additional spacing */
-}
