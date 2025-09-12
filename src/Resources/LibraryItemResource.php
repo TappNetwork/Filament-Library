@@ -7,7 +7,6 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Tapp\FilamentLibrary\Models\LibraryItem;
@@ -92,17 +91,13 @@ class LibraryItemResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('type')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'folder' => 'success',
-                        'file' => 'info',
-                    }),
-                Tables\Columns\TextColumn::make('parent.name')
-                    ->label('Parent Folder')
-                    ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->icon(fn (LibraryItem $record): string => 
+                        $record->type === 'folder' ? 'heroicon-o-folder' : 'heroicon-o-document'
+                    )
+                    ->iconColor(fn (LibraryItem $record): string => 
+                        $record->type === 'folder' ? 'success' : 'gray'
+                    ),
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Created By')
                     ->searchable()
@@ -124,12 +119,6 @@ class LibraryItemResource extends Resource
                     ]),
             ])
             ->actions([
-                ViewAction::make()
-                    ->url(fn (LibraryItem $record): string => 
-                        $record->type === 'folder' 
-                            ? static::getUrl('index', ['parent' => $record->id])
-                            : static::getUrl('view', ['record' => $record])
-                    ),
                 EditAction::make(),
             ])
             ->bulkActions([
