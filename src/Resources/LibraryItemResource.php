@@ -93,7 +93,7 @@ class LibraryItemResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->icon(fn (LibraryItem $record): string => 
-                        $record->type === 'folder' ? 'heroicon-s-folder' : 'heroicon-s-document'
+                        $record->type === 'folder' ? 'heroicon-s-folder' : 'heroicon-o-document'
                     )
                     ->iconColor('gray')
                     ->iconPosition('before')
