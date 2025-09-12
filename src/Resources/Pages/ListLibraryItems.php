@@ -77,7 +77,6 @@ class ListLibraryItems extends ListRecords
                 FileUpload::make('file')
                     ->label('Upload File')
                     ->required()
-                    ->acceptedFileTypes([]) // Allow all file types
                     ->maxSize(10240) // 10MB
                     ->disk('public')
                     ->directory('library-files')
