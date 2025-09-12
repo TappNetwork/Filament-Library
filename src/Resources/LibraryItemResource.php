@@ -92,14 +92,12 @@ class LibraryItemResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable()
-                    ->icon(fn (LibraryItem $record): string => 
-                        $record->type === 'folder' ? 'heroicon-o-folder' : 'heroicon-o-document'
-                    )
-                    ->iconColor(fn (LibraryItem $record): string => 
-                        $record->type === 'folder' ? 'success' : 'gray'
-                    )
-                    ->iconPosition('before')
-                    ->extraAttributes(['class' => 'flex items-center gap-2']),
+                    ->formatStateUsing(function (LibraryItem $record): string {
+                        $icon = $record->type === 'folder' ? 'heroicon-o-folder' : 'heroicon-o-document';
+                        $color = $record->type === 'folder' ? 'text-green-500' : 'text-gray-500';
+                        return "<div class='flex items-center gap-2'><x-heroicon-o-{$icon} class='w-4 h-4 {$color}' /><span>{$record->name}</span></div>";
+                    })
+                    ->html(),
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Created By')
                     ->searchable()
