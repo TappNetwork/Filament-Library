@@ -95,11 +95,9 @@ class LibraryItemResource extends Resource
                     ->icon(fn (LibraryItem $record): string => 
                         $record->type === 'folder' ? 'heroicon-o-folder' : 'heroicon-o-document'
                     )
-                    ->iconColor(fn (LibraryItem $record): string => 
-                        $record->type === 'folder' ? 'success' : 'gray'
-                    )
+                    ->iconColor('gray')
                     ->iconPosition('before')
-                    ->extraAttributes(['class' => 'flex items-center gap-2']),
+                    ->extraAttributes(['class' => 'library-item-name-column']),
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Created By')
                     ->searchable()

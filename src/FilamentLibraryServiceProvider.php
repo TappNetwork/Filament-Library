@@ -100,9 +100,14 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
     {
         $assets = [];
 
-        // Only register assets if they exist
+        // Register our custom CSS file
+        if (file_exists(__DIR__ . '/../resources/css/filament-library.css')) {
+            $assets[] = Css::make('filament-library-styles', __DIR__ . '/../resources/css/filament-library.css');
+        }
+
+        // Only register dist assets if they exist
         if (file_exists(__DIR__ . '/../resources/dist/filament-library.css')) {
-            $assets[] = Css::make('filament-library-styles', __DIR__ . '/../resources/dist/filament-library.css');
+            $assets[] = Css::make('filament-library-dist-styles', __DIR__ . '/../resources/dist/filament-library.css');
         }
 
         if (file_exists(__DIR__ . '/../resources/dist/filament-library.js')) {
