@@ -7,6 +7,8 @@ use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 use Filament\Actions\CreateAction;
 use Filament\Actions\Action;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
 
 class ListLibraryItems extends ListRecords
 {
@@ -18,9 +20,9 @@ class ListLibraryItems extends ListRecords
     public function mount(): void
     {
         parent::mount();
-        
+
         $this->parentId = request()->get('parent');
-        
+
         if ($this->parentId) {
             $this->parentFolder = LibraryItem::find($this->parentId);
         }
@@ -43,13 +45,56 @@ class ListLibraryItems extends ListRecords
                 ->color('gray');
         }
         
-        // Add "Create" action
-        $actions[] = CreateAction::make()
-            ->url(fn (): string => 
-                $this->parentId 
-                    ? static::getResource()::getUrl('create', ['parent' => $this->parentId])
-                    : static::getResource()::getUrl('create')
-            );
+        // Add "Create Folder" modal action
+        $actions[] = Action::make('create_folder')
+            ->label('Create Folder')
+            ->icon('heroicon-o-folder-plus')
+            ->color('success')
+            ->form([
+                TextInput::make('name')
+                    ->label('Folder Name')
+                    ->required()
+                    ->maxLength(255)
+                    ->placeholder('Enter folder name'),
+            ])
+            ->action(function (array $data): void {
+                LibraryItem::create([
+                    'name' => $data['name'],
+                    'type' => 'folder',
+                    'parent_id' => $this->parentId,
+                    'created_by' => auth()->user()?->id,
+                ]);
+                
+                $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
+            });
+        
+        // Add "Upload File" modal action
+        $actions[] = Action::make('upload_file')
+            ->label('Upload File')
+            ->icon('heroicon-o-document-plus')
+            ->color('primary')
+            ->form([
+                FileUpload::make('file')
+                    ->label('Upload File')
+                    ->required()
+                    ->acceptedFileTypes(['*'])
+                    ->maxSize(10240) // 10MB
+                    ->disk('public')
+                    ->directory('library-files')
+                    ->visibility('private'),
+            ])
+            ->action(function (array $data): void {
+                $file = $data['file'];
+                
+                LibraryItem::create([
+                    'name' => $file->getClientOriginalName(),
+                    'type' => 'file',
+                    'parent_id' => $this->parentId,
+                    'created_by' => auth()->user()?->id,
+                ]);
+                
+                $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
+            });
         
         return $actions;
     }
@@ -57,13 +102,13 @@ class ListLibraryItems extends ListRecords
     protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
     {
         $query = parent::getTableQuery();
-        
+
         if ($this->parentId) {
             $query->where('parent_id', $this->parentId);
         } else {
             $query->whereNull('parent_id');
         }
-        
+
         return $query;
     }
 
@@ -72,7 +117,7 @@ class ListLibraryItems extends ListRecords
         if ($this->parentFolder) {
             return $this->parentFolder->name;
         }
-        
+
         return 'All Folders';
     }
 
@@ -81,21 +126,21 @@ class ListLibraryItems extends ListRecords
         $breadcrumbs = [
             static::getResource()::getUrl() => 'All Folders',
         ];
-        
+
         if ($this->parentFolder) {
             $current = $this->parentFolder;
             $path = [];
-            
+
             while ($current) {
                 array_unshift($path, $current);
                 $current = $current->parent;
             }
-            
+
             foreach ($path as $folder) {
                 $breadcrumbs[static::getResource()::getUrl('index', ['parent' => $folder->id])] = $folder->name;
             }
         }
-        
+
         return $breadcrumbs;
     }
 }

@@ -4,9 +4,8 @@ namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Resources\Pages\CreateRecord;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
-use Tapp\FilamentLibrary\Models\LibraryItem;
 
-class CreateLibraryItem extends CreateRecord
+class CreateFile extends CreateRecord
 {
     protected static string $resource = LibraryItemResource::class;
 
@@ -15,24 +14,23 @@ class CreateLibraryItem extends CreateRecord
     public function mount(): void
     {
         parent::mount();
-
+        
         $this->parentId = request()->get('parent');
-
-        if ($this->parentId) {
-            $this->form->fill([
-                'parent_id' => $this->parentId,
-            ]);
-        }
     }
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        if ($this->parentId) {
-            $data['parent_id'] = $this->parentId;
-        }
-
-        $data['created_by'] = auth()->id();
-
+        $data['type'] = 'file';
+        $data['parent_id'] = $this->parentId;
+        $data['created_by'] = auth()->user()?->id;
+        
         return $data;
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->parentId 
+            ? static::getResource()::getUrl('index', ['parent' => $this->parentId])
+            : static::getResource()::getUrl('index');
     }
 }

@@ -51,6 +51,43 @@ class LibraryItemResource extends Resource
             ]);
     }
 
+    public static function folderForm(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                \Filament\Forms\Components\TextInput::make('name')
+                    ->label('Folder Name')
+                    ->required()
+                    ->maxLength(255)
+                    ->placeholder('Enter folder name'),
+            ]);
+    }
+
+    public static function fileForm(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                \Filament\Forms\Components\FileUpload::make('file')
+                    ->label('Upload File')
+                    ->required()
+                    ->acceptedFileTypes(['*'])
+                    ->maxSize(10240) // 10MB
+                    ->disk('public')
+                    ->directory('library-files')
+                    ->visibility('private'),
+            ]);
+    }
+
+    public static function editForm(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                \Filament\Forms\Components\TextInput::make('name')
+                    ->required()
+                    ->maxLength(255),
+            ]);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -90,8 +127,8 @@ class LibraryItemResource extends Resource
             ])
             ->actions([
                 ViewAction::make()
-                    ->url(fn (LibraryItem $record): string => 
-                        $record->type === 'folder' 
+                    ->url(fn (LibraryItem $record): string =>
+                        $record->type === 'folder'
                             ? static::getUrl('index', ['parent' => $record->id])
                             : static::getUrl('view', ['record' => $record])
                     ),
@@ -117,6 +154,8 @@ class LibraryItemResource extends Resource
         return [
             'index' => Pages\ListLibraryItems::route('/'),
             'create' => Pages\CreateLibraryItem::route('/create'),
+            'create-folder' => Pages\CreateFolder::route('/create-folder'),
+            'create-file' => Pages\CreateFile::route('/create-file'),
             'view' => Pages\ViewLibraryItem::route('/{record}'),
             'edit' => Pages\EditLibraryItem::route('/{record}/edit'),
         ];
