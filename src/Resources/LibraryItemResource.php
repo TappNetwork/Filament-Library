@@ -8,6 +8,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Tapp\FilamentLibrary\Models\LibraryItem;
@@ -88,6 +89,12 @@ class LibraryItemResource extends Resource
                     ]),
             ])
             ->actions([
+                ViewAction::make()
+                    ->url(fn (LibraryItem $record): string => 
+                        $record->type === 'folder' 
+                            ? static::getUrl('index', ['parent' => $record->id])
+                            : static::getUrl('view', ['record' => $record])
+                    ),
                 EditAction::make(),
                 DeleteAction::make(),
             ])
@@ -110,6 +117,7 @@ class LibraryItemResource extends Resource
         return [
             'index' => Pages\ListLibraryItems::route('/'),
             'create' => Pages\CreateLibraryItem::route('/create'),
+            'view' => Pages\ViewLibraryItem::route('/{record}'),
             'edit' => Pages\EditLibraryItem::route('/{record}/edit'),
         ];
     }
