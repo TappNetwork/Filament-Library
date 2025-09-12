@@ -99,11 +99,11 @@ class LibraryItemResource extends Resource
                     ->iconPosition('before')
                     ->extraAttributes(['class' => 'library-item-name-column']),
                 Tables\Columns\TextColumn::make('updater.name')
-                    ->label('Updated By')
+                    ->label('Modified By')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated At')
+                    ->label('Modified At')
                     ->dateTime()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('creator.name')
@@ -172,11 +172,11 @@ class LibraryItemResource extends Resource
     public static function formatFileSize(int $bytes): string
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        
+
         for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
             $bytes /= 1024;
         }
-        
+
         return round($bytes, 2) . ' ' . $units[$i];
     }
 }
