@@ -101,21 +101,23 @@ class LibraryItemResource extends Resource
                 Tables\Columns\TextColumn::make('updater.name')
                     ->label('Modified By')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Modified At')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Created By')
                     ->searchable()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('size')
                     ->label('Size')
                     ->formatStateUsing(function (LibraryItem $record): string {
@@ -126,7 +128,7 @@ class LibraryItemResource extends Resource
                         return $media ? static::formatFileSize($media->size) : '-';
                     })
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
