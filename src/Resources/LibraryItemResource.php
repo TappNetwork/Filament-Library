@@ -120,17 +120,6 @@ class LibraryItemResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('size')
-                    ->label('Size')
-                    ->formatStateUsing(function (LibraryItem $record): string {
-                        if ($record->type === 'folder') {
-                            return '-';
-                        }
-                        $media = $record->getFirstMedia('files');
-                        return $media ? static::formatFileSize($media->size) : '-';
-                    })
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
@@ -173,14 +162,4 @@ class LibraryItemResource extends Resource
         ];
     }
 
-    public static function formatFileSize(int $bytes): string
-    {
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-
-        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
-            $bytes /= 1024;
-        }
-
-        return round($bytes, 2) . ' ' . $units[$i];
-    }
 }

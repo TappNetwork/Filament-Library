@@ -51,7 +51,6 @@ class ListLibraryItems extends ListRecords
             Action::make('create_folder')
                 ->label('Create Folder')
                 ->icon('heroicon-o-folder-plus')
-                ->color('primary')
                 ->form([
                     TextInput::make('name')
                         ->label('Folder Name')
@@ -73,7 +72,6 @@ class ListLibraryItems extends ListRecords
             Action::make('upload_file')
                 ->label('Upload File')
                 ->icon('heroicon-o-document-plus')
-                ->color('primary')
                 ->form([
                     FileUpload::make('file')
                         ->label('Upload File')
