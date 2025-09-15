@@ -9,6 +9,10 @@ use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 
 class LibraryItemResource extends Resource
@@ -127,13 +131,21 @@ class LibraryItemResource extends Resource
                         'folder' => 'Folder',
                         'file' => 'File',
                     ]),
+                Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                EditAction::make(),
+                EditAction::make()
+                    ->visible(fn (LibraryItem $record): bool => !$record->trashed()),
+                RestoreAction::make()
+                    ->visible(fn (LibraryItem $record): bool => $record->trashed()),
+                ForceDeleteAction::make()
+                    ->visible(fn (LibraryItem $record): bool => $record->trashed()),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
                 ]),
             ])
             ->recordUrl(function (LibraryItem $record): string {
