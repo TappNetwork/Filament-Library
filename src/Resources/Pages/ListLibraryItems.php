@@ -49,7 +49,7 @@ class ListLibraryItems extends ListRecords
         $actions[] = Action::make('create_folder')
             ->label('Create Folder')
             ->icon('heroicon-o-folder-plus')
-            ->color('success')
+            ->color('primary')
             ->form([
                 TextInput::make('name')
                     ->label('Folder Name')
