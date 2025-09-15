@@ -45,60 +45,65 @@ class ListLibraryItems extends ListRecords
                 ->color('gray');
         }
 
-        // Add "Create Folder" modal action
-        $actions[] = Action::make('create_folder')
-            ->label('Create Folder')
-            ->icon('heroicon-o-folder-plus')
+        // Add "+ New" dropdown action
+        $actions[] = Action::make('new')
+            ->label('+ New')
+            ->icon('heroicon-o-plus')
             ->color('primary')
-            ->form([
-                TextInput::make('name')
-                    ->label('Folder Name')
-                    ->required()
-                    ->maxLength(255)
-                    ->placeholder('Enter folder name'),
-            ])
-            ->action(function (array $data): void {
-                LibraryItem::create([
-                    'name' => $data['name'],
-                    'type' => 'folder',
-                    'parent_id' => $this->parentId,
-                    'created_by' => auth()->user()?->id,
-                    'updated_by' => auth()->user()?->id,
-                ]);
+            ->dropdown()
+            ->actions([
+                Action::make('create_folder')
+                    ->label('Create Folder')
+                    ->icon('heroicon-o-folder-plus')
+                    ->color('primary')
+                    ->form([
+                        TextInput::make('name')
+                            ->label('Folder Name')
+                            ->required()
+                            ->maxLength(255)
+                            ->placeholder('Enter folder name'),
+                    ])
+                    ->action(function (array $data): void {
+                        LibraryItem::create([
+                            'name' => $data['name'],
+                            'type' => 'folder',
+                            'parent_id' => $this->parentId,
+                            'created_by' => auth()->user()?->id,
+                            'updated_by' => auth()->user()?->id,
+                        ]);
 
-                $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
-            });
-
-        // Add "Upload File" modal action
-        $actions[] = Action::make('upload_file')
-            ->label('Upload File')
-            ->icon('heroicon-o-document-plus')
-            ->color('primary')
-            ->form([
-                FileUpload::make('file')
+                        $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
+                    }),
+                Action::make('upload_file')
                     ->label('Upload File')
-                    ->required()
-                    ->maxSize(10240) // 10MB
-                    ->disk('public')
-                    ->directory('library-files')
-                    ->visibility('private'),
-            ])
-            ->action(function (array $data): void {
-                $filePath = $data['file'];
+                    ->icon('heroicon-o-document-plus')
+                    ->color('primary')
+                    ->form([
+                        FileUpload::make('file')
+                            ->label('Upload File')
+                            ->required()
+                            ->maxSize(10240) // 10MB
+                            ->disk('public')
+                            ->directory('library-files')
+                            ->visibility('private'),
+                    ])
+                    ->action(function (array $data): void {
+                        $filePath = $data['file'];
 
-                // Extract filename from the path
-                $fileName = basename($filePath);
+                        // Extract filename from the path
+                        $fileName = basename($filePath);
 
-                LibraryItem::create([
-                    'name' => $fileName,
-                    'type' => 'file',
-                    'parent_id' => $this->parentId,
-                    'created_by' => auth()->user()?->id,
-                    'updated_by' => auth()->user()?->id,
-                ]);
+                        LibraryItem::create([
+                            'name' => $fileName,
+                            'type' => 'file',
+                            'parent_id' => $this->parentId,
+                            'created_by' => auth()->user()?->id,
+                            'updated_by' => auth()->user()?->id,
+                        ]);
 
-                $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
-            });
+                        $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
+                    }),
+            ]);
 
         return $actions;
     }
