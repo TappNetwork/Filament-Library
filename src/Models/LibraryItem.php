@@ -220,7 +220,9 @@ class LibraryItem extends Model implements HasMedia
         $slug = $baseSlug;
         $counter = 1;
 
-        while (static::where('slug', $slug)
+        // Check for existing slugs (including soft-deleted ones)
+        while (static::withTrashed()
+            ->where('slug', $slug)
             ->where('parent_id', $parentId)
             ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
             ->exists()) {

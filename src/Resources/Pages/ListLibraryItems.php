@@ -44,6 +44,15 @@ class ListLibraryItems extends ListRecords
                         : static::getResource()::getUrl('index')
                 )
                 ->color('gray');
+
+            // Add "Edit" action for the current folder
+            $actions[] = Action::make('edit_folder')
+                ->label('Edit')
+                ->icon('heroicon-o-pencil')
+                ->color('gray')
+                ->url(fn (): string =>
+                    static::getResource()::getUrl('edit', ['record' => $this->parentFolder])
+                );
         }
 
         // Add "+ New" dropdown action group
@@ -79,12 +88,13 @@ class ListLibraryItems extends ListRecords
                         ->maxSize(10240) // 10MB
                         ->disk('public')
                         ->directory('library-files')
-                        ->visibility('private'),
+                        ->visibility('private')
+                        ->preserveFilenames(), // This should preserve original filenames
                 ])
                 ->action(function (array $data): void {
                     $filePath = $data['file'];
 
-                    // Extract filename from the path
+                    // Extract filename from the stored path - this should preserve the original name
                     $fileName = basename($filePath);
 
                     LibraryItem::create([

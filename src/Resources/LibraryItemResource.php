@@ -7,6 +7,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\RestoreAction;
@@ -135,14 +136,35 @@ class LibraryItemResource extends Resource
             ])
             ->actions([
                 EditAction::make(),
+                DeleteAction::make()
+                    ->successRedirectUrl(function (LibraryItem $record) {
+                        // Redirect to the parent folder after deletion
+                        $parentId = $record->parent_id;
+                        return static::getUrl('index', $parentId ? ['parent' => $parentId] : []);
+                    }),
                 RestoreAction::make(),
-                ForceDeleteAction::make(),
+                ForceDeleteAction::make()
+                    ->successRedirectUrl(function (LibraryItem $record) {
+                        // Redirect to the parent folder after deletion
+                        $parentId = $record->parent_id;
+                        return static::getUrl('index', $parentId ? ['parent' => $parentId] : []);
+                    }),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->successRedirectUrl(function () {
+                            // For bulk actions, redirect to current folder (maintain current location)
+                            $currentParent = request()->get('parent');
+                            return static::getUrl('index', $currentParent ? ['parent' => $currentParent] : []);
+                        }),
                     RestoreBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make()
+                        ->successRedirectUrl(function () {
+                            // For bulk actions, redirect to current folder (maintain current location)
+                            $currentParent = request()->get('parent');
+                            return static::getUrl('index', $currentParent ? ['parent' => $currentParent] : []);
+                        }),
                 ]),
             ])
             ->recordUrl(function (LibraryItem $record): string {

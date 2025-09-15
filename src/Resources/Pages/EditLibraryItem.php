@@ -35,7 +35,12 @@ class EditLibraryItem extends EditRecord
         }
 
 
-        $actions[] = DeleteAction::make();
+        $actions[] = DeleteAction::make()
+            ->successRedirectUrl(function () {
+                // Redirect to the parent folder after deletion
+                $parentId = $this->getRecord()->parent_id;
+                return static::getResource()::getUrl('index', $parentId ? ['parent' => $parentId] : []);
+            });
 
         return $actions;
     }
