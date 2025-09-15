@@ -105,4 +105,32 @@ class EditLibraryItem extends EditRecord
         ];
     }
 
+    public function getBreadcrumbs(): array
+    {
+        $breadcrumbs = [
+            static::getResource()::getUrl() => 'All Folders',
+        ];
+
+        $record = $this->getRecord();
+        
+        if ($record->parent_id) {
+            $current = $record->parent;
+            $path = [];
+
+            while ($current) {
+                array_unshift($path, $current);
+                $current = $current->parent;
+            }
+
+            foreach ($path as $folder) {
+                $breadcrumbs[static::getResource()::getUrl('index', ['parent' => $folder->id])] = $folder->name;
+            }
+        }
+
+        // Add current item to breadcrumbs
+        $breadcrumbs[] = $record->name;
+
+        return $breadcrumbs;
+    }
+
 }
