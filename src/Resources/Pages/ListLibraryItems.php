@@ -100,7 +100,7 @@ class ListLibraryItems extends ListRecords
                     $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
                 }),
         ])
-            ->label('+ New')
+            ->label('New')
             ->icon('heroicon-o-plus')
             ->color('primary')
             ->button();
