@@ -136,11 +136,15 @@ class LibraryItemResource extends Resource
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->recordUrl(fn (LibraryItem $record): string =>
-                $record->type === 'folder'
-                    ? static::getUrl('index', ['parent' => $record->id])
-                    : static::getUrl('view', ['record' => $record])
-            );
+            ->recordUrl(function (LibraryItem $record): string {
+                // Cache URL generation to reduce computation during rapid navigation
+                $cacheKey = 'record_url_' . $record->id . '_' . $record->type;
+                return cache()->remember($cacheKey, 60, function () use ($record) { // 1 minute cache
+                    return $record->type === 'folder'
+                        ? static::getUrl('index', ['parent' => $record->id])
+                        : static::getUrl('view', ['record' => $record]);
+                });
+            });
     }
 
     public static function getRelations(): array

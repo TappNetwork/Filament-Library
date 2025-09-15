@@ -135,16 +135,24 @@ class ListLibraryItems extends ListRecords
         ];
 
         if ($this->parentFolder) {
-            $current = $this->parentFolder;
-            $path = [];
+            // Cache the breadcrumb path to avoid repeated computation
+            $cacheKey = 'breadcrumbs_' . $this->parentFolder->id;
+            $path = cache()->remember($cacheKey, 300, function () { // 5 minute cache
+                $current = $this->parentFolder;
+                $path = [];
 
-            while ($current) {
-                array_unshift($path, $current);
-                $current = $current->parent;
-            }
+                while ($current) {
+                    array_unshift($path, $current);
+                    $current = $current->parent;
+                }
 
+                return $path;
+            });
+
+            // Generate URLs more efficiently
+            $baseUrl = static::getResource()::getUrl('index');
             foreach ($path as $folder) {
-                $breadcrumbs[static::getResource()::getUrl('index', ['parent' => $folder->id])] = $folder->name;
+                $breadcrumbs[$baseUrl . '?parent=' . $folder->id] = $folder->name;
             }
         }
 
