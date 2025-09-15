@@ -22,8 +22,20 @@ class EditLibraryItem extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [
-            Action::make('move')
+        $actions = [];
+
+        // Add "View Folder" action if we have a parent
+        if ($this->getRecord()->parent_id) {
+            $actions[] = Action::make('view_folder')
+                ->label('View Folder')
+                ->icon('heroicon-o-arrow-up')
+                ->color('gray')
+                ->url(fn (): string =>
+                    static::getResource()::getUrl('index', ['parent' => $this->getRecord()->parent_id])
+                );
+        }
+
+        $actions[] = Action::make('move')
                 ->label('Move')
                 ->icon('heroicon-o-arrow-right-circle')
                 ->color('warning')
@@ -54,9 +66,11 @@ class EditLibraryItem extends EditRecord
                     ]);
 
                     $this->redirect(static::getResource()::getUrl('index', $data['parent_id'] ? ['parent' => $data['parent_id']] : []));
-                }),
-            DeleteAction::make(),
-        ];
+                });
+
+        $actions[] = DeleteAction::make();
+
+        return $actions;
     }
 
     protected function mutateFormDataBeforeFill(array $data): array

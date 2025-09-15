@@ -4,6 +4,7 @@ namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Resources\Pages\ViewRecord;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
+use Filament\Actions\Action;
 
 class ViewLibraryItem extends ViewRecord
 {
@@ -18,9 +19,22 @@ class ViewLibraryItem extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        return [
-            \Filament\Actions\EditAction::make(),
-            \Filament\Actions\DeleteAction::make(),
-        ];
+        $actions = [];
+
+        // Add "View Folder" action if we have a parent
+        if ($this->getRecord()->parent_id) {
+            $actions[] = Action::make('view_folder')
+                ->label('View Folder')
+                ->icon('heroicon-o-arrow-up')
+                ->color('gray')
+                ->url(fn (): string =>
+                    static::getResource()::getUrl('index', ['parent' => $this->getRecord()->parent_id])
+                );
+        }
+
+        $actions[] = \Filament\Actions\EditAction::make();
+        $actions[] = \Filament\Actions\DeleteAction::make();
+
+        return $actions;
     }
 }
