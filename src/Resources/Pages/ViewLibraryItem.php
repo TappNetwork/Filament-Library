@@ -45,7 +45,7 @@ class ViewLibraryItem extends ViewRecord
         ];
 
         $record = $this->getRecord();
-        
+
         if ($record->parent_id) {
             // Cache the breadcrumb path to avoid repeated computation
             $cacheKey = 'breadcrumbs_' . $record->parent_id;
