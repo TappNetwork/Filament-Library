@@ -134,12 +134,9 @@ class LibraryItemResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                EditAction::make()
-                    ->visible(fn (LibraryItem $record): bool => !$record->trashed()),
-                RestoreAction::make()
-                    ->visible(fn (LibraryItem $record): bool => $record->trashed()),
-                ForceDeleteAction::make()
-                    ->visible(fn (LibraryItem $record): bool => $record->trashed()),
+                EditAction::make(),
+                RestoreAction::make(),
+                ForceDeleteAction::make(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
