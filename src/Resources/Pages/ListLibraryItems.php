@@ -7,6 +7,7 @@ use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 use Filament\Actions\CreateAction;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
 
@@ -45,65 +46,64 @@ class ListLibraryItems extends ListRecords
                 ->color('gray');
         }
 
-        // Add "+ New" dropdown action
-        $actions[] = Action::make('new')
+        // Add "+ New" dropdown action group
+        $actions[] = ActionGroup::make([
+            Action::make('create_folder')
+                ->label('Create Folder')
+                ->icon('heroicon-o-folder-plus')
+                ->color('primary')
+                ->form([
+                    TextInput::make('name')
+                        ->label('Folder Name')
+                        ->required()
+                        ->maxLength(255)
+                        ->placeholder('Enter folder name'),
+                ])
+                ->action(function (array $data): void {
+                    LibraryItem::create([
+                        'name' => $data['name'],
+                        'type' => 'folder',
+                        'parent_id' => $this->parentId,
+                        'created_by' => auth()->user()?->id,
+                        'updated_by' => auth()->user()?->id,
+                    ]);
+
+                    $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
+                }),
+            Action::make('upload_file')
+                ->label('Upload File')
+                ->icon('heroicon-o-document-plus')
+                ->color('primary')
+                ->form([
+                    FileUpload::make('file')
+                        ->label('Upload File')
+                        ->required()
+                        ->maxSize(10240) // 10MB
+                        ->disk('public')
+                        ->directory('library-files')
+                        ->visibility('private'),
+                ])
+                ->action(function (array $data): void {
+                    $filePath = $data['file'];
+
+                    // Extract filename from the path
+                    $fileName = basename($filePath);
+
+                    LibraryItem::create([
+                        'name' => $fileName,
+                        'type' => 'file',
+                        'parent_id' => $this->parentId,
+                        'created_by' => auth()->user()?->id,
+                        'updated_by' => auth()->user()?->id,
+                    ]);
+
+                    $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
+                }),
+        ])
             ->label('+ New')
             ->icon('heroicon-o-plus')
             ->color('primary')
-            ->dropdown()
-            ->actions([
-                Action::make('create_folder')
-                    ->label('Create Folder')
-                    ->icon('heroicon-o-folder-plus')
-                    ->color('primary')
-                    ->form([
-                        TextInput::make('name')
-                            ->label('Folder Name')
-                            ->required()
-                            ->maxLength(255)
-                            ->placeholder('Enter folder name'),
-                    ])
-                    ->action(function (array $data): void {
-                        LibraryItem::create([
-                            'name' => $data['name'],
-                            'type' => 'folder',
-                            'parent_id' => $this->parentId,
-                            'created_by' => auth()->user()?->id,
-                            'updated_by' => auth()->user()?->id,
-                        ]);
-
-                        $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
-                    }),
-                Action::make('upload_file')
-                    ->label('Upload File')
-                    ->icon('heroicon-o-document-plus')
-                    ->color('primary')
-                    ->form([
-                        FileUpload::make('file')
-                            ->label('Upload File')
-                            ->required()
-                            ->maxSize(10240) // 10MB
-                            ->disk('public')
-                            ->directory('library-files')
-                            ->visibility('private'),
-                    ])
-                    ->action(function (array $data): void {
-                        $filePath = $data['file'];
-
-                        // Extract filename from the path
-                        $fileName = basename($filePath);
-
-                        LibraryItem::create([
-                            'name' => $fileName,
-                            'type' => 'file',
-                            'parent_id' => $this->parentId,
-                            'created_by' => auth()->user()?->id,
-                            'updated_by' => auth()->user()?->id,
-                        ]);
-
-                        $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
-                    }),
-            ]);
+            ->button();
 
         return $actions;
     }
