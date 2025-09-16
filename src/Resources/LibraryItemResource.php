@@ -117,9 +117,13 @@ class LibraryItemResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable()
-                    ->icon(fn (LibraryItem $record): string => $record->getDisplayIcon())
+                    ->icon(fn (?LibraryItem $record): string => $record?->getDisplayIcon() ?? 'heroicon-o-document')
                     ->iconPosition('before')
-                    ->url(function (LibraryItem $record): ?string {
+                    ->url(function (?LibraryItem $record): ?string {
+                        if (!$record) {
+                            return null;
+                        }
+                        
                         return match ($record->type) {
                             'folder' => static::getUrl('index', ['parent' => $record->id]),
                             'link' => $record->external_url,
@@ -149,9 +153,9 @@ class LibraryItemResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('external_url')
                     ->label('URL')
-                    ->visible(fn (LibraryItem $record) => $record->type === 'link')
+                    ->visible(fn (?LibraryItem $record) => $record && $record->type === 'link')
                     ->limit(50)
-                    ->tooltip(fn (LibraryItem $record) => $record->external_url),
+                    ->tooltip(fn (?LibraryItem $record) => $record?->external_url),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
