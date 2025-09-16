@@ -12,8 +12,8 @@ use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
-use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Tapp\FilamentLibrary\Models\LibraryItem;
@@ -21,6 +21,8 @@ use Tapp\FilamentLibrary\Models\LibraryItem;
 class LibraryItemResource extends Resource
 {
     protected static ?string $model = LibraryItem::class;
+
+    protected static ?int $deletedParentId = null;
 
     protected static ?string $slug = 'library';
 
@@ -122,7 +124,7 @@ class LibraryItemResource extends Resource
                     ]),
                 Tables\Filters\TrashedFilter::make(),
             ])
-            ->actions([
+            ->recordActions([
                 ActionGroup::make([
                     Action::make('view')
                         ->label('View')
@@ -141,17 +143,25 @@ class LibraryItemResource extends Resource
                         ->color('gray'),
                     DeleteAction::make()
                         ->color('gray')
-                        ->successRedirectUrl(function (LibraryItem $record) {
+                        ->before(function (LibraryItem $record) {
+                            // Store parent_id before deletion
+                            static::$deletedParentId = $record->parent_id;
+                        })
+                        ->successRedirectUrl(function () {
                             // Redirect to the parent folder after deletion
-                            $parentId = $record->parent_id;
+                            $parentId = static::$deletedParentId;
 
                             return static::getUrl('index', $parentId ? ['parent' => $parentId] : []);
                         }),
                     RestoreAction::make(),
                     ForceDeleteAction::make()
-                        ->successRedirectUrl(function (LibraryItem $record) {
+                        ->before(function (LibraryItem $record) {
+                            // Store parent_id before deletion
+                            static::$deletedParentId = $record->parent_id;
+                        })
+                        ->successRedirectUrl(function () {
                             // Redirect to the parent folder after deletion
-                            $parentId = $record->parent_id;
+                            $parentId = static::$deletedParentId;
 
                             return static::getUrl('index', $parentId ? ['parent' => $parentId] : []);
                         }),
@@ -160,7 +170,7 @@ class LibraryItemResource extends Resource
                     ->color('gray')
                     ->iconButton(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->successRedirectUrl(function () {

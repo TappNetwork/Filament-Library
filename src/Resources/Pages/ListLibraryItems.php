@@ -60,7 +60,7 @@ class ListLibraryItems extends ListRecords
             Action::make('create_folder')
                 ->label('Create Folder')
                 ->icon('heroicon-o-folder-plus')
-                ->form([
+                ->schema([
                     TextInput::make('name')
                         ->label('Folder Name')
                         ->required()
@@ -81,7 +81,7 @@ class ListLibraryItems extends ListRecords
             Action::make('upload_file')
                 ->label('Upload File')
                 ->icon('heroicon-o-document-plus')
-                ->form([
+                ->schema([
                     FileUpload::make('file')
                         ->label('Upload File')
                         ->required()

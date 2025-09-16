@@ -10,6 +10,8 @@ class ViewLibraryItem extends ViewRecord
 {
     protected static string $resource = LibraryItemResource::class;
 
+    protected ?int $parentId = null;
+
     public function getTitle(): string
     {
         $record = $this->getRecord();
@@ -34,7 +36,17 @@ class ViewLibraryItem extends ViewRecord
         }
 
         $actions[] = \Filament\Actions\EditAction::make();
-        $actions[] = \Filament\Actions\DeleteAction::make();
+        $actions[] = \Filament\Actions\DeleteAction::make()
+            ->before(function () {
+                // Store parent_id before deletion
+                $this->parentId = $this->getRecord()->parent_id;
+            })
+            ->successRedirectUrl(function () {
+                // Redirect to the parent folder after deletion
+                $parentId = $this->parentId;
+
+                return static::getResource()::getUrl('index', $parentId ? ['parent' => $parentId] : []);
+            });
 
         return $actions;
     }

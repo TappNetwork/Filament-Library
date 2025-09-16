@@ -11,6 +11,8 @@ class EditLibraryItem extends EditRecord
 {
     protected static string $resource = LibraryItemResource::class;
 
+    protected ?int $parentId = null;
+
     public function getTitle(): string
     {
         $record = $this->getRecord();
@@ -35,9 +37,13 @@ class EditLibraryItem extends EditRecord
         }
 
         $actions[] = DeleteAction::make()
+            ->before(function () {
+                // Store parent_id before deletion
+                $this->parentId = $this->getRecord()->parent_id;
+            })
             ->successRedirectUrl(function () {
                 // Redirect to the parent folder after deletion
-                $parentId = $this->getRecord()->parent_id;
+                $parentId = $this->parentId;
 
                 return static::getResource()::getUrl('index', $parentId ? ['parent' => $parentId] : []);
             });
@@ -66,12 +72,9 @@ class EditLibraryItem extends EditRecord
     protected function getForms(): array
     {
         return [
-            'form' => $this->makeForm()
-                ->schema([
-                    \Filament\Forms\Components\TextInput::make('name')
-                        ->required()
-                        ->maxLength(255),
-                ])
+            'form' => $this->form(static::getResource()::form(
+                \Filament\Schemas\Schema::make()
+            ))
                 ->statePath('data')
                 ->model($this->getRecord()),
         ];
