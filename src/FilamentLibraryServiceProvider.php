@@ -1,26 +1,23 @@
 <?php
 
-namespace VendorName\Skeleton;
+namespace Tapp\FilamentLibrary;
 
-use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
 use Illuminate\Filesystem\Filesystem;
-use Livewire\Features\SupportTesting\Testable;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use VendorName\Skeleton\Commands\SkeletonCommand;
-use VendorName\Skeleton\Testing\TestsSkeleton;
+use Tapp\FilamentLibrary\Commands\FilamentLibraryCommand;
 
-class SkeletonServiceProvider extends PackageServiceProvider
+class FilamentLibraryServiceProvider extends PackageServiceProvider
 {
-    public static string $name = 'skeleton';
+    public static string $name = 'filament-library';
 
-    public static string $viewNamespace = 'skeleton';
+    public static string $viewNamespace = 'filament-library';
 
     public function configurePackage(Package $package): void
     {
@@ -36,7 +33,7 @@ class SkeletonServiceProvider extends PackageServiceProvider
                     ->publishConfigFile()
                     ->publishMigrations()
                     ->askToRunMigrations()
-                    ->askToStarRepoOnGitHub(':vendor_slug/:package_slug');
+                    ->askToStarRepoOnGitHub('TappNetwork/Filament-Library');
             });
 
         $configFileName = $package->shortName();
@@ -80,18 +77,17 @@ class SkeletonServiceProvider extends PackageServiceProvider
         if (app()->runningInConsole()) {
             foreach (app(Filesystem::class)->files(__DIR__ . '/../stubs/') as $file) {
                 $this->publishes([
-                    $file->getRealPath() => base_path("stubs/skeleton/{$file->getFilename()}"),
-                ], 'skeleton-stubs');
+                    $file->getRealPath() => base_path("stubs/filament-library/{$file->getFilename()}"),
+                ], 'filament-library-stubs');
             }
         }
 
-        // Testing
-        Testable::mixin(new TestsSkeleton);
+        // Testing - No custom test mixins needed
     }
 
     protected function getAssetPackageName(): ?string
     {
-        return ':vendor_slug/:package_slug';
+        return 'tapp/filament-library';
     }
 
     /**
@@ -99,11 +95,23 @@ class SkeletonServiceProvider extends PackageServiceProvider
      */
     protected function getAssets(): array
     {
-        return [
-            // AlpineComponent::make('skeleton', __DIR__ . '/../resources/dist/components/skeleton.js'),
-            Css::make('skeleton-styles', __DIR__ . '/../resources/dist/skeleton.css'),
-            Js::make('skeleton-scripts', __DIR__ . '/../resources/dist/skeleton.js'),
-        ];
+        $assets = [];
+
+        // Register our custom CSS file
+        if (file_exists(__DIR__ . '/../resources/css/filament-library.css')) {
+            $assets[] = Css::make('filament-library-styles', __DIR__ . '/../resources/css/filament-library.css');
+        }
+
+        // Only register dist assets if they exist
+        if (file_exists(__DIR__ . '/../resources/dist/filament-library.css')) {
+            $assets[] = Css::make('filament-library-dist-styles', __DIR__ . '/../resources/dist/filament-library.css');
+        }
+
+        if (file_exists(__DIR__ . '/../resources/dist/filament-library.js')) {
+            $assets[] = Js::make('filament-library-scripts', __DIR__ . '/../resources/dist/filament-library.js');
+        }
+
+        return $assets;
     }
 
     /**
@@ -112,7 +120,7 @@ class SkeletonServiceProvider extends PackageServiceProvider
     protected function getCommands(): array
     {
         return [
-            SkeletonCommand::class,
+            FilamentLibraryCommand::class,
         ];
     }
 
@@ -146,7 +154,8 @@ class SkeletonServiceProvider extends PackageServiceProvider
     protected function getMigrations(): array
     {
         return [
-            'create_skeleton_table',
+            '2024_01_01_000000_create_library_items_table',
+            '2024_01_01_000001_create_library_item_permissions_table',
         ];
     }
 }

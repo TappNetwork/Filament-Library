@@ -1,6 +1,6 @@
 <?php
 
-namespace VendorName\Skeleton\Tests;
+namespace Tapp\FilamentLibrary\Tests;
 
 use BladeUI\Heroicons\BladeHeroiconsServiceProvider;
 use BladeUI\Icons\BladeIconsServiceProvider;
@@ -13,19 +13,26 @@ use Filament\Support\SupportServiceProvider;
 use Filament\Tables\TablesServiceProvider;
 use Filament\Widgets\WidgetsServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Foundation\Testing\TestResponse;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use RyanChandler\BladeCaptureDirective\BladeCaptureDirectiveServiceProvider;
-use VendorName\Skeleton\SkeletonServiceProvider;
+use Spatie\MediaLibrary\MediaLibraryServiceProvider;
+use Tapp\FilamentLibrary\FilamentLibraryServiceProvider;
 
 class TestCase extends Orchestra
 {
+    /**
+     * The latest response from the application.
+     */
+    protected static ?TestResponse $latestResponse = null;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'VendorName\\Skeleton\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
+            fn (string $modelName) => 'Tapp\\FilamentLibrary\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
         );
     }
 
@@ -40,11 +47,12 @@ class TestCase extends Orchestra
             FormsServiceProvider::class,
             InfolistsServiceProvider::class,
             LivewireServiceProvider::class,
+            MediaLibraryServiceProvider::class,
             NotificationsServiceProvider::class,
             SupportServiceProvider::class,
             TablesServiceProvider::class,
             WidgetsServiceProvider::class,
-            SkeletonServiceProvider::class,
+            FilamentLibraryServiceProvider::class,
         ];
     }
 
@@ -52,9 +60,11 @@ class TestCase extends Orchestra
     {
         config()->set('database.default', 'testing');
 
-        /*
-        $migration = include __DIR__.'/../database/migrations/create_skeleton_table.php.stub';
+        // Run the library migrations
+        $migration = include __DIR__ . '/../database/migrations/2024_01_01_000000_create_library_items_table.php';
         $migration->up();
-        */
+
+        $migration = include __DIR__ . '/../database/migrations/2024_01_01_000001_create_library_item_permissions_table.php';
+        $migration->up();
     }
 }

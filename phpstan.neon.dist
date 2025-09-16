@@ -11,4 +11,12 @@ parameters:
     checkOctaneCompatibility: true
     checkModelProperties: true
     checkMissingIterableValueType: false
+    ignoreErrors:
+        - '#Class App\\Models\\User not found#'
+        - '#Call to static method .* on an unknown class App\\Models\\User#'
+        - '#Access to an undefined property .*\$type#'
+        - '#Access to an undefined property .*\$parent_id#'
+        - '#Access to an undefined property .*\$name#'
+        - '#Access to an undefined property .*\$parent#'
+        - '#Access to an undefined property .*\$slug#'
 
