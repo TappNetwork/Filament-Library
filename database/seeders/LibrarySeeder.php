@@ -23,7 +23,7 @@ class LibrarySeeder extends Seeder
         }
 
         $this->command->info('Clearing existing library data...');
-        
+
         // Force delete all existing library items and permissions
         LibraryItemPermission::query()->forceDelete();
         LibraryItem::query()->forceDelete();
@@ -32,40 +32,40 @@ class LibrarySeeder extends Seeder
 
         // Create root folders with descriptive names
         $documents = LibraryItem::create([
-            'name' => '📄 Project Documents & Files',
+            'name' => 'Project Documents & Files',
             'type' => 'folder',
             'created_by' => $user->id,
         ]);
 
         $images = LibraryItem::create([
-            'name' => '🖼️ Images & Media Assets',
+            'name' => 'Images & Media Assets',
             'type' => 'folder',
             'created_by' => $user->id,
         ]);
 
         $resources = LibraryItem::create([
-            'name' => '🔗 External Links & Resources',
+            'name' => 'External Links & Resources',
             'type' => 'folder',
             'created_by' => $user->id,
         ]);
 
         // Create subfolders under Documents
         $projects = LibraryItem::create([
-            'name' => '📁 Active Projects',
+            'name' => 'Active Projects',
             'type' => 'folder',
             'parent_id' => $documents->id,
             'created_by' => $user->id,
         ]);
 
         $templates = LibraryItem::create([
-            'name' => '📋 Document Templates',
+            'name' => 'Document Templates',
             'type' => 'folder',
             'parent_id' => $documents->id,
             'created_by' => $user->id,
         ]);
 
         $meetings = LibraryItem::create([
-            'name' => '📝 Meeting Notes & Minutes',
+            'name' => 'Meeting Notes & Minutes',
             'type' => 'folder',
             'parent_id' => $documents->id,
             'created_by' => $user->id,
@@ -73,14 +73,14 @@ class LibrarySeeder extends Seeder
 
         // Create project subfolders
         $projectA = LibraryItem::create([
-            'name' => '🚀 Website Redesign Project',
+            'name' => 'Website Redesign Project',
             'type' => 'folder',
             'parent_id' => $projects->id,
             'created_by' => $user->id,
         ]);
 
         $projectB = LibraryItem::create([
-            'name' => '📱 Mobile App Development',
+            'name' => 'Mobile App Development',
             'type' => 'folder',
             'parent_id' => $projects->id,
             'created_by' => $user->id,
@@ -88,21 +88,21 @@ class LibrarySeeder extends Seeder
 
         // Create subfolders under Images
         $photos = LibraryItem::create([
-            'name' => '📸 Team Photos & Events',
+            'name' => 'Team Photos & Events',
             'type' => 'folder',
             'parent_id' => $images->id,
             'created_by' => $user->id,
         ]);
 
         $graphics = LibraryItem::create([
-            'name' => '🎨 Graphics & Design Assets',
+            'name' => 'Graphics & Design Assets',
             'type' => 'folder',
             'parent_id' => $images->id,
             'created_by' => $user->id,
         ]);
 
         $logos = LibraryItem::create([
-            'name' => '🏷️ Logos & Branding',
+            'name' => 'Logos & Branding',
             'type' => 'folder',
             'parent_id' => $images->id,
             'created_by' => $user->id,
@@ -110,21 +110,21 @@ class LibrarySeeder extends Seeder
 
         // Create subfolders under Resources
         $videoResources = LibraryItem::create([
-            'name' => '🎥 Video Tutorials & Demos',
+            'name' => 'Video Tutorials & Demos',
             'type' => 'folder',
             'parent_id' => $resources->id,
             'created_by' => $user->id,
         ]);
 
         $documentation = LibraryItem::create([
-            'name' => '📚 Documentation & Guides',
+            'name' => 'Documentation & Guides',
             'type' => 'folder',
             'parent_id' => $resources->id,
             'created_by' => $user->id,
         ]);
 
         $tools = LibraryItem::create([
-            'name' => '🛠️ Development Tools & Links',
+            'name' => 'Development Tools & Links',
             'type' => 'folder',
             'parent_id' => $resources->id,
             'created_by' => $user->id,
@@ -351,20 +351,20 @@ class LibrarySeeder extends Seeder
 
         $this->command->info('Sample library structure created successfully!');
         $this->command->info('Created:');
-        $this->command->info('📄 Project Documents & Files/');
-        $this->command->info('  📁 Active Projects/');
-        $this->command->info('    🚀 Website Redesign Project/ (with 4 files + 1 link)');
-        $this->command->info('    📱 Mobile App Development/ (with 3 files + 1 link)');
-        $this->command->info('  📋 Document Templates/ (with 3 template files)');
-        $this->command->info('  📝 Meeting Notes & Minutes/ (with 3 meeting files)');
-        $this->command->info('🖼️ Images & Media Assets/');
-        $this->command->info('  📸 Team Photos & Events/');
-        $this->command->info('  🎨 Graphics & Design Assets/');
-        $this->command->info('  🏷️ Logos & Branding/ (with 1 brand guidelines link)');
-        $this->command->info('🔗 External Links & Resources/');
-        $this->command->info('  🎥 Video Tutorials & Demos/ (with 4 video links)');
-        $this->command->info('  📚 Documentation & Guides/ (with 4 documentation links)');
-        $this->command->info('  🛠️ Development Tools & Links/ (with 4 tool links)');
+        $this->command->info('Project Documents & Files/');
+        $this->command->info('  Active Projects/');
+        $this->command->info('    Website Redesign Project/ (with 4 files + 1 link)');
+        $this->command->info('    Mobile App Development/ (with 3 files + 1 link)');
+        $this->command->info('  Document Templates/ (with 3 template files)');
+        $this->command->info('  Meeting Notes & Minutes/ (with 3 meeting files)');
+        $this->command->info('Images & Media Assets/');
+        $this->command->info('  Team Photos & Events/');
+        $this->command->info('  Graphics & Design Assets/');
+        $this->command->info('  Logos & Branding/ (with 1 brand guidelines link)');
+        $this->command->info('External Links & Resources/');
+        $this->command->info('  Video Tutorials & Demos/ (with 4 video links)');
+        $this->command->info('  Documentation & Guides/ (with 4 documentation links)');
+        $this->command->info('  Development Tools & Links/ (with 4 tool links)');
 
         if ($otherUsers->count() > 0) {
             $this->command->info('Sample permissions created for other users.');
