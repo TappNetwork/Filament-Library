@@ -3,7 +3,7 @@
     :id="$getId()"
     :state-path="$getStatePath()"
 >
-    <div class="fi-in-entry-wrp-content -mx-6 -my-4">
+    <div class="fi-in-entry-wrp-content" style="padding: 0; margin: 0;">
         {!! $getVideoEmbedHtml($getState()) !!}
     </div>
 </x-filament-infolists::entry-wrapper>
