@@ -55,10 +55,10 @@ class TestCase extends Orchestra
         config()->set('database.default', 'testing');
 
         // Run the library migrations
-        $migration = include __DIR__.'/../database/migrations/2024_01_01_000000_create_library_items_table.php';
+        $migration = include __DIR__ . '/../database/migrations/2024_01_01_000000_create_library_items_table.php';
         $migration->up();
 
-        $migration = include __DIR__.'/../database/migrations/2024_01_01_000001_create_library_item_permissions_table.php';
+        $migration = include __DIR__ . '/../database/migrations/2024_01_01_000001_create_library_item_permissions_table.php';
         $migration->up();
     }
 }
