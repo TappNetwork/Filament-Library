@@ -6,6 +6,8 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
@@ -135,20 +137,39 @@ class LibraryItemResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                EditAction::make(),
-                DeleteAction::make()
-                    ->successRedirectUrl(function (LibraryItem $record) {
-                        // Redirect to the parent folder after deletion
-                        $parentId = $record->parent_id;
-                        return static::getUrl('index', $parentId ? ['parent' => $parentId] : []);
-                    }),
-                RestoreAction::make(),
-                ForceDeleteAction::make()
-                    ->successRedirectUrl(function (LibraryItem $record) {
-                        // Redirect to the parent folder after deletion
-                        $parentId = $record->parent_id;
-                        return static::getUrl('index', $parentId ? ['parent' => $parentId] : []);
-                    }),
+                ActionGroup::make([
+                    Action::make('view')
+                        ->label('View')
+                        ->icon('heroicon-o-eye')
+                        ->url(function (LibraryItem $record): string {
+                            // Use the same logic as recordUrl - cache URL generation to reduce computation
+                            $cacheKey = 'record_url_' . $record->id . '_' . $record->type;
+                            return cache()->remember($cacheKey, 60, function () use ($record) { // 1 minute cache
+                                return $record->type === 'folder'
+                                    ? static::getUrl('index', ['parent' => $record->id])
+                                    : static::getUrl('view', ['record' => $record]);
+                            });
+                        }),
+                    EditAction::make()
+                    ->color('gray'),
+                    DeleteAction::make()
+                    ->color('gray')
+                        ->successRedirectUrl(function (LibraryItem $record) {
+                            // Redirect to the parent folder after deletion
+                            $parentId = $record->parent_id;
+                            return static::getUrl('index', $parentId ? ['parent' => $parentId] : []);
+                        }),
+                    RestoreAction::make(),
+                    ForceDeleteAction::make()
+                        ->successRedirectUrl(function (LibraryItem $record) {
+                            // Redirect to the parent folder after deletion
+                            $parentId = $record->parent_id;
+                            return static::getUrl('index', $parentId ? ['parent' => $parentId] : []);
+                        }),
+                ])
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->color('gray')
+                ->iconButton(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

@@ -207,3 +207,4 @@ class PermissionService
         return self::CACHE_PREFIX . $userId . '_' . $itemId . '_' . $permission;
     }
 }
+

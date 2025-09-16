@@ -1,16 +1,16 @@
 <?php
 
-namespace Tapp\FilamentLibrary\Facades;
+namespace VendorName\Skeleton\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @see \Tapp\FilamentLibrary\FilamentLibrary
+ * @see \VendorName\Skeleton\Skeleton
  */
-class FilamentLibrary extends Facade
+class Skeleton extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return \Tapp\FilamentLibrary\FilamentLibrary::class;
+        return \VendorName\Skeleton\Skeleton::class;
     }
 }
