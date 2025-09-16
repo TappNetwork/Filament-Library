@@ -121,46 +121,44 @@ class ViewLibraryItem extends ViewRecord
                         VideoEmbed::make('external_url')
                             ->visible(fn () => $record->type === 'link' && $record->isVideoUrl()),
                     ])
-                    ->visible(fn () => $record->type === 'link' && $record->isVideoUrl()),
+                    ->visible(fn () => $record->type === 'link' && $record->isVideoUrl())
+                    ->columnSpanFull(),
 
                 // Item details section
                 Section::make('Item Details')
-                    ->columns(2)
                     ->schema([
-                        TextEntry::make('name')
-                            ->label('Name')
-                            ->columnSpan(1),
-                        TextEntry::make('type')
-                            ->badge()
-                            ->formatStateUsing(fn ($state) => match ($state) {
-                                'folder' => 'Folder',
-                                'file' => 'File',
-                                'link' => 'External Link',
-                                default => $state,
-                            })
-                            ->columnSpan(1),
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('name')
+                                    ->label('Name'),
+                                TextEntry::make('type')
+                                    ->badge()
+                                    ->formatStateUsing(fn ($state) => match ($state) {
+                                        'folder' => 'Folder',
+                                        'file' => 'File',
+                                        'link' => 'External Link',
+                                        default => $state,
+                                    }),
+                            ]),
                         TextEntry::make('external_url')
                             ->label('URL')
-                            ->visible(fn () => $record->type === 'link')
-                            ->columnSpan(2),
+                            ->visible(fn () => $record->type === 'link'),
                         TextEntry::make('link_description')
                             ->label('Description')
-                            ->visible(fn () => $record->type === 'link' && $record->link_description)
-                            ->columnSpan(2),
-                        TextEntry::make('creator.name')
-                            ->label('Created By')
-                            ->columnSpan(1),
-                        TextEntry::make('created_at')
-                            ->label('Created At')
-                            ->dateTime()
-                            ->columnSpan(1),
-                        TextEntry::make('updater.name')
-                            ->label('Modified By')
-                            ->columnSpan(1),
-                        TextEntry::make('updated_at')
-                            ->label('Modified At')
-                            ->dateTime()
-                            ->columnSpan(1),
+                            ->visible(fn () => $record->type === 'link' && $record->link_description),
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('creator.name')
+                                    ->label('Created By'),
+                                TextEntry::make('created_at')
+                                    ->label('Created At')
+                                    ->dateTime(),
+                                TextEntry::make('updater.name')
+                                    ->label('Modified By'),
+                                TextEntry::make('updated_at')
+                                    ->label('Modified At')
+                                    ->dateTime(),
+                            ]),
                     ]),
 
                 // Media section for files
