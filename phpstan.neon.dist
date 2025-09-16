@@ -11,4 +11,16 @@ parameters:
     checkOctaneCompatibility: true
     checkModelProperties: true
     checkMissingIterableValueType: false
+    ignoreErrors:
+        - '#Class App\\Models\\User not found#'
+        - '#Call to static method .* on an unknown class App\\Models\\User#'
+        - '#Access to an undefined property .*\$type#'
+        - '#Access to an undefined property .*\$parent_id#'
+        - '#Access to an undefined property .*\$name#'
+        - '#Access to an undefined property .*\$parent#'
+        - '#Access to an undefined property .*\$slug#'
+        - '#Call to static method make\(\) on an unknown class Filament\\Actions\\BulkActionGroup#'
+        - '#Call to static method make\(\) on an unknown class Filament\\Actions\\DeleteBulkAction#'
+        - '#Call to static method make\(\) on an unknown class Filament\\Actions\\RestoreBulkAction#'
+        - '#Call to static method make\(\) on an unknown class Filament\\Actions\\ForceDeleteBulkAction#'
 

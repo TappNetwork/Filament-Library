@@ -117,7 +117,7 @@ class PermissionService
     /**
      * Get all users who have permissions on an item.
      */
-    public function getUsersWithPermissions(LibraryItem $item): Collection
+    public function getUsersWithPermissions(LibraryItem $item): \Illuminate\Support\Collection
     {
         return $item->permissions()
             ->with('user')
@@ -207,4 +207,3 @@ class PermissionService
         return self::CACHE_PREFIX . $userId . '_' . $itemId . '_' . $permission;
     }
 }
-

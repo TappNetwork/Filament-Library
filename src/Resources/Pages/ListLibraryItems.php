@@ -2,20 +2,20 @@
 
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
-use Filament\Resources\Pages\ListRecords;
-use Tapp\FilamentLibrary\Resources\LibraryItemResource;
-use Tapp\FilamentLibrary\Models\LibraryItem;
-use Filament\Actions\CreateAction;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Pages\ListRecords;
+use Tapp\FilamentLibrary\Models\LibraryItem;
+use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class ListLibraryItems extends ListRecords
 {
     protected static string $resource = LibraryItemResource::class;
 
     public ?int $parentId = null;
+
     public ?LibraryItem $parentFolder = null;
 
     public function mount(): void
@@ -38,8 +38,8 @@ class ListLibraryItems extends ListRecords
             $actions[] = Action::make('up_one_level')
                 ->label('Up One Level')
                 ->icon('heroicon-o-arrow-up')
-                ->url(fn (): string =>
-                    $this->parentFolder->parent_id
+                ->url(
+                    fn (): string => $this->parentFolder->parent_id
                         ? static::getResource()::getUrl('index', ['parent' => $this->parentFolder->parent_id])
                         : static::getResource()::getUrl('index')
                 )
@@ -50,8 +50,8 @@ class ListLibraryItems extends ListRecords
                 ->label('Edit')
                 ->icon('heroicon-o-pencil')
                 ->color('gray')
-                ->url(fn (): string =>
-                    static::getResource()::getUrl('edit', ['record' => $this->parentFolder])
+                ->url(
+                    fn (): string => static::getResource()::getUrl('edit', ['record' => $this->parentFolder])
                 );
         }
 

@@ -4,7 +4,6 @@ namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Resources\Pages\CreateRecord;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
-use Tapp\FilamentLibrary\Models\LibraryItem;
 
 class CreateLibraryItem extends CreateRecord
 {

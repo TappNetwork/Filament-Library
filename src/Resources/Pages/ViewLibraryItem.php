@@ -2,9 +2,9 @@
 
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
+use Filament\Actions\Action;
 use Filament\Resources\Pages\ViewRecord;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
-use Filament\Actions\Action;
 
 class ViewLibraryItem extends ViewRecord
 {
@@ -14,6 +14,7 @@ class ViewLibraryItem extends ViewRecord
     {
         $record = $this->getRecord();
         $type = $record->type === 'folder' ? 'Folder' : 'File';
+
         return "View {$type}";
     }
 
@@ -27,8 +28,8 @@ class ViewLibraryItem extends ViewRecord
                 ->label('View Folder')
                 ->icon('heroicon-o-arrow-up')
                 ->color('gray')
-                ->url(fn (): string =>
-                    static::getResource()::getUrl('index', ['parent' => $this->getRecord()->parent_id])
+                ->url(
+                    fn (): string => static::getResource()::getUrl('index', ['parent' => $this->getRecord()->parent_id])
                 );
         }
 

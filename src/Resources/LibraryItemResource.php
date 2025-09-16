@@ -2,20 +2,20 @@
 
 namespace Tapp\FilamentLibrary\Resources;
 
-use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Tables;
-use Filament\Tables\Table;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\RestoreAction;
+use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 
 class LibraryItemResource extends Resource
@@ -24,9 +24,9 @@ class LibraryItemResource extends Resource
 
     protected static ?string $slug = 'library';
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-folder';
+    protected static ?string $navigationIcon = 'heroicon-o-folder';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Resource Library';
+    protected static ?string $navigationGroup = 'Resource Library';
 
     protected static ?int $navigationSort = 10;
 
@@ -48,20 +48,20 @@ class LibraryItemResource extends Resource
         return 'Library';
     }
 
-    public static function form(Schema $schema): Schema
+    public static function form(Form $form): Form
     {
-        return $schema
-            ->components([
+        return $form
+            ->schema([
                 \Filament\Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
             ]);
     }
 
-    public static function folderForm(Schema $schema): Schema
+    public static function folderForm(Form $form): Form
     {
-        return $schema
-            ->components([
+        return $form
+            ->schema([
                 \Filament\Forms\Components\TextInput::make('name')
                     ->label('Folder Name')
                     ->required()
@@ -70,10 +70,10 @@ class LibraryItemResource extends Resource
             ]);
     }
 
-    public static function fileForm(Schema $schema): Schema
+    public static function fileForm(Form $form): Form
     {
-        return $schema
-            ->components([
+        return $form
+            ->schema([
                 \Filament\Forms\Components\FileUpload::make('file')
                     ->label('Upload File')
                     ->required()
@@ -84,10 +84,10 @@ class LibraryItemResource extends Resource
             ]);
     }
 
-    public static function editForm(Schema $schema): Schema
+    public static function editForm(Form $form): Form
     {
-        return $schema
-            ->components([
+        return $form
+            ->schema([
                 \Filament\Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
@@ -101,8 +101,8 @@ class LibraryItemResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable()
-                    ->icon(fn (LibraryItem $record): string =>
-                        $record->type === 'folder' ? 'heroicon-s-folder' : 'heroicon-o-document'
+                    ->icon(
+                        fn (LibraryItem $record): string => $record->type === 'folder' ? 'heroicon-s-folder' : 'heroicon-o-document'
                     )
                     ->iconColor('gray')
                     ->iconPosition('before')
@@ -144,6 +144,7 @@ class LibraryItemResource extends Resource
                         ->url(function (LibraryItem $record): string {
                             // Use the same logic as recordUrl - cache URL generation to reduce computation
                             $cacheKey = 'record_url_' . $record->id . '_' . $record->type;
+
                             return cache()->remember($cacheKey, 60, function () use ($record) { // 1 minute cache
                                 return $record->type === 'folder'
                                     ? static::getUrl('index', ['parent' => $record->id])
@@ -151,12 +152,13 @@ class LibraryItemResource extends Resource
                             });
                         }),
                     EditAction::make()
-                    ->color('gray'),
+                        ->color('gray'),
                     DeleteAction::make()
-                    ->color('gray')
+                        ->color('gray')
                         ->successRedirectUrl(function (LibraryItem $record) {
                             // Redirect to the parent folder after deletion
                             $parentId = $record->parent_id;
+
                             return static::getUrl('index', $parentId ? ['parent' => $parentId] : []);
                         }),
                     RestoreAction::make(),
@@ -164,12 +166,13 @@ class LibraryItemResource extends Resource
                         ->successRedirectUrl(function (LibraryItem $record) {
                             // Redirect to the parent folder after deletion
                             $parentId = $record->parent_id;
+
                             return static::getUrl('index', $parentId ? ['parent' => $parentId] : []);
                         }),
                 ])
-                ->icon('heroicon-m-ellipsis-vertical')
-                ->color('gray')
-                ->iconButton(),
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->color('gray')
+                    ->iconButton(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -177,6 +180,7 @@ class LibraryItemResource extends Resource
                         ->successRedirectUrl(function () {
                             // For bulk actions, redirect to current folder (maintain current location)
                             $currentParent = request()->get('parent');
+
                             return static::getUrl('index', $currentParent ? ['parent' => $currentParent] : []);
                         }),
                     RestoreBulkAction::make(),
@@ -184,6 +188,7 @@ class LibraryItemResource extends Resource
                         ->successRedirectUrl(function () {
                             // For bulk actions, redirect to current folder (maintain current location)
                             $currentParent = request()->get('parent');
+
                             return static::getUrl('index', $currentParent ? ['parent' => $currentParent] : []);
                         }),
                 ]),
@@ -191,6 +196,7 @@ class LibraryItemResource extends Resource
             ->recordUrl(function (LibraryItem $record): string {
                 // Cache URL generation to reduce computation during rapid navigation
                 $cacheKey = 'record_url_' . $record->id . '_' . $record->type;
+
                 return cache()->remember($cacheKey, 60, function () use ($record) { // 1 minute cache
                     return $record->type === 'folder'
                         ? static::getUrl('index', ['parent' => $record->id])
@@ -217,5 +223,4 @@ class LibraryItemResource extends Resource
             'edit' => Pages\EditLibraryItem::route('/{record}/edit'),
         ];
     }
-
 }

@@ -2,11 +2,10 @@
 
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\Action;
-use Tapp\FilamentLibrary\Models\LibraryItem;
 
 class EditLibraryItem extends EditRecord
 {
@@ -16,6 +15,7 @@ class EditLibraryItem extends EditRecord
     {
         $record = $this->getRecord();
         $type = $record->type === 'folder' ? 'Folder' : 'File';
+
         return "Edit {$type}";
     }
 
@@ -29,16 +29,16 @@ class EditLibraryItem extends EditRecord
                 ->label('View Folder')
                 ->icon('heroicon-o-arrow-up')
                 ->color('gray')
-                ->url(fn (): string =>
-                    static::getResource()::getUrl('index', ['parent' => $this->getRecord()->parent_id])
+                ->url(
+                    fn (): string => static::getResource()::getUrl('index', ['parent' => $this->getRecord()->parent_id])
                 );
         }
-
 
         $actions[] = DeleteAction::make()
             ->successRedirectUrl(function () {
                 // Redirect to the parent folder after deletion
                 $parentId = $this->getRecord()->parent_id;
+
                 return static::getResource()::getUrl('index', $parentId ? ['parent' => $parentId] : []);
             });
 
@@ -112,5 +112,4 @@ class EditLibraryItem extends EditRecord
 
         return $breadcrumbs;
     }
-
 }

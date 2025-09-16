@@ -16,11 +16,7 @@ class LibrarySeeder extends Seeder
         // Get the first user as the creator
         $user = \App\Models\User::first();
 
-<<<<<<< HEAD
-        if (!$user) {
-=======
         if (! $user) {
->>>>>>> 428499810cee073c27187b76f36c914dcdf38c37
             $this->command->warn('No users found. Please create a user first.');
 
             return;
@@ -161,4 +157,3 @@ class LibrarySeeder extends Seeder
         }
     }
 }
-
