@@ -123,10 +123,10 @@ class LibraryItemResource extends Resource
                         if (!$record) {
                             return null;
                         }
-                        
+
                         return match ($record->type) {
                             'folder' => static::getUrl('index', ['parent' => $record->id]),
-                            'link' => $record->external_url,
+                            'link' => static::getUrl('view', ['record' => $record]),
                             'file' => static::getUrl('view', ['record' => $record]),
                             default => null,
                         };
