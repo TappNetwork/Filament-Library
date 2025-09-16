@@ -5,6 +5,7 @@ namespace Tapp\FilamentLibrary\Resources\Pages;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\ListRecords;
 use Tapp\FilamentLibrary\Models\LibraryItem;
@@ -100,6 +101,42 @@ class ListLibraryItems extends ListRecords
                     LibraryItem::create([
                         'name' => $fileName,
                         'type' => 'file',
+                        'parent_id' => $this->parentId,
+                        'created_by' => auth()->user()?->id,
+                        'updated_by' => auth()->user()?->id,
+                    ]);
+
+                    $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
+                }),
+            Action::make('create_link')
+                ->label('Add Link')
+                ->icon('heroicon-o-link')
+                ->schema([
+                    TextInput::make('name')
+                        ->label('Link Name')
+                        ->required()
+                        ->maxLength(255)
+                        ->placeholder('Enter link name'),
+                    TextInput::make('external_url')
+                        ->label('URL')
+                        ->required()
+                        ->url()
+                        ->placeholder('https://example.com'),
+                    TextInput::make('link_icon')
+                        ->label('Icon (Heroicon name)')
+                        ->placeholder('heroicon-o-link'),
+                    Textarea::make('link_description')
+                        ->label('Description')
+                        ->rows(3)
+                        ->placeholder('Optional description'),
+                ])
+                ->action(function (array $data): void {
+                    LibraryItem::create([
+                        'name' => $data['name'],
+                        'type' => 'link',
+                        'external_url' => $data['external_url'],
+                        'link_icon' => $data['link_icon'] ?? 'heroicon-o-link',
+                        'link_description' => $data['link_description'] ?? null,
                         'parent_id' => $this->parentId,
                         'created_by' => auth()->user()?->id,
                         'updated_by' => auth()->user()?->id,

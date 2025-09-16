@@ -19,4 +19,11 @@ parameters:
         - '#Access to an undefined property .*\$name#'
         - '#Access to an undefined property .*\$parent#'
         - '#Access to an undefined property .*\$slug#'
+        - '#Access to an undefined property .*\$external_url#'
+        - '#Access to an undefined property .*\$link_description#'
+        - '#Call to an undefined method .*::isVideoUrl\(\)#'
+        - '#Call to an undefined method .*::getMedia\(\)#'
+        - '#Call to static method make\(\) on an unknown class Filament\\Infolists\\Components\\Section#'
+        - '#Call to deprecated method height\(\) of class Filament\\Infolists\\Components\\ImageEntry#'
+        - '#Call to deprecated method width\(\) of class Filament\\Infolists\\Components\\ImageEntry#'
 

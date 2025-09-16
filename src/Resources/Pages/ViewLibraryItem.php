@@ -3,7 +3,15 @@
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Actions\Action;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Schemas\Components\Flex;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
+use Tapp\FilamentLibrary\Infolists\Components\VideoEmbed;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class ViewLibraryItem extends ViewRecord
@@ -15,7 +23,12 @@ class ViewLibraryItem extends ViewRecord
     public function getTitle(): string
     {
         $record = $this->getRecord();
-        $type = $record->type === 'folder' ? 'Folder' : 'File';
+        $type = match ($record->type) {
+            'folder' => 'Folder',
+            'file' => 'File',
+            'link' => 'External Link',
+            default => 'Item',
+        };
 
         return "View {$type}";
     }
@@ -33,6 +46,15 @@ class ViewLibraryItem extends ViewRecord
                 ->url(
                     fn (): string => static::getResource()::getUrl('index', ['parent' => $this->getRecord()->parent_id])
                 );
+        }
+
+        // Add "Visit Link" action for external links
+        if ($this->getRecord()->type === 'link' && $this->getRecord()->external_url) {
+            $actions[] = Action::make('visit_link')
+                ->label('Visit Link')
+                ->icon('heroicon-o-arrow-top-right-on-square')
+                ->url(fn () => $this->getRecord()->external_url)
+                ->openUrlInNewTab();
         }
 
         $actions[] = \Filament\Actions\EditAction::make();
@@ -85,5 +107,98 @@ class ViewLibraryItem extends ViewRecord
         $breadcrumbs[] = $record->name;
 
         return $breadcrumbs;
+    }
+
+    public function infolist(Schema $schema): Schema
+    {
+        $record = $this->getRecord();
+
+        return $schema
+            ->components([
+                // Video section for external links that are videos
+                Section::make('Video')
+                    ->schema([
+                        VideoEmbed::make('external_url')
+                            ->visible(fn () => $record->type === 'link' && $record->isVideoUrl()),
+                    ])
+                    ->visible(fn () => $record->type === 'link' && $record->isVideoUrl()),
+
+                // Item details section
+                Section::make('Item Details')
+                    ->columns(2)
+                    ->schema([
+                        TextEntry::make('name')
+                            ->label('Name')
+                            ->columnSpan(1),
+                        TextEntry::make('type')
+                            ->badge()
+                            ->formatStateUsing(fn ($state) => match ($state) {
+                                'folder' => 'Folder',
+                                'file' => 'File',
+                                'link' => 'External Link',
+                                default => $state,
+                            })
+                            ->columnSpan(1),
+                        TextEntry::make('external_url')
+                            ->label('URL')
+                            ->visible(fn () => $record->type === 'link')
+                            ->columnSpan(2),
+                        TextEntry::make('link_description')
+                            ->label('Description')
+                            ->visible(fn () => $record->type === 'link' && $record->link_description)
+                            ->columnSpan(2),
+                        TextEntry::make('creator.name')
+                            ->label('Created By')
+                            ->columnSpan(1),
+                        TextEntry::make('created_at')
+                            ->label('Created At')
+                            ->dateTime()
+                            ->columnSpan(1),
+                        TextEntry::make('updater.name')
+                            ->label('Modified By')
+                            ->columnSpan(1),
+                        TextEntry::make('updated_at')
+                            ->label('Modified At')
+                            ->dateTime()
+                            ->columnSpan(1),
+                    ]),
+
+                // Media section for files
+                Section::make('Media')
+                    ->headerActions([
+                        Action::make('downloadAll')
+                            ->label('Download All Files')
+                            ->icon('heroicon-o-arrow-down-tray')
+                            ->visible(fn () => $record->type === 'file' && $record->getMedia()->count() > 0)
+                            ->action(function () {
+                                // TODO: Implement download all functionality
+                            }),
+                    ])
+                    ->schema([
+                        RepeatableEntry::make('media')
+                            ->label('')
+                            ->schema([
+                                Flex::make([
+                                    ImageEntry::make('preview')
+                                        ->state(fn ($media) => $media->getUrl('thumb'))
+                                        ->width(300)
+                                        ->height(300)
+                                        ->visible(fn ($media) => $media->hasGeneratedConversion('thumb'))
+                                        ->label(''),
+                                    Grid::make(1)
+                                        ->schema([
+                                            TextEntry::make('name')
+                                                ->label('File Name'),
+                                            TextEntry::make('size')
+                                                ->label('File Size')
+                                                ->formatStateUsing(fn ($state) => number_format($state / 1024 / 1024, 2) . ' MB'),
+                                        ]),
+                                ])
+                                    ->from('lg'),
+                            ])
+                            ->visible(fn () => $record->type === 'file' && $record->getMedia()->count() > 0),
+                    ])
+                    ->visible(fn () => $record->type === 'file' && $record->getMedia()->count() > 0),
+            ]);
     }
 }

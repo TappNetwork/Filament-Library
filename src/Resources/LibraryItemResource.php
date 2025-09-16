@@ -69,6 +69,32 @@ class LibraryItemResource extends Resource
                 \Filament\Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
+
+                \Filament\Forms\Components\Select::make('type')
+                    ->options([
+                        'folder' => 'Folder',
+                        'file' => 'File',
+                        'link' => 'External Link',
+                    ])
+                    ->required()
+                    ->reactive()
+                    ->afterStateUpdated(fn (callable $set) => $set('external_url', null)),
+
+                \Filament\Forms\Components\TextInput::make('external_url')
+                    ->label('External URL')
+                    ->url()
+                    ->visible(fn (callable $get) => $get('type') === 'link')
+                    ->required(fn (callable $get) => $get('type') === 'link'),
+
+                \Filament\Forms\Components\TextInput::make('link_icon')
+                    ->label('Icon (Heroicon name)')
+                    ->placeholder('heroicon-o-link')
+                    ->visible(fn (callable $get) => $get('type') === 'link'),
+
+                \Filament\Forms\Components\Textarea::make('link_description')
+                    ->label('Description')
+                    ->visible(fn (callable $get) => $get('type') === 'link')
+                    ->rows(3),
             ]);
     }
 
@@ -91,10 +117,16 @@ class LibraryItemResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable()
-                    ->icon(
-                        fn (LibraryItem $record): string => $record->type === 'folder' ? 'heroicon-s-folder' : 'heroicon-o-document'
-                    )
-                    ->iconPosition('before'),
+                    ->icon(fn (LibraryItem $record): string => $record->getDisplayIcon())
+                    ->iconPosition('before')
+                    ->url(function (LibraryItem $record): ?string {
+                        return match ($record->type) {
+                            'folder' => static::getUrl('index', ['parent' => $record->id]),
+                            'link' => $record->external_url,
+                            'file' => static::getUrl('view', ['record' => $record]),
+                            default => null,
+                        };
+                    }),
                 Tables\Columns\TextColumn::make('updater.name')
                     ->label('Modified By')
                     ->searchable()
@@ -115,12 +147,18 @@ class LibraryItemResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('external_url')
+                    ->label('URL')
+                    ->visible(fn (LibraryItem $record) => $record->type === 'link')
+                    ->limit(50)
+                    ->tooltip(fn (LibraryItem $record) => $record->external_url),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
                     ->options([
                         'folder' => 'Folder',
                         'file' => 'File',
+                        'link' => 'External Link',
                     ]),
                 Tables\Filters\TrashedFilter::make(),
             ])
@@ -214,6 +252,7 @@ class LibraryItemResource extends Resource
             'index' => Pages\ListLibraryItems::route('/'),
             'create-folder' => Pages\CreateFolder::route('/create-folder'),
             'create-file' => Pages\CreateFile::route('/create-file'),
+            'create-link' => Pages\CreateLink::route('/create-link'),
             'view' => Pages\ViewLibraryItem::route('/{record}'),
             'edit' => Pages\EditLibraryItem::route('/{record}/edit'),
         ];

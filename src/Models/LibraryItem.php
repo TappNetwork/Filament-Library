@@ -25,6 +25,9 @@ class LibraryItem extends Model implements HasMedia
         'parent_id',
         'created_by',
         'updated_by',
+        'external_url',
+        'link_icon',
+        'link_description',
     ];
 
     protected $casts = [
@@ -110,6 +113,14 @@ class LibraryItem extends Model implements HasMedia
     }
 
     /**
+     * Scope to get only links.
+     */
+    public function scopeLinks($query)
+    {
+        return $query->where('type', 'link');
+    }
+
+    /**
      * Scope to get items accessible by a user.
      */
     public function scopeForUser($query, $user)
@@ -173,6 +184,44 @@ class LibraryItem extends Model implements HasMedia
         $media = $this->getFirstMedia('files');
 
         return $media ? $media->size : null;
+    }
+
+    /**
+     * Check if the external URL is a video URL.
+     */
+    public function isVideoUrl(): bool
+    {
+        if (! $this->external_url || $this->type !== 'link') {
+            return false;
+        }
+
+        $videoDomains = [
+            'youtube.com',
+            'youtu.be',
+            'vimeo.com',
+            'wistia.com',
+        ];
+
+        foreach ($videoDomains as $domain) {
+            if (str_contains($this->external_url, $domain)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get the appropriate display icon for this item.
+     */
+    public function getDisplayIcon(): string
+    {
+        return match ($this->type) {
+            'folder' => 'heroicon-s-folder',
+            'file' => 'heroicon-o-document',
+            'link' => $this->link_icon ?? 'heroicon-o-link',
+            default => 'heroicon-o-document',
+        };
     }
 
     /**

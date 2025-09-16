@@ -16,7 +16,12 @@ class EditLibraryItem extends EditRecord
     public function getTitle(): string
     {
         $record = $this->getRecord();
-        $type = $record->type === 'folder' ? 'Folder' : 'File';
+        $type = match ($record->type) {
+            'folder' => 'Folder',
+            'file' => 'File',
+            'link' => 'External Link',
+            default => 'Item',
+        };
 
         return "Edit {$type}";
     }
