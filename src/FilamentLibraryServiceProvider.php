@@ -8,12 +8,10 @@ use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
 use Illuminate\Filesystem\Filesystem;
-use Livewire\Features\SupportTesting\Testable;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Tapp\FilamentLibrary\Commands\FilamentLibraryCommand;
-use Tapp\FilamentLibrary\Testing\TestsFilamentLibrary;
 
 class FilamentLibraryServiceProvider extends PackageServiceProvider
 {
@@ -84,8 +82,7 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
             }
         }
 
-        // Testing
-        Testable::mixin(new TestsFilamentLibrary);
+        // Testing - No custom test mixins needed
     }
 
     protected function getAssetPackageName(): ?string

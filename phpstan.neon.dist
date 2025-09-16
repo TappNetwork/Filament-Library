@@ -23,4 +23,6 @@ parameters:
         - '#Call to static method make\(\) on an unknown class Filament\\Actions\\DeleteBulkAction#'
         - '#Call to static method make\(\) on an unknown class Filament\\Actions\\RestoreBulkAction#'
         - '#Call to static method make\(\) on an unknown class Filament\\Actions\\ForceDeleteBulkAction#'
+        - '#Type of .*\$navigationGroup must be UnitEnum\|string\|null#'
+        - '#Type of .*\$navigationIcon must be BackedEnum\|string\|null#'
 

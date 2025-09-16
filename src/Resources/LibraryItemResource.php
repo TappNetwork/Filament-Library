@@ -12,7 +12,7 @@ use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -24,13 +24,25 @@ class LibraryItemResource extends Resource
 
     protected static ?string $slug = 'library';
 
-    protected static ?string $navigationIcon = 'heroicon-o-folder';
+    public static function getNavigationIcon(): ?string
+    {
+        return 'heroicon-o-folder';
+    }
 
-    protected static ?string $navigationGroup = 'Resource Library';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Resource Library';
+    }
 
-    protected static ?int $navigationSort = 10;
+    public static function getNavigationSort(): ?int
+    {
+        return 10;
+    }
 
-    protected static ?string $navigationLabel = 'All Folders';
+    public static function getNavigationLabel(): string
+    {
+        return 'All Folders';
+    }
 
     protected static ?string $modelLabel = 'Library Item';
 
@@ -48,9 +60,9 @@ class LibraryItemResource extends Resource
         return 'Library';
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
                 \Filament\Forms\Components\TextInput::make('name')
                     ->required()
@@ -58,39 +70,15 @@ class LibraryItemResource extends Resource
             ]);
     }
 
-    public static function folderForm(Form $form): Form
+    public static function folderForm(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
                 \Filament\Forms\Components\TextInput::make('name')
                     ->label('Folder Name')
                     ->required()
                     ->maxLength(255)
                     ->placeholder('Enter folder name'),
-            ]);
-    }
-
-    public static function fileForm(Form $form): Form
-    {
-        return $form
-            ->schema([
-                \Filament\Forms\Components\FileUpload::make('file')
-                    ->label('Upload File')
-                    ->required()
-                    ->maxSize(10240) // 10MB
-                    ->disk('public')
-                    ->directory('library-files')
-                    ->visibility('private'),
-            ]);
-    }
-
-    public static function editForm(Form $form): Form
-    {
-        return $form
-            ->schema([
-                \Filament\Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
             ]);
     }
 
@@ -104,9 +92,7 @@ class LibraryItemResource extends Resource
                     ->icon(
                         fn (LibraryItem $record): string => $record->type === 'folder' ? 'heroicon-s-folder' : 'heroicon-o-document'
                     )
-                    ->iconColor('gray')
-                    ->iconPosition('before')
-                    ->extraAttributes(['class' => 'library-item-name-column']),
+                    ->iconPosition('before'),
                 Tables\Columns\TextColumn::make('updater.name')
                     ->label('Modified By')
                     ->searchable()
@@ -216,7 +202,6 @@ class LibraryItemResource extends Resource
     {
         return [
             'index' => Pages\ListLibraryItems::route('/'),
-            'create' => Pages\CreateLibraryItem::route('/create'),
             'create-folder' => Pages\CreateFolder::route('/create-folder'),
             'create-file' => Pages\CreateFile::route('/create-file'),
             'view' => Pages\ViewLibraryItem::route('/{record}'),
