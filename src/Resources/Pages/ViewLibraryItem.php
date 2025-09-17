@@ -23,6 +23,12 @@ class ViewLibraryItem extends ViewRecord
     public function getTitle(): string
     {
         $record = $this->getRecord();
+
+        // For external links, show the item name instead of "View External Link"
+        if ($record->type === 'link') {
+            return $record->name;
+        }
+
         $type = match ($record->type) {
             'folder' => 'Folder',
             'file' => 'File',
@@ -52,6 +58,7 @@ class ViewLibraryItem extends ViewRecord
         if ($this->getRecord()->type === 'link' && $this->getRecord()->external_url) {
             $actions[] = Action::make('visit_link')
                 ->label('Visit Link')
+                ->color('gray')
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->url(fn () => $this->getRecord()->external_url)
                 ->openUrlInNewTab();
@@ -115,18 +122,16 @@ class ViewLibraryItem extends ViewRecord
 
         return $schema
             ->components([
-                // Video section for external links that are videos
-                Section::make('Video')
-                    ->schema([
-                        VideoEmbed::make('external_url')
-                            ->visible(fn () => $record->type === 'link' && $record->isVideoUrl()),
-                    ])
+                // Video for external links that are videos (no card wrapper)
+                VideoEmbed::make('external_url')
+                    ->hiddenLabel()
                     ->visible(fn () => $record->type === 'link' && $record->isVideoUrl())
                     ->columnSpanFull(),
 
                 // Item details section
-                Section::make('Item Details')
+                Section::make()
                     ->schema([
+                        // Row 1: Name, Type
                         Grid::make(2)
                             ->schema([
                                 TextEntry::make('name')
@@ -140,26 +145,24 @@ class ViewLibraryItem extends ViewRecord
                                         default => $state,
                                     }),
                             ]),
-                        TextEntry::make('external_url')
-                            ->label('URL')
-                            ->visible(fn () => $record->type === 'link'),
-                        TextEntry::make('link_description')
-                            ->label('Description')
-                            ->visible(fn () => $record->type === 'link' && $record->link_description),
+
+                        // Row 2: Created At, Created By
                         Grid::make(2)
                             ->schema([
-                                TextEntry::make('creator.name')
-                                    ->label('Created By'),
                                 TextEntry::make('created_at')
                                     ->label('Created At')
                                     ->dateTime(),
-                                TextEntry::make('updater.name')
-                                    ->label('Modified By'),
-                                TextEntry::make('updated_at')
-                                    ->label('Modified At')
-                                    ->dateTime(),
+                                TextEntry::make('creator.name')
+                                    ->label('Created By'),
                             ]),
-                    ]),
+
+                        // Row 3: Description (full width)
+                        TextEntry::make('link_description')
+                            ->label('Description')
+                            ->visible(fn () => $record->type === 'link' && $record->link_description)
+                            ->columnSpanFull(),
+                    ])
+                    ->columnSpanFull(),
 
                 // Media section for files
                 Section::make('Media')

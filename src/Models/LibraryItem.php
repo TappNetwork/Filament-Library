@@ -47,11 +47,22 @@ class LibraryItem extends Model implements HasMedia
             if (empty($item->slug)) {
                 $item->slug = static::generateUniqueSlug($item->name, $item->parent_id);
             }
+
+            // Set created_by and updated_by on creation (like Laravel does with timestamps)
+            if (auth()->check()) {
+                $item->created_by = auth()->id();
+                $item->updated_by = auth()->id(); // Set both on creation
+            }
         });
 
         static::updating(function (self $item) {
             if ($item->isDirty('name') && ! $item->isDirty('slug')) {
                 $item->slug = static::generateUniqueSlug($item->name, $item->parent_id, $item->id);
+            }
+
+            // Set updated_by on updates
+            if (auth()->check()) {
+                $item->updated_by = auth()->id();
             }
         });
     }

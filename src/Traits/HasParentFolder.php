@@ -25,3 +25,4 @@ trait HasParentFolder
         return $this->parentId;
     }
 }
+
