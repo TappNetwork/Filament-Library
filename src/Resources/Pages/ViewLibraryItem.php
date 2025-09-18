@@ -70,7 +70,24 @@ class ViewLibraryItem extends ViewRecord
                 ->label('Download')
                 ->color('gray')
                 ->icon('heroicon-o-arrow-down-tray')
-                ->url(fn () => $this->getRecord()->getFirstMedia('files')->getUrl())
+                ->url(function () {
+                    $media = $this->getRecord()->getFirstMedia('files');
+
+                    // Try temporary URL first, fallback to regular URL
+                    try {
+                        return $media->getTemporaryUrl(now()->addMinutes(60));
+                    } catch (\Exception $e) {
+                        // Fallback to regular URL if temporary URLs not supported
+                        $url = $media->getUrl();
+
+                        // Ensure HTTPS for security
+                        if (str_starts_with($url, 'http://')) {
+                            $url = str_replace('http://', 'https://', $url);
+                        }
+
+                        return $url;
+                    }
+                })
                 ->openUrlInNewTab();
         }
 
@@ -140,13 +157,10 @@ class ViewLibraryItem extends ViewRecord
                     ->columnSpanFull(),
 
                 // File preview for files
-                Section::make()
-                    ->schema([
-                        \Filament\Infolists\Components\ViewEntry::make('file_preview')
-                            ->view('filament-library::infolists.components.file-preview')
-                            ->viewData(fn () => ['record' => $record])
-                    ])
-                    ->visible(fn () => $record->type === 'file' && $record->getFirstMedia('files'))
+                \Filament\Infolists\Components\ViewEntry::make('file_preview')
+                    ->view('filament-library::infolists.components.file-preview')
+                    ->viewData(fn () => ['record' => $record])
+                    ->visible(fn () => $record->type === 'file')
                     ->columnSpanFull(),
 
                 // Item details section
