@@ -58,7 +58,7 @@ class BulkManagePermissionsAction extends BulkAction
             ->modalSubmitActionLabel('Grant Permissions');
     }
 
-    protected function success(): void
+    public function success(): void
     {
         $this->successNotification(
             title: 'Permissions Updated',
