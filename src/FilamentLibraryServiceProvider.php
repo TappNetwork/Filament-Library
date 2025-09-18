@@ -12,6 +12,7 @@ use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Tapp\FilamentLibrary\Commands\FilamentLibraryCommand;
+use Tapp\FilamentLibrary\Commands\SeedLibraryCommand;
 
 class FilamentLibraryServiceProvider extends PackageServiceProvider
 {
@@ -73,6 +74,9 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
         // Icon Registration
         FilamentIcon::register($this->getIcons());
 
+        // Register middleware
+        $this->app['router']->pushMiddlewareToGroup('web', \Tapp\FilamentLibrary\Middleware\RedirectToCorrectEditPage::class);
+
         // Handle Stubs
         if (app()->runningInConsole()) {
             foreach (app(Filesystem::class)->files(__DIR__ . '/../stubs/') as $file) {
@@ -81,6 +85,7 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
                 ], 'filament-library-stubs');
             }
         }
+
 
         // Testing - No custom test mixins needed
     }
@@ -121,6 +126,7 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
     {
         return [
             FilamentLibraryCommand::class,
+            SeedLibraryCommand::class,
         ];
     }
 
@@ -156,6 +162,7 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
         return [
             '2024_01_01_000000_create_library_items_table',
             '2024_01_01_000001_create_library_item_permissions_table',
+            '2024_01_01_000002_add_external_link_support_to_library_items_table',
         ];
     }
 }

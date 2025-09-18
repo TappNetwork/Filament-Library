@@ -24,8 +24,8 @@ class ViewLibraryItem extends ViewRecord
     {
         $record = $this->getRecord();
 
-        // For external links, show the item name instead of "View External Link"
-        if ($record->type === 'link') {
+        // For files and links, show the item name
+        if ($record->type === 'link' || $record->type === 'file') {
             return $record->name;
         }
 
@@ -64,7 +64,18 @@ class ViewLibraryItem extends ViewRecord
                 ->openUrlInNewTab();
         }
 
-        $actions[] = \Filament\Actions\EditAction::make();
+        // Add "Download" action for files
+        if ($this->getRecord()->type === 'file' && $this->getRecord()->getFirstMedia('files')) {
+            $actions[] = Action::make('download_file')
+                ->label('Download')
+                ->color('gray')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->url(fn () => $this->getRecord()->getFirstMedia('files')->getUrl())
+                ->openUrlInNewTab();
+        }
+
+        $actions[] = \Filament\Actions\EditAction::make()
+            ->url(fn () => static::getResource()::getEditUrl($this->getRecord()));
         $actions[] = \Filament\Actions\DeleteAction::make()
             ->before(function () {
                 // Store parent_id before deletion
@@ -128,6 +139,16 @@ class ViewLibraryItem extends ViewRecord
                     ->visible(fn () => $record->type === 'link' && $record->isVideoUrl())
                     ->columnSpanFull(),
 
+                // File preview for files
+                Section::make()
+                    ->schema([
+                        \Filament\Infolists\Components\ViewEntry::make('file_preview')
+                            ->view('filament-library::infolists.components.file-preview')
+                            ->viewData(fn () => ['record' => $record])
+                    ])
+                    ->visible(fn () => $record->type === 'file' && $record->getFirstMedia('files'))
+                    ->columnSpanFull(),
+
                 // Item details section
                 Section::make()
                     ->schema([
@@ -159,7 +180,7 @@ class ViewLibraryItem extends ViewRecord
                         // Row 3: Description (full width)
                         TextEntry::make('link_description')
                             ->label('Description')
-                            ->visible(fn () => $record->type === 'link' && $record->link_description)
+                            ->visible(fn () => $record->link_description)
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),

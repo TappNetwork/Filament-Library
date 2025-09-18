@@ -7,34 +7,15 @@ use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
-class EditLibraryItem extends EditRecord
+class EditFolder extends EditRecord
 {
     protected static string $resource = LibraryItemResource::class;
 
     protected ?int $parentId = null;
 
-    public function mount(int | string $record): void
-    {
-        parent::mount($record);
-
-        // Automatically redirect to the correct edit page based on type
-        $record = $this->getRecord();
-        $editUrl = static::getResource()::getEditUrl($record);
-
-        $this->redirect($editUrl);
-    }
-
     public function getTitle(): string
     {
-        $record = $this->getRecord();
-        $type = match ($record->type) {
-            'folder' => 'Folder',
-            'file' => 'File',
-            'link' => 'External Link',
-            default => 'Item',
-        };
-
-        return "Edit {$type}";
+        return "Edit Folder";
     }
 
     protected function getHeaderActions(): array
@@ -77,7 +58,6 @@ class EditLibraryItem extends EditRecord
         return $data;
     }
 
-
     protected function mutateFormDataBeforeSave(array $data): array
     {
         // Set the updated_by field
@@ -86,44 +66,18 @@ class EditLibraryItem extends EditRecord
         return $data;
     }
 
-    protected function getForms(): array
+    public function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
-        return [
-            'form' => $this->form(static::getResource()::form(
-                \Filament\Schemas\Schema::make()
-            ))
-                ->statePath('data')
-                ->model($this->getRecord())
-                ->schema([
-                    \Filament\Forms\Components\TextInput::make('name')
-                        ->required()
-                        ->maxLength(255),
+        return $schema
+            ->schema([
+                \Filament\Forms\Components\TextInput::make('name')
+                    ->required()
+                    ->maxLength(255),
 
-                    // Folder form fields
-                    \Filament\Forms\Components\Textarea::make('link_description')
-                        ->label('Description')
-                        ->visible(fn () => $this->getRecord()->type === 'folder')
-                        ->rows(3),
-
-                    // File form fields
-                    \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('files')
-                        ->label('File')
-                        ->collection('files')
-                        ->visible(fn () => $this->getRecord()->type === 'file'),
-
-                    // Link form fields
-                    \Filament\Forms\Components\TextInput::make('external_url')
-                        ->label('URL')
-                        ->url()
-                        ->visible(fn () => $this->getRecord()->type === 'link')
-                        ->required(fn () => $this->getRecord()->type === 'link'),
-
-                    \Filament\Forms\Components\Textarea::make('link_description')
-                        ->label('Description')
-                        ->visible(fn () => $this->getRecord()->type === 'link')
-                        ->rows(3),
-                ]),
-        ];
+                \Filament\Forms\Components\Textarea::make('link_description')
+                    ->label('Description')
+                    ->rows(3),
+            ]);
     }
 
     public function getBreadcrumbs(): array

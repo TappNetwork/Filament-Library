@@ -80,16 +80,25 @@ class LibraryItemResource extends Resource
                     ->reactive()
                     ->afterStateUpdated(fn (callable $set) => $set('external_url', null)),
 
+                // Folder form fields
+                \Filament\Forms\Components\Textarea::make('link_description')
+                    ->label('Description')
+                    ->visible(fn (callable $get) => $get('type') === 'folder')
+                    ->rows(3),
+
+                // File form fields
+                \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('files')
+                    ->label('File')
+                    ->collection('files')
+                    ->visible(fn (callable $get) => $get('type') === 'file')
+                    ->required(fn (callable $get) => $get('type') === 'file'),
+
+                // Link form fields
                 \Filament\Forms\Components\TextInput::make('external_url')
-                    ->label('External URL')
+                    ->label('URL')
                     ->url()
                     ->visible(fn (callable $get) => $get('type') === 'link')
                     ->required(fn (callable $get) => $get('type') === 'link'),
-
-                \Filament\Forms\Components\TextInput::make('link_icon')
-                    ->label('Icon (Heroicon name)')
-                    ->placeholder('heroicon-o-link')
-                    ->visible(fn (callable $get) => $get('type') === 'link'),
 
                 \Filament\Forms\Components\Textarea::make('link_description')
                     ->label('Description')
@@ -182,7 +191,10 @@ class LibraryItemResource extends Resource
                             });
                         }),
                     EditAction::make()
-                        ->color('gray'),
+                        ->color('gray')
+                        ->url(function (LibraryItem $record): string {
+                            return static::getEditUrl($record);
+                        }),
                     DeleteAction::make()
                         ->color('gray')
                         ->before(function (LibraryItem $record) {
@@ -258,7 +270,20 @@ class LibraryItemResource extends Resource
             'create-file' => Pages\CreateFile::route('/create-file'),
             'create-link' => Pages\CreateLink::route('/create-link'),
             'view' => Pages\ViewLibraryItem::route('/{record}'),
-            'edit' => Pages\EditLibraryItem::route('/{record}/edit'),
+            'edit' => Pages\EditLibraryItem::route('/{record}/edit'), // Keep old route for middleware redirect
+            'edit-folder' => Pages\EditFolder::route('/{record}/edit-folder'),
+            'edit-file' => Pages\EditFile::route('/{record}/edit-file'),
+            'edit-link' => Pages\EditLink::route('/{record}/edit-link'),
         ];
+    }
+
+    public static function getEditUrl($record): string
+    {
+        return match ($record->type) {
+            'folder' => static::getUrl('edit-folder', ['record' => $record]),
+            'file' => static::getUrl('edit-file', ['record' => $record]),
+            'link' => static::getUrl('edit-link', ['record' => $record]),
+            default => static::getUrl('edit-folder', ['record' => $record]),
+        };
     }
 }

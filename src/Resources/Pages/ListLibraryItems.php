@@ -175,6 +175,15 @@ class ListLibraryItems extends ListRecords
         return 'All Folders';
     }
 
+    public function getSubheading(): ?string
+    {
+        if ($this->parentFolder && $this->parentFolder->link_description) {
+            return $this->parentFolder->link_description;
+        }
+
+        return null;
+    }
+
     public function getBreadcrumbs(): array
     {
         $breadcrumbs = [

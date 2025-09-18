@@ -26,7 +26,6 @@ class LibraryItem extends Model implements HasMedia
         'created_by',
         'updated_by',
         'external_url',
-        'link_icon',
         'link_description',
     ];
 
@@ -230,7 +229,7 @@ class LibraryItem extends Model implements HasMedia
         return match ($this->type) {
             'folder' => 'heroicon-s-folder',
             'file' => 'heroicon-o-document',
-            'link' => $this->link_icon ?? 'heroicon-o-link',
+            'link' => 'heroicon-o-link',
             default => 'heroicon-o-document',
         };
     }
