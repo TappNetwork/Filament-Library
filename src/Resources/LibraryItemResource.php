@@ -17,6 +17,8 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Tapp\FilamentLibrary\Models\LibraryItem;
+use Tapp\FilamentLibrary\Tables\Actions\BulkManagePermissionsAction;
+use Tapp\FilamentLibrary\Tables\Columns\PermissionsColumn;
 
 class LibraryItemResource extends Resource
 {
@@ -165,6 +167,9 @@ class LibraryItemResource extends Resource
                     ->visible(fn (?LibraryItem $record) => $record && $record->type === 'link')
                     ->limit(50)
                     ->tooltip(fn (?LibraryItem $record) => $record?->external_url),
+                PermissionsColumn::make('permissions')
+                    ->label('Permissions')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
@@ -226,6 +231,7 @@ class LibraryItemResource extends Resource
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    BulkManagePermissionsAction::make(),
                     DeleteBulkAction::make()
                         ->successRedirectUrl(function () {
                             // For bulk actions, redirect to current folder (maintain current location)

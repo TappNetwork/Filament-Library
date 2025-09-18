@@ -12,6 +12,8 @@ use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Tapp\FilamentLibrary\Commands\FilamentLibraryCommand;
 use Tapp\FilamentLibrary\Commands\SeedLibraryCommand;
+use Tapp\FilamentLibrary\Models\LibraryItem;
+use Tapp\FilamentLibrary\Policies\LibraryItemPolicy;
 
 class FilamentLibraryServiceProvider extends PackageServiceProvider
 {
@@ -75,6 +77,9 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
 
         // Register middleware
         $this->app['router']->pushMiddlewareToGroup('web', \Tapp\FilamentLibrary\Middleware\RedirectToCorrectEditPage::class);
+
+        // Register the policy
+        $this->app['Illuminate\Contracts\Auth\Access\Gate']->policy(LibraryItem::class, LibraryItemPolicy::class);
 
         // Handle Stubs
         if (app()->runningInConsole()) {
