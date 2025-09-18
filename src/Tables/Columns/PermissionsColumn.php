@@ -10,7 +10,7 @@ class PermissionsColumn extends Column
 {
     protected string $view = 'filament-library::tables.columns.permissions-column';
 
-    public static function make(string $name): static
+    public static function make(?string $name = null): static
     {
         $static = app(static::class, ['name' => $name]);
         $static->configure();

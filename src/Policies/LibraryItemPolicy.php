@@ -16,7 +16,7 @@ class LibraryItemPolicy
         if (method_exists($user, 'canViewRootLibraryItems')) {
             return $user->canViewRootLibraryItems();
         }
-        
+
         // Fallback: allow all users to view (can be restricted by individual item permissions)
         return true;
     }
@@ -30,7 +30,7 @@ class LibraryItemPolicy
         if (method_exists($user, 'canViewLibraryItem')) {
             return $user->canViewLibraryItem($libraryItem);
         }
-        
+
         // Fallback: check if user is creator or has permission
         return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'view');
     }
@@ -54,7 +54,7 @@ class LibraryItemPolicy
         if (method_exists($user, 'canEditLibraryItem')) {
             return $user->canEditLibraryItem($libraryItem);
         }
-        
+
         // Fallback: check if user is creator or has permission
         return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'edit');
     }
@@ -68,7 +68,7 @@ class LibraryItemPolicy
         if (method_exists($user, 'canEditLibraryItem')) {
             return $user->canEditLibraryItem($libraryItem);
         }
-        
+
         // Fallback: check if user is creator or has permission
         return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'edit');
     }
@@ -91,7 +91,7 @@ class LibraryItemPolicy
         if (method_exists($user, 'canEditLibraryItem')) {
             return $user->canEditLibraryItem($libraryItem);
         }
-        
+
         // Fallback: check if user is creator or has permission
         return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'edit');
     }
@@ -114,7 +114,7 @@ class LibraryItemPolicy
         if (method_exists($user, 'canEditLibraryItem')) {
             return $user->canEditLibraryItem($libraryItem);
         }
-        
+
         // Fallback: check if user is creator or has permission
         return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'edit');
     }
@@ -137,7 +137,7 @@ class LibraryItemPolicy
         if (method_exists($user, 'canEditLibraryItem')) {
             return $user->canEditLibraryItem($libraryItem);
         }
-        
+
         // Fallback: check if user is creator or has permission
         return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'edit');
     }
@@ -159,7 +159,7 @@ class LibraryItemPolicy
         if (method_exists($user, 'canEditLibraryItem')) {
             return $user->canEditLibraryItem($libraryItem);
         }
-        
+
         // Fallback: check if user is creator or has permission
         return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'edit');
     }
