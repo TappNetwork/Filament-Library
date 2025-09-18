@@ -31,7 +31,7 @@ class PermissionsColumn extends Column
 
                 return $users->map(function ($user) use ($record, $permissionService) {
                     $permissions = $permissionService->getUserPermissions($user, $record);
-                    
+
                     return [
                         'user' => $user,
                         'permissions' => $permissions,

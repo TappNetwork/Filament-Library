@@ -20,6 +20,14 @@ class PermissionService
     private const CACHE_TTL = 3600;
 
     /**
+     * Get the user model class.
+     */
+    protected function getUserModel(): string
+    {
+        return config('auth.providers.users.model', 'App\\Models\\User');
+    }
+
+    /**
      * Check if a user has a specific permission on an item.
      */
     public function hasPermission($user, LibraryItem $item, string $permission): bool
@@ -77,8 +85,9 @@ class PermissionService
 
         foreach ($items as $item) {
             foreach ($userIds as $userId) {
+                $userModel = $this->getUserModel();
                 $this->assignPermission(
-                    \App\Models\User::find($userId),
+                    $userModel::find($userId),
                     $item,
                     $permission
                 );
@@ -100,8 +109,9 @@ class PermissionService
 
         foreach ($children as $child) {
             foreach ($userIds as $userId) {
+                $userModel = $this->getUserModel();
                 $this->assignPermission(
-                    \App\Models\User::find($userId),
+                    $userModel::find($userId),
                     $child,
                     $permission
                 );

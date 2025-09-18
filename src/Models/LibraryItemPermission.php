@@ -34,6 +34,7 @@ class LibraryItemPermission extends Model
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class);
+        $userModel = config('auth.providers.users.model', 'App\\Models\\User');
+        return $this->belongsTo($userModel);
     }
 }

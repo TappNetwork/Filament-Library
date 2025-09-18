@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 
 class UserSearchSelect extends Select
 {
-    protected string $userModel = 'App\\Models\\User';
+    protected string $userModel;
 
     protected string $nameField = 'name';
 
@@ -55,6 +55,11 @@ class UserSearchSelect extends Select
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Set default user model if not specified
+        if (empty($this->userModel)) {
+            $this->userModel = config('auth.providers.users.model', 'App\\Models\\User');
+        }
 
         $this->searchable()
             ->multiple()
