@@ -12,7 +12,13 @@ class LibraryItemPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->canViewRootLibraryItems();
+        // Check if user has the trait method, otherwise use fallback
+        if (method_exists($user, 'canViewRootLibraryItems')) {
+            return $user->canViewRootLibraryItems();
+        }
+        
+        // Fallback: allow all users to view (can be restricted by individual item permissions)
+        return true;
     }
 
     /**
@@ -20,7 +26,13 @@ class LibraryItemPolicy
      */
     public function view(User $user, LibraryItem $libraryItem): bool
     {
-        return $user->canViewLibraryItem($libraryItem);
+        // Check if user has the trait method, otherwise use fallback
+        if (method_exists($user, 'canViewLibraryItem')) {
+            return $user->canViewLibraryItem($libraryItem);
+        }
+        
+        // Fallback: check if user is creator or has permission
+        return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'view');
     }
 
     /**
@@ -38,7 +50,13 @@ class LibraryItemPolicy
      */
     public function update(User $user, LibraryItem $libraryItem): bool
     {
-        return $user->canEditLibraryItem($libraryItem);
+        // Check if user has the trait method, otherwise use fallback
+        if (method_exists($user, 'canEditLibraryItem')) {
+            return $user->canEditLibraryItem($libraryItem);
+        }
+        
+        // Fallback: check if user is creator or has permission
+        return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'edit');
     }
 
     /**
@@ -46,7 +64,13 @@ class LibraryItemPolicy
      */
     public function delete(User $user, LibraryItem $libraryItem): bool
     {
-        return $user->canEditLibraryItem($libraryItem);
+        // Check if user has the trait method, otherwise use fallback
+        if (method_exists($user, 'canEditLibraryItem')) {
+            return $user->canEditLibraryItem($libraryItem);
+        }
+        
+        // Fallback: check if user is creator or has permission
+        return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'edit');
     }
 
     /**
@@ -63,7 +87,13 @@ class LibraryItemPolicy
      */
     public function forceDelete(User $user, LibraryItem $libraryItem): bool
     {
-        return $user->canEditLibraryItem($libraryItem);
+        // Check if user has the trait method, otherwise use fallback
+        if (method_exists($user, 'canEditLibraryItem')) {
+            return $user->canEditLibraryItem($libraryItem);
+        }
+        
+        // Fallback: check if user is creator or has permission
+        return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'edit');
     }
 
     /**
@@ -80,7 +110,13 @@ class LibraryItemPolicy
      */
     public function restore(User $user, LibraryItem $libraryItem): bool
     {
-        return $user->canEditLibraryItem($libraryItem);
+        // Check if user has the trait method, otherwise use fallback
+        if (method_exists($user, 'canEditLibraryItem')) {
+            return $user->canEditLibraryItem($libraryItem);
+        }
+        
+        // Fallback: check if user is creator or has permission
+        return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'edit');
     }
 
     /**
@@ -97,7 +133,13 @@ class LibraryItemPolicy
      */
     public function replicate(User $user, LibraryItem $libraryItem): bool
     {
-        return $user->canEditLibraryItem($libraryItem);
+        // Check if user has the trait method, otherwise use fallback
+        if (method_exists($user, 'canEditLibraryItem')) {
+            return $user->canEditLibraryItem($libraryItem);
+        }
+        
+        // Fallback: check if user is creator or has permission
+        return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'edit');
     }
 
     /**
@@ -113,7 +155,13 @@ class LibraryItemPolicy
      */
     public function managePermissions(User $user, LibraryItem $libraryItem): bool
     {
-        return $user->canEditLibraryItem($libraryItem);
+        // Check if user has the trait method, otherwise use fallback
+        if (method_exists($user, 'canEditLibraryItem')) {
+            return $user->canEditLibraryItem($libraryItem);
+        }
+        
+        // Fallback: check if user is creator or has permission
+        return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'edit');
     }
 
     /**
