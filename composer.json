@@ -45,7 +45,8 @@
     "autoload": {
         "psr-4": {
             "Tapp\\FilamentLibrary\\": "src/",
-            "Tapp\\FilamentLibrary\\Database\\Factories\\": "database/factories/"
+            "Tapp\\FilamentLibrary\\Database\\Factories\\": "database/factories/",
+            "Tapp\\FilamentLibrary\\Database\\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {
