@@ -10,11 +10,11 @@ class UserSearchSelect extends Select
 {
     protected string $userModel;
 
-    protected string $nameField = 'name';
+    protected string $nameField = 'first_name';
 
     protected string $emailField = 'email';
 
-    protected string $searchFields = 'name,email';
+    protected string $searchFields = 'first_name,last_name,email';
 
     public static function make(?string $name = null): static
     {
@@ -82,7 +82,7 @@ class UserSearchSelect extends Select
                     ->limit(50)
                     ->get()
                     ->mapWithKeys(function (Model $user) {
-                        $name = $user->getAttribute($this->nameField);
+                        $name = $this->getDisplayName($user);
                         $email = $user->getAttribute($this->emailField);
                         $label = $email ? "{$name} ({$email})" : $name;
 
@@ -96,7 +96,7 @@ class UserSearchSelect extends Select
                 return $userModel::whereIn('id', $values)
                     ->get()
                     ->mapWithKeys(function (Model $user) {
-                        $name = $user->getAttribute($this->nameField);
+                        $name = $this->getDisplayName($user);
                         $email = $user->getAttribute($this->emailField);
                         $label = $email ? "{$name} ({$email})" : $name;
 
@@ -104,5 +104,19 @@ class UserSearchSelect extends Select
                     })
                     ->toArray();
             });
+    }
+
+    protected function getDisplayName(Model $user): string
+    {
+        // Try to use the name accessor first (if it exists)
+        if (method_exists($user, 'getNameAttribute') || $user->getAttribute('name')) {
+            return $user->name;
+        }
+
+        // Fallback to combining first_name and last_name
+        $firstName = $user->getAttribute('first_name') ?? '';
+        $lastName = $user->getAttribute('last_name') ?? '';
+        
+        return trim("{$firstName} {$lastName}") ?: $user->getAttribute('email') ?? 'Unknown User';
     }
 }
