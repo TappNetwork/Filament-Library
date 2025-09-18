@@ -16,7 +16,7 @@ class UserSearchSelect extends Select
 
     protected string $searchFields = 'name,email';
 
-    public static function make(string $name): static
+    public static function make(?string $name = null): static
     {
         $static = app(static::class, ['name' => $name]);
         $static->configure();
