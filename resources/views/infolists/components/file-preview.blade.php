@@ -2,21 +2,8 @@
     $media = $record->getFirstMedia('files');
     $mimeType = $media?->mime_type;
 
-    // Try temporary URL first, fallback to regular URL
-    $fileUrl = null;
-    if ($media) {
-        try {
-            $fileUrl = $media->getTemporaryUrl(now()->addMinutes(60));
-        } catch (\Exception $e) {
-            // Fallback to regular URL if temporary URLs not supported
-            $fileUrl = $media->getUrl();
-
-            // Ensure HTTPS for security
-            if (str_starts_with($fileUrl, 'http://')) {
-                $fileUrl = str_replace('http://', 'https://', $fileUrl);
-            }
-        }
-    }
+    // Use the secure URL method from the model
+    $fileUrl = $record->getSecureUrl();
 
     // Get file extension for better type detection
     $extension = strtolower(pathinfo($media?->name, PATHINFO_EXTENSION));

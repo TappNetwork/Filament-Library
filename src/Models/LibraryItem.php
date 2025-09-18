@@ -205,12 +205,12 @@ class LibraryItem extends Model implements HasMedia
             return false;
         }
 
-        $videoDomains = [
+        $videoDomains = config('filament-library.video.supported_domains', [
             'youtube.com',
             'youtu.be',
             'vimeo.com',
             'wistia.com',
-        ];
+        ]);
 
         foreach ($videoDomains as $domain) {
             if (str_contains($this->external_url, $domain)) {
@@ -267,6 +267,34 @@ class LibraryItem extends Model implements HasMedia
             ->width(300)
             ->height(300);
     }
+
+    /**
+     * Get a secure URL for the file with temporary URL fallback.
+     */
+    public function getSecureUrl(?int $expirationMinutes = null): string
+    {
+        $media = $this->getFirstMedia('files');
+
+        if (!$media) {
+            return '';
+        }
+
+        $expirationMinutes = $expirationMinutes ?? config('filament-library.url.temporary_expiration_minutes', 60);
+
+        try {
+            return $media->getTemporaryUrl(now()->addMinutes($expirationMinutes));
+        } catch (\Exception $e) {
+            $url = $media->getUrl();
+
+            // Ensure HTTPS for security
+            if (str_starts_with($url, 'http://')) {
+                $url = str_replace('http://', 'https://', $url);
+            }
+
+            return $url;
+        }
+    }
+
 
     /**
      * Generate a unique slug for the given name and parent.

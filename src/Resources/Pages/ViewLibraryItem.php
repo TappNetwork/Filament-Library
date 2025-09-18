@@ -70,24 +70,7 @@ class ViewLibraryItem extends ViewRecord
                 ->label('Download')
                 ->color('gray')
                 ->icon('heroicon-o-arrow-down-tray')
-                ->url(function () {
-                    $media = $this->getRecord()->getFirstMedia('files');
-
-                    // Try temporary URL first, fallback to regular URL
-                    try {
-                        return $media->getTemporaryUrl(now()->addMinutes(60));
-                    } catch (\Exception $e) {
-                        // Fallback to regular URL if temporary URLs not supported
-                        $url = $media->getUrl();
-
-                        // Ensure HTTPS for security
-                        if (str_starts_with($url, 'http://')) {
-                            $url = str_replace('http://', 'https://', $url);
-                        }
-
-                        return $url;
-                    }
-                })
+                ->url(fn () => $this->getRecord()->getSecureUrl())
                 ->openUrlInNewTab();
         }
 
@@ -119,7 +102,8 @@ class ViewLibraryItem extends ViewRecord
         if ($record->parent_id) {
             // Cache the breadcrumb path to avoid repeated computation
             $cacheKey = 'breadcrumbs_' . $record->parent_id;
-            $path = cache()->remember($cacheKey, 300, function () use ($record) { // 5 minute cache
+            $cacheTtl = config('filament-library.cache.breadcrumbs_ttl_seconds', 300);
+            $path = cache()->remember($cacheKey, $cacheTtl, function () use ($record) {
                 $current = $record->parent;
                 $path = [];
 
@@ -201,15 +185,6 @@ class ViewLibraryItem extends ViewRecord
 
                 // Media section for files
                 Section::make('Media')
-                    ->headerActions([
-                        Action::make('downloadAll')
-                            ->label('Download All Files')
-                            ->icon('heroicon-o-arrow-down-tray')
-                            ->visible(fn () => $record->type === 'file' && $record->getMedia()->count() > 0)
-                            ->action(function () {
-                                // TODO: Implement download all functionality
-                            }),
-                    ])
                     ->schema([
                         RepeatableEntry::make('media')
                             ->label('')

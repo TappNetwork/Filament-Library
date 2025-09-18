@@ -1,4 +1,10 @@
-/* Filament Library Plugin Styles */
+/* ==========================================================================
+   Filament Library Plugin Styles
+   ========================================================================== */
+
+/* ==========================================================================
+   File Preview Styles
+   ========================================================================== */
 
 /* Unpreviewable File Section */
 .filament-library-unpreviewable {
@@ -16,14 +22,6 @@
     font-weight: 400 !important;
     line-height: 1.5 !important;
     margin-bottom: 1rem !important;
-    /* Force cache bust - v3 */
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .filament-library-unpreviewable-message {
-        color: #9ca3af; /* text-gray-400 equivalent for dark mode */
-    }
 }
 
 .filament-library-unpreviewable-button {
@@ -32,7 +30,18 @@
     width: 100% !important;
 }
 
-/* PDF Container Styles */
+/* Dark mode support for file preview */
+@media (prefers-color-scheme: dark) {
+    .filament-library-unpreviewable-message {
+        color: #9ca3af; /* text-gray-400 equivalent for dark mode */
+    }
+}
+
+/* ==========================================================================
+   Media Container Styles
+   ========================================================================== */
+
+/* PDF Container */
 .pdf-container {
     width: 100%;
     height: calc(100vh - 80px); /* 100vh minus estimated top nav height */
@@ -41,7 +50,7 @@
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
-/* Video Container Styles */
+/* Video Container */
 .video-container {
     width: 100%;
     height: 400px;
