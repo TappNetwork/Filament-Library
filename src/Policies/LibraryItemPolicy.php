@@ -2,8 +2,8 @@
 
 namespace Tapp\FilamentLibrary\Policies;
 
-use Tapp\FilamentLibrary\Models\LibraryItem;
 use Illuminate\Foundation\Auth\User;
+use Tapp\FilamentLibrary\Models\LibraryItem;
 
 class LibraryItemPolicy
 {

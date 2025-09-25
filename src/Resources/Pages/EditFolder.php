@@ -5,10 +5,7 @@ namespace Tapp\FilamentLibrary\Resources\Pages;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\EditRecord;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Schema;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class EditFolder extends EditRecord
@@ -19,7 +16,7 @@ class EditFolder extends EditRecord
 
     public function getTitle(): string
     {
-        return "Edit Folder";
+        return 'Edit Folder';
     }
 
     protected function getHeaderActions(): array
@@ -98,7 +95,7 @@ class EditFolder extends EditRecord
                         $options = \Tapp\FilamentLibrary\Models\LibraryItem::getGeneralAccessOptions();
 
                         // Remove inherit option if no parent folder
-                        if (!$this->getRecord()->parent_id) {
+                        if (! $this->getRecord()->parent_id) {
                             unset($options['inherit']);
                         }
 
@@ -151,7 +148,7 @@ class EditFolder extends EditRecord
                     ->preload()
                     ->disabled(function () {
                         // Only allow changes if user has library admin access (Admin role)
-                        return !auth()->user()?->hasRole('Admin');
+                        return ! auth()->user()?->hasRole('Admin');
                     })
                     ->helperText('Creator receives owner permissions'),
             ]);

@@ -25,7 +25,6 @@ return [
         'breadcrumbs_ttl_seconds' => env('FILAMENT_LIBRARY_BREADCRUMBS_TTL', 300),
     ],
 
-
     /*
     |--------------------------------------------------------------------------
     | Video Configuration

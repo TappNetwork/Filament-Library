@@ -21,7 +21,7 @@ class SharedWithMe extends ListRecords
             $query->whereHas('resourcePermissions', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             })
-            ->where('created_by', '!=', $user->id); // Exclude items created by user
+                ->where('created_by', '!=', $user->id); // Exclude items created by user
         } else {
             $query->whereRaw('1 = 0');
         }
