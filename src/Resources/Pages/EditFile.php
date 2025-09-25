@@ -15,7 +15,7 @@ class EditFile extends EditRecord
 
     public function getTitle(): string
     {
-        return "Edit File";
+        return 'Edit File';
     }
 
     protected function getHeaderActions(): array
@@ -104,7 +104,7 @@ class EditFile extends EditRecord
                         $options = \Tapp\FilamentLibrary\Models\LibraryItem::getGeneralAccessOptions();
 
                         // Remove inherit option if no parent folder
-                        if (!$this->getRecord()->parent_id) {
+                        if (! $this->getRecord()->parent_id) {
                             unset($options['inherit']);
                         }
 

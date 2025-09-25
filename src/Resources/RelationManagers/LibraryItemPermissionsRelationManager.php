@@ -13,7 +13,6 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Tapp\FilamentLibrary\Forms\Components\UserSearchSelect;
-use Tapp\FilamentLibrary\Models\LibraryItemPermission;
 
 class LibraryItemPermissionsRelationManager extends RelationManager
 {
@@ -88,4 +87,3 @@ class LibraryItemPermissionsRelationManager extends RelationManager
             ]);
     }
 }
-

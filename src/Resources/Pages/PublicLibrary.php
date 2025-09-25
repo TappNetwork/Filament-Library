@@ -33,7 +33,7 @@ class PublicLibrary extends ListRecords
                 $q->orWhere('created_by', $user->id);
             }
         })
-        ->where('name', 'not like', "%'s Personal Folder"); // Exclude personal folders
+            ->where('name', 'not like', "%'s Personal Folder"); // Exclude personal folders
 
         return $query;
     }

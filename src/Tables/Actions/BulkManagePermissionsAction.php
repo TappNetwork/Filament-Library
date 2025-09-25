@@ -2,9 +2,9 @@
 
 namespace Tapp\FilamentLibrary\Tables\Actions;
 
+use Filament\Actions\BulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
-use Filament\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Collection;
 use Tapp\FilamentLibrary\Forms\Components\UserSearchSelect;
 use Tapp\FilamentLibrary\Services\PermissionService;

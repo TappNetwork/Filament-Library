@@ -22,13 +22,13 @@ class SearchAll extends ListRecords
                 // Items created by user
                 $q->where('created_by', $user->id)
                 // Items with explicit permissions
-                ->orWhereHas('resourcePermissions', function ($permQuery) use ($user) {
-                    $permQuery->where('user_id', $user->id);
-                })
+                    ->orWhereHas('resourcePermissions', function ($permQuery) use ($user) {
+                        $permQuery->where('user_id', $user->id);
+                    })
                 // Public items
-                ->orWhere('general_access', 'anyone_can_view');
+                    ->orWhere('general_access', 'anyone_can_view');
             })
-            ->where('name', 'not like', "%'s Personal Folder"); // Exclude personal folders
+                ->where('name', 'not like', "%'s Personal Folder"); // Exclude personal folders
         } else {
             // For non-authenticated users, show only public items
             $query->where('general_access', 'anyone_can_view')

@@ -68,6 +68,7 @@ class ListLibraryItems extends ListRecords
                     if ($this->parentId !== null) {
                         return true; // Always allow in subfolders
                     }
+
                     // At root level, only allow admins
                     return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin(auth()->user());
                 })
@@ -98,6 +99,7 @@ class ListLibraryItems extends ListRecords
                     if ($this->parentId !== null) {
                         return true; // Always allow in subfolders
                     }
+
                     // At root level, only allow admins
                     return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin(auth()->user());
                 })
@@ -181,6 +183,7 @@ class ListLibraryItems extends ListRecords
                 if ($this->parentId !== null) {
                     return true; // Always allow in subfolders
                 }
+
                 // At root level, only allow admins
                 return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin(auth()->user());
             });
@@ -234,7 +237,7 @@ class ListLibraryItems extends ListRecords
             return $this->parentFolder->link_description;
         }
 
-        if (!$this->parentId) {
+        if (! $this->parentId) {
             return 'Publicly accessible files and folders';
         }
 
@@ -271,5 +274,4 @@ class ListLibraryItems extends ListRecords
 
         return $breadcrumbs;
     }
-
 }

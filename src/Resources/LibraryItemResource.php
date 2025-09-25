@@ -12,12 +12,12 @@ use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
-use Tapp\FilamentLibrary\Tables\Actions\BulkManagePermissionsAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Tapp\FilamentLibrary\Models\LibraryItem;
+use Tapp\FilamentLibrary\Tables\Actions\BulkManagePermissionsAction;
 use Tapp\FilamentLibrary\Tables\Columns\PermissionsColumn;
 
 class LibraryItemResource extends Resource
@@ -136,7 +136,7 @@ class LibraryItemResource extends Resource
                     ->icon(fn (?LibraryItem $record): string => $record?->getDisplayIcon() ?? 'heroicon-o-document')
                     ->iconPosition('before')
                     ->url(function (?LibraryItem $record): ?string {
-                        if (!$record) {
+                        if (! $record) {
                             return null;
                         }
 

@@ -4,7 +4,6 @@ namespace Tapp\FilamentLibrary\Forms\Components;
 
 use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
 
 class UserSearchSelect extends Select
 {

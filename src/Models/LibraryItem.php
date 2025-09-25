@@ -74,7 +74,6 @@ class LibraryItem extends Model implements HasMedia
                 $item->slug = static::generateUniqueSlug($item->name, $item->parent_id, $item->id);
             }
 
-
             // Set updated_by on updates
             if (auth()->check()) {
                 $item->updated_by = auth()->id();
@@ -108,14 +107,15 @@ class LibraryItem extends Model implements HasMedia
             if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'name')) {
                 return [
                     'name' => 'Unknown User',
-                    'email' => 'deleted@example.com'
+                    'email' => 'deleted@example.com',
                 ];
             }
+
             // Fall back to first_name/last_name
             return [
                 'first_name' => 'Unknown',
                 'last_name' => 'User',
-                'email' => 'deleted@example.com'
+                'email' => 'deleted@example.com',
             ];
         });
     }
@@ -186,7 +186,7 @@ class LibraryItem extends Model implements HasMedia
      */
     public function getEffectiveRole($user): ?string
     {
-        if (!$user) {
+        if (! $user) {
             return null;
         }
 
@@ -197,6 +197,7 @@ class LibraryItem extends Model implements HasMedia
             if ($currentOwner && $currentOwner->id === $user->id) {
                 return 'owner'; // Creator is also owner
             }
+
             return 'creator'; // Creator but not owner
         }
 
@@ -247,6 +248,7 @@ class LibraryItem extends Model implements HasMedia
     public function isCreatorOwner(): bool
     {
         $currentOwner = $this->getCurrentOwner();
+
         return $currentOwner && $currentOwner->id === $this->created_by;
     }
 
@@ -332,7 +334,7 @@ class LibraryItem extends Model implements HasMedia
      */
     public function getInheritedGeneralAccess(): ?string
     {
-        if (!$this->parent_id) {
+        if (! $this->parent_id) {
             return null;
         }
 
@@ -346,11 +348,12 @@ class LibraryItem extends Model implements HasMedia
     {
         $inherited = $this->getInheritedGeneralAccess();
 
-        if (!$inherited) {
+        if (! $inherited) {
             return null;
         }
 
         $options = self::getGeneralAccessOptions();
+
         return $options[$inherited] ?? $inherited;
     }
 
@@ -366,7 +369,7 @@ class LibraryItem extends Model implements HasMedia
 
         $effectiveRole = $this->getEffectiveRole($user);
 
-        if (!$effectiveRole) {
+        if (! $effectiveRole) {
             return false;
         }
 
@@ -392,6 +395,7 @@ class LibraryItem extends Model implements HasMedia
 
         // For anonymous users, check if general access allows viewing
         $effectiveGeneralAccess = $this->getEffectiveGeneralAccess();
+
         return $effectiveGeneralAccess === 'anyone_can_view';
     }
 
@@ -488,7 +492,7 @@ class LibraryItem extends Model implements HasMedia
     {
         $media = $this->getFirstMedia('files');
 
-        if (!$media) {
+        if (! $media) {
             return '';
         }
 
@@ -507,7 +511,6 @@ class LibraryItem extends Model implements HasMedia
             return $url;
         }
     }
-
 
     /**
      * Generate a unique slug for the given name and parent.
@@ -530,7 +533,6 @@ class LibraryItem extends Model implements HasMedia
 
         return $slug;
     }
-
 
     /**
      * Get the access control options for the general access select.
