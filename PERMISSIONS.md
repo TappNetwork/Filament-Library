@@ -155,3 +155,6 @@ If you have many users and items, consider:
 - `hasPermission($user, $permission)` - Check if user has permission on this item
 - `permissions()` - Get all permissions for this item
 - `getAllPermissions()` - Get all permissions including inherited ones
+
+
+
