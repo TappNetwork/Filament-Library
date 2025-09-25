@@ -195,9 +195,24 @@ class ListLibraryItems extends ListRecords
         if ($this->parentId) {
             $query->where('parent_id', $this->parentId);
         } else {
-            // Show public items at root level
+            // Show items at root level based on user permissions
+            $user = auth()->user();
             $query->whereNull('parent_id')
-                ->where('general_access', 'anyone_can_view')
+                ->where(function ($q) use ($user) {
+                    $q->where('general_access', 'anyone_can_view');
+
+                    // Admins can see all items (including private/inherit)
+                    if ($user && $user->hasRole('Admin')) {
+                        $q->orWhere(function ($adminQuery) {
+                            $adminQuery->whereIn('general_access', ['private', 'inherit']);
+                        });
+                    }
+
+                    // Creators can see their own items (even if private)
+                    if ($user) {
+                        $q->orWhere('created_by', $user->id);
+                    }
+                })
                 ->where('name', 'not like', "%'s Personal Folder");
         }
 

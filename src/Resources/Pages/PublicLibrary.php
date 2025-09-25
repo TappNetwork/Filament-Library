@@ -14,10 +14,26 @@ class PublicLibrary extends ListRecords
     protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
     {
         $query = parent::getTableQuery();
+        $user = auth()->user();
 
-        // Show only public items
-        $query->where('general_access', 'anyone_can_view')
-            ->where('name', 'not like', "%'s Personal Folder"); // Exclude personal folders
+        // Show public items
+        $query->where(function ($q) use ($user) {
+            $q->where('general_access', 'anyone_can_view');
+
+            // Admins can see all items (including private/inherit)
+            if ($user && $user->hasRole('Admin')) {
+                $q->orWhere(function ($adminQuery) {
+                    $adminQuery->whereIn('general_access', ['private', 'inherit'])
+                        ->whereNull('parent_id'); // Only root-level items
+                });
+            }
+
+            // Creators can see their own items (even if private)
+            if ($user) {
+                $q->orWhere('created_by', $user->id);
+            }
+        })
+        ->where('name', 'not like', "%'s Personal Folder"); // Exclude personal folders
 
         return $query;
     }
@@ -30,5 +46,13 @@ class PublicLibrary extends ListRecords
     public function getSubheading(): ?string
     {
         return 'Publicly accessible files and folders';
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            static::getResource()::getUrl() => 'Library',
+            '' => 'Public Library',
+        ];
     }
 }

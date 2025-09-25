@@ -38,4 +38,12 @@ class SharedWithMe extends ListRecords
     {
         return 'Files and folders shared with you by others';
     }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            static::getResource()::getUrl() => 'Library',
+            '' => 'Shared with Me',
+        ];
+    }
 }

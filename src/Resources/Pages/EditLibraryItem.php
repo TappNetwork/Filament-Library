@@ -41,16 +41,27 @@ class EditLibraryItem extends EditRecord
     {
         $actions = [];
 
-        // Add "View Folder" action if we have a parent
+        // Add "Up One Level" action if we have a parent
         if ($this->getRecord()->parent_id) {
-            $actions[] = Action::make('view_folder')
-                ->label('View Folder')
+            $actions[] = Action::make('up_one_level')
+                ->label('Up One Level')
                 ->icon('heroicon-o-arrow-up')
                 ->color('gray')
                 ->url(
                     fn (): string => static::getResource()::getUrl('index', ['parent' => $this->getRecord()->parent_id])
                 );
         }
+
+        // Add "View" action - for folders go to list page, for files/links go to view page
+        $viewUrl = $this->getRecord()->type === 'folder'
+            ? static::getResource()::getUrl('index', ['parent' => $this->getRecord()->id])
+            : static::getResource()::getUrl('view', ['record' => $this->getRecord()->id]);
+
+        $actions[] = Action::make('view')
+            ->label('View')
+            ->icon('heroicon-o-eye')
+            ->color('gray')
+            ->url($viewUrl);
 
         $actions[] = DeleteAction::make()
             ->before(function () {
@@ -67,172 +78,12 @@ class EditLibraryItem extends EditRecord
         return $actions;
     }
 
-    protected function mutateFormDataBeforeFill(array $data): array
-    {
-        // Remove fields that shouldn't be editable
-        unset($data['type']);
-        unset($data['parent_id']);
-        unset($data['created_by']);
-
-        return $data;
-    }
-
-
-    protected function mutateFormDataBeforeSave(array $data): array
-    {
-        // Set the updated_by field
-        $data['updated_by'] = auth()->user()?->id;
-
-        return $data;
-    }
-
-    protected function getForms(): array
-    {
-        return [
-            'form' => $this->form(static::getResource()::form(
-                \Filament\Schemas\Schema::make()
-            ))
-                ->statePath('data')
-                ->model($this->getRecord())
-                ->schema([
-                    \Filament\Forms\Components\TextInput::make('name')
-                        ->required()
-                        ->maxLength(255),
-
-                    // Folder form fields
-                    \Filament\Forms\Components\Textarea::make('link_description')
-                        ->label('Description')
-                        ->visible(fn () => $this->getRecord()->type === 'folder')
-                        ->rows(3),
-
-                    // File form fields
-                    \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('files')
-                        ->label('File')
-                        ->collection('files')
-                        ->visible(fn () => $this->getRecord()->type === 'file'),
-
-                    // Link form fields
-                    \Filament\Forms\Components\TextInput::make('external_url')
-                        ->label('URL')
-                        ->url()
-                        ->visible(fn () => $this->getRecord()->type === 'link')
-                        ->required(fn () => $this->getRecord()->type === 'link'),
-
-                    \Filament\Forms\Components\Textarea::make('link_description')
-                        ->label('Description')
-                        ->visible(fn () => $this->getRecord()->type === 'link')
-                        ->rows(3),
-
-                    // Ownership information section
-                    \Filament\Forms\Components\Section::make('Ownership')
-                        ->description('The Creator is permanent and cannot be changed. The Owner manages sharing permissions and can be transferred to another user.')
-                        ->schema([
-                            \Filament\Forms\Components\Placeholder::make('creator_info')
-                                ->label('Created by')
-                                ->content(function () {
-                                    $creator = $this->getRecord()->creator;
-                                    if (!$creator) {
-                                        return 'Unknown';
-                                    }
-
-                                    // Check if 'name' field exists and has a value
-                                    if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'name') && $creator->name) {
-                                        return $creator->name . ' (' . $creator->email . ')';
-                                    }
-
-                                    // Fall back to first_name/last_name if available
-                                    if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'first_name') && \Illuminate\Support\Facades\Schema::hasColumn('users', 'last_name')) {
-                                        $firstName = $creator->first_name ?? '';
-                                        $lastName = $creator->last_name ?? '';
-                                        $fullName = trim($firstName . ' ' . $lastName);
-
-                                        if ($fullName) {
-                                            return $fullName . ' (' . $creator->email . ')';
-                                        }
-                                    }
-
-                                    // Fall back to email only
-                                    return $creator->email;
-                                }),
-
-                            \Filament\Forms\Components\Placeholder::make('owner_info')
-                                ->label('Current Owner')
-                                ->content(function () {
-                                    $owner = $this->getRecord()->getCurrentOwner();
-                                    if (!$owner) {
-                                        return 'No owner assigned';
-                                    }
-
-                                    // Check if 'name' field exists and has a value
-                                    if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'name') && $owner->name) {
-                                        return $owner->name . ' (' . $owner->email . ')';
-                                    }
-
-                                    // Fall back to first_name/last_name if available
-                                    if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'first_name') && \Illuminate\Support\Facades\Schema::hasColumn('users', 'last_name')) {
-                                        $firstName = $owner->first_name ?? '';
-                                        $lastName = $owner->last_name ?? '';
-                                        $fullName = trim($firstName . ' ' . $lastName);
-
-                                        if ($fullName) {
-                                            return $fullName . ' (' . $owner->email . ')';
-                                        }
-                                    }
-
-                                    // Fall back to email only
-                                    return $owner->email;
-                                }),
-
-                            \Filament\Forms\Components\Select::make('owner_id')
-                                ->label('Transfer Ownership To')
-                                ->options(function () {
-                                    // Get all users who have access to this item
-                                    $users = \App\Models\User::whereHas('roles', function ($query) {
-                                        $query->whereIn('name', [
-                                            'Admin',
-                                            'Board of Directors',
-                                            'Community Coach',
-                                            'COE Reviewer',
-                                            'Community Admin',
-                                            'Community Member'
-                                        ]);
-                                    })->get();
-
-                                    return $users->pluck('email', 'id')->toArray();
-                                })
-                                ->searchable()
-                                ->preload()
-                                ->default(function () {
-                                    // Default to current owner
-                                    $currentOwner = $this->getRecord()->getCurrentOwner();
-                                    return $currentOwner ? $currentOwner->id : null;
-                                })
-                                ->visible(function () {
-                                    // Only show to current owner (not just creator)
-                                    $record = $this->getRecord();
-                                    $currentUser = auth()->user();
-                                    $effectiveRole = $record->getEffectiveRole($currentUser);
-                                    return $effectiveRole === 'owner';
-                                })
-                                ->helperText('Transfer ownership to another user. You will remain the creator (permanent) but lose owner privileges (managing sharing). The new owner will be able to manage permissions via the User Permissions section below.')
-                                ->afterStateUpdated(function ($state) {
-                                    if ($state && $state !== $this->getRecord()->getCurrentOwner()?->id) {
-                                        $newOwner = \App\Models\User::find($state);
-                                        if ($newOwner) {
-                                            $this->getRecord()->transferOwnership($newOwner);
-                                            $this->dispatch('notify', [
-                                                'type' => 'success',
-                                                'message' => 'Ownership transferred successfully!'
-                                            ]);
-                                        }
-                                    }
-                                }),
-                        ])
-                        ->collapsible()
-                        ->collapsed(false),
-                ]),
-        ];
-    }
+    // NOTE: This page is a redirect middleware only - it never displays a form
+    // Forms are defined in the specific edit pages:
+    // - EditFolder.php (for folders)
+    // - EditFile.php (for files)
+    // - EditLink.php (for external links)
+    // This page automatically redirects to the appropriate edit page based on item type
 
     public function getBreadcrumbs(): array
     {

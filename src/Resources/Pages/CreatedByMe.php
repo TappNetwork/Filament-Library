@@ -34,4 +34,12 @@ class CreatedByMe extends ListRecords
     {
         return 'Files and folders you created';
     }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            static::getResource()::getUrl() => 'Library',
+            '' => 'Created by Me',
+        ];
+    }
 }

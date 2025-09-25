@@ -47,4 +47,12 @@ class SearchAll extends ListRecords
     {
         return 'All files and folders you have access to';
     }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            static::getResource()::getUrl() => 'Library',
+            '' => 'Search All',
+        ];
+    }
 }

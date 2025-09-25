@@ -27,9 +27,6 @@ class LibraryItem extends Model implements HasMedia
         'updated_by',
         'external_url',
         'link_description',
-        'inherits_from_parent',
-        'link_role',
-        'link_token',
         'general_access',
     ];
 
@@ -37,7 +34,6 @@ class LibraryItem extends Model implements HasMedia
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
-        'inherits_from_parent' => 'boolean',
     ];
 
     /**
@@ -60,8 +56,17 @@ class LibraryItem extends Model implements HasMedia
         });
 
         static::created(function (self $item) {
-            // Creator gets special status - no need to store in permissions table
-            // They can never lose access and are always the creator
+            // Copy parent folder permissions to the new item
+            if ($item->parent_id) {
+                $parentPermissions = $item->parent->resourcePermissions()->get();
+
+                foreach ($parentPermissions as $permission) {
+                    $item->resourcePermissions()->create([
+                        'user_id' => $permission->user_id,
+                        'role' => $permission->role,
+                    ]);
+                }
+            }
         });
 
         static::updating(function (self $item) {
@@ -69,10 +74,6 @@ class LibraryItem extends Model implements HasMedia
                 $item->slug = static::generateUniqueSlug($item->name, $item->parent_id, $item->id);
             }
 
-            // Generate link token when link_role is set for the first time
-            if ($item->isDirty('link_role') && $item->link_role && !$item->link_token) {
-                $item->link_token = static::generateLinkToken();
-            }
 
             // Set updated_by on updates
             if (auth()->check()) {
@@ -358,6 +359,11 @@ class LibraryItem extends Model implements HasMedia
      */
     public function hasPermission($user, string $permission): bool
     {
+        // Admin users always have all permissions
+        if ($user && $user->hasRole('Admin')) {
+            return true;
+        }
+
         $effectiveRole = $this->getEffectiveRole($user);
 
         if (!$effectiveRole) {
@@ -525,17 +531,6 @@ class LibraryItem extends Model implements HasMedia
         return $slug;
     }
 
-    /**
-     * Generate a unique link token for sharing.
-     */
-    protected static function generateLinkToken(): string
-    {
-        do {
-            $token = Str::random(32);
-        } while (static::where('link_token', $token)->exists());
-
-        return $token;
-    }
 
     /**
      * Get the access control options for the general access select.
@@ -545,8 +540,7 @@ class LibraryItem extends Model implements HasMedia
         return [
             'inherit' => 'Inherit from parent',
             'private' => 'Private (owner only)',
-            'link_viewer' => 'Anyone with link — Viewer',
-            'link_editor' => 'Anyone with link — Editor',
+            'anyone_can_view' => 'Anyone can view',
         ];
     }
 
@@ -555,22 +549,17 @@ class LibraryItem extends Model implements HasMedia
      */
     public function getEffectiveAccessControl(): string
     {
-        if (!$this->inherits_from_parent) {
-            if ($this->link_role === 'viewer') {
-                return 'link_viewer';
-            } elseif ($this->link_role === 'editor') {
-                return 'link_editor';
-            } else {
-                return 'private';
-            }
+        // If not inheriting, use the item's own setting
+        if ($this->general_access && $this->general_access !== 'inherit') {
+            return $this->general_access;
         }
 
-        // If inheriting from parent, check parent's setting
+        // If inheriting from parent, check parent's access control
         if ($this->parent_id) {
             return $this->parent->getEffectiveAccessControl();
         }
 
-        // Root level defaults to private
+        // Root level items default to private
         return 'private';
     }
 

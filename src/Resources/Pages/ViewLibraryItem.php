@@ -39,14 +39,24 @@ class ViewLibraryItem extends ViewRecord
         return "View {$type}";
     }
 
+    public function mount(int | string $record): void
+    {
+        parent::mount($record);
+
+        // Redirect folders to their list page since view page isn't useful for folders
+        if ($this->getRecord()->type === 'folder') {
+            $this->redirect(static::getResource()::getUrl('index', ['parent' => $this->getRecord()->id]));
+        }
+    }
+
     protected function getHeaderActions(): array
     {
         $actions = [];
 
-        // Add "View Folder" action if we have a parent
+        // Add "Up One Level" action if we have a parent
         if ($this->getRecord()->parent_id) {
-            $actions[] = Action::make('view_folder')
-                ->label('View Folder')
+            $actions[] = Action::make('up_one_level')
+                ->label('Up One Level')
                 ->icon('heroicon-o-arrow-up')
                 ->color('gray')
                 ->url(

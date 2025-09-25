@@ -22,16 +22,27 @@ class EditFile extends EditRecord
     {
         $actions = [];
 
-        // Add "View Folder" action if we have a parent
+        // Add "Up One Level" action if we have a parent
         if ($this->getRecord()->parent_id) {
-            $actions[] = Action::make('view_folder')
-                ->label('View Folder')
+            $actions[] = Action::make('up_one_level')
+                ->label('Up One Level')
                 ->icon('heroicon-o-arrow-up')
                 ->color('gray')
                 ->url(
                     fn (): string => static::getResource()::getUrl('index', ['parent' => $this->getRecord()->parent_id])
                 );
         }
+
+        // Add "View" action - for folders go to list page, for files/links go to view page
+        $viewUrl = $this->getRecord()->type === 'folder'
+            ? static::getResource()::getUrl('index', ['parent' => $this->getRecord()->id])
+            : static::getResource()::getUrl('view', ['record' => $this->getRecord()->id]);
+
+        $actions[] = Action::make('view')
+            ->label('View')
+            ->icon('heroicon-o-eye')
+            ->color('gray')
+            ->url($viewUrl);
 
         $actions[] = DeleteAction::make()
             ->before(function () {
@@ -53,7 +64,6 @@ class EditFile extends EditRecord
         // Remove fields that shouldn't be editable
         unset($data['type']);
         unset($data['parent_id']);
-        unset($data['created_by']);
 
         // Load the current file into the media input
         $record = $this->getRecord();
@@ -117,6 +127,39 @@ class EditFile extends EditRecord
                         return $baseText;
                     })
                     ->visible(fn () => $this->getRecord()->hasPermission(auth()->user(), 'share')),
+
+                // Creator select field
+                \Filament\Forms\Components\Select::make('created_by')
+                    ->label('Creator')
+                    ->options(function () {
+                        return \App\Models\User::all()->mapWithKeys(function ($user) {
+                            // Check if 'name' field exists and has a value
+                            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'name') && $user->name) {
+                                return [$user->id => $user->name . ' (' . $user->email . ')'];
+                            }
+
+                            // Fall back to first_name/last_name if available
+                            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'first_name') && \Illuminate\Support\Facades\Schema::hasColumn('users', 'last_name')) {
+                                $firstName = $user->first_name ?? '';
+                                $lastName = $user->last_name ?? '';
+                                $fullName = trim($firstName . ' ' . $lastName);
+
+                                if ($fullName) {
+                                    return [$user->id => $fullName . ' (' . $user->email . ')'];
+                                }
+                            }
+
+                            // Fall back to email only
+                            return [$user->id => $user->email];
+                        });
+                    })
+                    ->searchable()
+                    ->preload()
+                    ->disabled(function () {
+                        // Only allow changes if user has library admin access (Admin role)
+                        return !auth()->user()?->hasRole('Admin');
+                    })
+                    ->helperText('Creator receives owner permissions'),
             ]);
     }
 

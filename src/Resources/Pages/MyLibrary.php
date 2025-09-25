@@ -47,6 +47,14 @@ class MyLibrary extends ListRecords
         return 'Your personal files and folders';
     }
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            static::getResource()::getUrl() => 'Library',
+            '' => 'My Documents',
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         $actions = [];
