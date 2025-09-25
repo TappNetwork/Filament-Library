@@ -44,16 +44,22 @@ class PermissionService
      */
     public function assignPermission($user, LibraryItem $item, string $permission): void
     {
-        LibraryItemPermission::updateOrCreate(
+        // Map permission to role
+        $role = match ($permission) {
+            'view' => 'viewer',
+            'edit' => 'editor',
+            default => 'viewer',
+        };
+
+        \App\Models\ResourcePermission::updateOrCreate(
             [
                 'library_item_id' => $item->id,
                 'user_id' => $user->id,
-                'permission' => $permission,
             ],
             [
                 'library_item_id' => $item->id,
                 'user_id' => $user->id,
-                'permission' => $permission,
+                'role' => $role,
             ]
         );
 
@@ -65,10 +71,9 @@ class PermissionService
      */
     public function removePermission($user, LibraryItem $item, string $permission): void
     {
-        LibraryItemPermission::where([
+        \App\Models\ResourcePermission::where([
             'library_item_id' => $item->id,
             'user_id' => $user->id,
-            'permission' => $permission,
         ])->delete();
 
         $this->clearPermissionCache($user->id, $item->id);
@@ -77,7 +82,7 @@ class PermissionService
     /**
      * Bulk assign permissions to multiple users for multiple items.
      */
-    public function bulkAssignPermissions(Collection $items, array $data): void
+    public function bulkAssignPermissions($items, array $data): void
     {
         $userIds = $data['user_ids'] ?? [];
         $permission = $data['permission'] ?? 'view';
@@ -191,22 +196,8 @@ class PermissionService
      */
     private function checkPermissionRecursive($user, LibraryItem $item, string $permission): bool
     {
-        // Check direct permissions
-        $directPermission = $item->permissions()
-            ->where('user_id', $user->id)
-            ->where('permission', $permission)
-            ->exists();
-
-        if ($directPermission) {
-            return true;
-        }
-
-        // Check inherited permissions from parent folders
-        if ($item->parent_id) {
-            return $this->checkPermissionRecursive($user, $item->parent, $permission);
-        }
-
-        return false;
+        // Use the new effective role logic from the LibraryItem model
+        return $item->hasPermission($user, $permission);
     }
 
     /**

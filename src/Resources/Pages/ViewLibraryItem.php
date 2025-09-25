@@ -94,7 +94,7 @@ class ViewLibraryItem extends ViewRecord
     public function getBreadcrumbs(): array
     {
         $breadcrumbs = [
-            static::getResource()::getUrl() => 'All Folders',
+            static::getResource()::getUrl() => 'Library',
         ];
 
         $record = $this->getRecord();

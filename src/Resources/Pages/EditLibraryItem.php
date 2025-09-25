@@ -122,6 +122,114 @@ class EditLibraryItem extends EditRecord
                         ->label('Description')
                         ->visible(fn () => $this->getRecord()->type === 'link')
                         ->rows(3),
+
+                    // Ownership information section
+                    \Filament\Forms\Components\Section::make('Ownership')
+                        ->description('The Creator is permanent and cannot be changed. The Owner manages sharing permissions and can be transferred to another user.')
+                        ->schema([
+                            \Filament\Forms\Components\Placeholder::make('creator_info')
+                                ->label('Created by')
+                                ->content(function () {
+                                    $creator = $this->getRecord()->creator;
+                                    if (!$creator) {
+                                        return 'Unknown';
+                                    }
+
+                                    // Check if 'name' field exists and has a value
+                                    if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'name') && $creator->name) {
+                                        return $creator->name . ' (' . $creator->email . ')';
+                                    }
+
+                                    // Fall back to first_name/last_name if available
+                                    if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'first_name') && \Illuminate\Support\Facades\Schema::hasColumn('users', 'last_name')) {
+                                        $firstName = $creator->first_name ?? '';
+                                        $lastName = $creator->last_name ?? '';
+                                        $fullName = trim($firstName . ' ' . $lastName);
+
+                                        if ($fullName) {
+                                            return $fullName . ' (' . $creator->email . ')';
+                                        }
+                                    }
+
+                                    // Fall back to email only
+                                    return $creator->email;
+                                }),
+
+                            \Filament\Forms\Components\Placeholder::make('owner_info')
+                                ->label('Current Owner')
+                                ->content(function () {
+                                    $owner = $this->getRecord()->getCurrentOwner();
+                                    if (!$owner) {
+                                        return 'No owner assigned';
+                                    }
+
+                                    // Check if 'name' field exists and has a value
+                                    if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'name') && $owner->name) {
+                                        return $owner->name . ' (' . $owner->email . ')';
+                                    }
+
+                                    // Fall back to first_name/last_name if available
+                                    if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'first_name') && \Illuminate\Support\Facades\Schema::hasColumn('users', 'last_name')) {
+                                        $firstName = $owner->first_name ?? '';
+                                        $lastName = $owner->last_name ?? '';
+                                        $fullName = trim($firstName . ' ' . $lastName);
+
+                                        if ($fullName) {
+                                            return $fullName . ' (' . $owner->email . ')';
+                                        }
+                                    }
+
+                                    // Fall back to email only
+                                    return $owner->email;
+                                }),
+
+                            \Filament\Forms\Components\Select::make('owner_id')
+                                ->label('Transfer Ownership To')
+                                ->options(function () {
+                                    // Get all users who have access to this item
+                                    $users = \App\Models\User::whereHas('roles', function ($query) {
+                                        $query->whereIn('name', [
+                                            'Admin',
+                                            'Board of Directors',
+                                            'Community Coach',
+                                            'COE Reviewer',
+                                            'Community Admin',
+                                            'Community Member'
+                                        ]);
+                                    })->get();
+
+                                    return $users->pluck('email', 'id')->toArray();
+                                })
+                                ->searchable()
+                                ->preload()
+                                ->default(function () {
+                                    // Default to current owner
+                                    $currentOwner = $this->getRecord()->getCurrentOwner();
+                                    return $currentOwner ? $currentOwner->id : null;
+                                })
+                                ->visible(function () {
+                                    // Only show to current owner (not just creator)
+                                    $record = $this->getRecord();
+                                    $currentUser = auth()->user();
+                                    $effectiveRole = $record->getEffectiveRole($currentUser);
+                                    return $effectiveRole === 'owner';
+                                })
+                                ->helperText('Transfer ownership to another user. You will remain the creator (permanent) but lose owner privileges (managing sharing). The new owner will be able to manage permissions via the User Permissions section below.')
+                                ->afterStateUpdated(function ($state) {
+                                    if ($state && $state !== $this->getRecord()->getCurrentOwner()?->id) {
+                                        $newOwner = \App\Models\User::find($state);
+                                        if ($newOwner) {
+                                            $this->getRecord()->transferOwnership($newOwner);
+                                            $this->dispatch('notify', [
+                                                'type' => 'success',
+                                                'message' => 'Ownership transferred successfully!'
+                                            ]);
+                                        }
+                                    }
+                                }),
+                        ])
+                        ->collapsible()
+                        ->collapsed(false),
                 ]),
         ];
     }
@@ -129,7 +237,7 @@ class EditLibraryItem extends EditRecord
     public function getBreadcrumbs(): array
     {
         $breadcrumbs = [
-            static::getResource()::getUrl() => 'All Folders',
+            static::getResource()::getUrl() => 'Library',
         ];
 
         $record = $this->getRecord();

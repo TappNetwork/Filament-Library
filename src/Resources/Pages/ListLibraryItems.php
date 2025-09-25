@@ -28,6 +28,7 @@ class ListLibraryItems extends ListRecords
         if ($this->parentId) {
             $this->parentFolder = LibraryItem::find($this->parentId);
         }
+
     }
 
     protected function getHeaderActions(): array
@@ -61,6 +62,15 @@ class ListLibraryItems extends ListRecords
             Action::make('create_folder')
                 ->label('Create Folder')
                 ->icon('heroicon-o-folder-plus')
+                ->visible(function () {
+                    // Only allow folder creation if we're in a personal folder or subfolder
+                    // Or if user is admin and at root level
+                    if ($this->parentId !== null) {
+                        return true; // Always allow in subfolders
+                    }
+                    // At root level, only allow admins
+                    return auth()->user()?->hasRole('Admin') ?? false;
+                })
                 ->schema([
                     TextInput::make('name')
                         ->label('Folder Name')
@@ -82,6 +92,15 @@ class ListLibraryItems extends ListRecords
             Action::make('upload_file')
                 ->label('Upload File')
                 ->icon('heroicon-o-document-plus')
+                ->visible(function () {
+                    // Only allow file upload if we're in a personal folder or subfolder
+                    // Or if user is admin and at root level
+                    if ($this->parentId !== null) {
+                        return true; // Always allow in subfolders
+                    }
+                    // At root level, only allow admins
+                    return auth()->user()?->hasRole('Admin') ?? false;
+                })
                 ->schema([
                     FileUpload::make('file')
                         ->label('Upload File')
@@ -90,21 +109,28 @@ class ListLibraryItems extends ListRecords
                         ->disk('public')
                         ->directory('library-files')
                         ->visibility('private')
-                        ->preserveFilenames(), // This should preserve original filenames
+                        ->preserveFilenames(),
                 ])
                 ->action(function (array $data): void {
                     $filePath = $data['file'];
 
-                    // Extract filename from the stored path - this should preserve the original name
+                    // Extract filename from the stored path
                     $fileName = basename($filePath);
 
-                    LibraryItem::create([
+                    // Create the library item
+                    $libraryItem = LibraryItem::create([
                         'name' => $fileName,
                         'type' => 'file',
                         'parent_id' => $this->parentId,
                         'created_by' => auth()->user()?->id,
                         'updated_by' => auth()->user()?->id,
                     ]);
+
+                    // Associate the uploaded file with the library item using Spatie Media Library
+                    $libraryItem->addMediaFromDisk($filePath, 'public')
+                        ->usingName($fileName)
+                        ->usingFileName($fileName)
+                        ->toMediaCollection('files');
 
                     $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
                 }),
@@ -148,7 +174,16 @@ class ListLibraryItems extends ListRecords
             ->label('New')
             ->icon('heroicon-o-plus')
             ->color('primary')
-            ->button();
+            ->button()
+            ->visible(function () {
+                // Show the action group if we're in a subfolder (always allow)
+                // Or if we're at root level and user is admin
+                if ($this->parentId !== null) {
+                    return true; // Always allow in subfolders
+                }
+                // At root level, only allow admins
+                return auth()->user()?->hasRole('Admin') ?? false;
+            });
 
         return $actions;
     }
@@ -160,7 +195,10 @@ class ListLibraryItems extends ListRecords
         if ($this->parentId) {
             $query->where('parent_id', $this->parentId);
         } else {
-            $query->whereNull('parent_id');
+            // Show public items at root level
+            $query->whereNull('parent_id')
+                ->where('general_access', 'anyone_can_view')
+                ->where('name', 'not like', "%'s Personal Folder");
         }
 
         return $query;
@@ -172,7 +210,7 @@ class ListLibraryItems extends ListRecords
             return $this->parentFolder->name;
         }
 
-        return 'All Folders';
+        return 'Library';
     }
 
     public function getSubheading(): ?string
@@ -181,13 +219,17 @@ class ListLibraryItems extends ListRecords
             return $this->parentFolder->link_description;
         }
 
+        if (!$this->parentId) {
+            return 'Publicly accessible files and folders';
+        }
+
         return null;
     }
 
     public function getBreadcrumbs(): array
     {
         $breadcrumbs = [
-            static::getResource()::getUrl() => 'All Folders',
+            static::getResource()::getUrl() => 'Library',
         ];
 
         if ($this->parentFolder) {

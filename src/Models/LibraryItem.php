@@ -27,12 +27,17 @@ class LibraryItem extends Model implements HasMedia
         'updated_by',
         'external_url',
         'link_description',
+        'inherits_from_parent',
+        'link_role',
+        'link_token',
+        'general_access',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'inherits_from_parent' => 'boolean',
     ];
 
     /**
@@ -54,9 +59,19 @@ class LibraryItem extends Model implements HasMedia
             }
         });
 
+        static::created(function (self $item) {
+            // Creator gets special status - no need to store in permissions table
+            // They can never lose access and are always the creator
+        });
+
         static::updating(function (self $item) {
             if ($item->isDirty('name') && ! $item->isDirty('slug')) {
                 $item->slug = static::generateUniqueSlug($item->name, $item->parent_id, $item->id);
+            }
+
+            // Generate link token when link_role is set for the first time
+            if ($item->isDirty('link_role') && $item->link_role && !$item->link_token) {
+                $item->link_token = static::generateLinkToken();
             }
 
             // Set updated_by on updates
@@ -87,7 +102,21 @@ class LibraryItem extends Model implements HasMedia
      */
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'created_by');
+        return $this->belongsTo(\App\Models\User::class, 'created_by')->withDefault(function () {
+            // Check if 'name' field exists
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'name')) {
+                return [
+                    'name' => 'Unknown User',
+                    'email' => 'deleted@example.com'
+                ];
+            }
+            // Fall back to first_name/last_name
+            return [
+                'first_name' => 'Unknown',
+                'last_name' => 'User',
+                'email' => 'deleted@example.com'
+            ];
+        });
     }
 
     /**
@@ -104,6 +133,14 @@ class LibraryItem extends Model implements HasMedia
     public function permissions(): HasMany
     {
         return $this->hasMany(LibraryItemPermission::class);
+    }
+
+    /**
+     * Get the resource permissions for this item.
+     */
+    public function resourcePermissions(): HasMany
+    {
+        return $this->hasMany(\App\Models\ResourcePermission::class);
     }
 
     /**
@@ -144,26 +181,212 @@ class LibraryItem extends Model implements HasMedia
     }
 
     /**
-     * Check if a user has a specific permission on this item.
+     * Get the effective role for a user on this item.
      */
-    public function hasPermission($user, string $permission): bool
+    public function getEffectiveRole($user): ?string
     {
-        // Check direct permissions
-        $directPermission = $this->permissions()
+        if (!$user) {
+            return null;
+        }
+
+        // Check if user is the creator (always has access)
+        if ($this->created_by === $user->id) {
+            // Creator always has access, but check if they're also the owner
+            $currentOwner = $this->getCurrentOwner();
+            if ($currentOwner && $currentOwner->id === $user->id) {
+                return 'owner'; // Creator is also owner
+            }
+            return 'creator'; // Creator but not owner
+        }
+
+        // Check direct resource permissions
+        $directPermission = $this->resourcePermissions()
             ->where('user_id', $user->id)
-            ->where('permission', $permission)
-            ->exists();
+            ->first();
 
         if ($directPermission) {
-            return true;
+            return $directPermission->role;
         }
 
         // Check inherited permissions from parent folders
         if ($this->parent_id) {
-            return $this->parent->hasPermission($user, $permission);
+            return $this->parent->getEffectiveRole($user);
         }
 
-        return false;
+        // Check general access
+        $effectiveGeneralAccess = $this->getEffectiveGeneralAccess();
+
+        if ($effectiveGeneralAccess === 'anyone_can_view') {
+            return 'viewer';
+        }
+
+        return null; // No access
+    }
+
+    /**
+     * Get the current owner of this item.
+     */
+    public function getCurrentOwner(): ?\App\Models\User
+    {
+        $ownerPermission = $this->resourcePermissions()
+            ->where('role', 'owner')
+            ->first();
+
+        if ($ownerPermission) {
+            return $ownerPermission->user;
+        }
+
+        // If no owner in permissions table, creator is the owner
+        return $this->creator;
+    }
+
+    /**
+     * Check if the creator is the current owner.
+     */
+    public function isCreatorOwner(): bool
+    {
+        $currentOwner = $this->getCurrentOwner();
+        return $currentOwner && $currentOwner->id === $this->created_by;
+    }
+
+    /**
+     * Transfer ownership to another user.
+     */
+    public function transferOwnership(\App\Models\User $newOwner): void
+    {
+        // Remove existing owner permissions
+        $this->resourcePermissions()->where('role', 'owner')->delete();
+
+        // Check if the new owner already has a permission for this item
+        $existingPermission = $this->resourcePermissions()->where('user_id', $newOwner->id)->first();
+
+        if ($existingPermission) {
+            // Update existing permission to owner
+            $existingPermission->update(['role' => 'owner']);
+        } else {
+            // Create new owner permission
+            $this->resourcePermissions()->create([
+                'user_id' => $newOwner->id,
+                'role' => 'owner',
+            ]);
+        }
+    }
+
+    /**
+     * Ensure a user has a personal folder (like Google Drive's "My Drive").
+     */
+    public static function ensurePersonalFolder(\App\Models\User $user): self
+    {
+        // Check if user already has a personal folder
+        $personalFolder = static::where('name', $user->first_name . "'s Personal Folder")
+            ->where('type', 'folder')
+            ->where('parent_id', null)
+            ->where('created_by', $user->id)
+            ->first();
+
+        if ($personalFolder) {
+            return $personalFolder;
+        }
+
+        // Create personal folder
+        $personalFolder = static::create([
+            'name' => $user->first_name . "'s Personal Folder",
+            'type' => 'folder',
+            'parent_id' => null,
+            'created_by' => $user->id,
+            'updated_by' => $user->id,
+            'general_access' => 'private',
+        ]);
+
+        // Set the user as owner of their personal folder
+        $personalFolder->resourcePermissions()->create([
+            'user_id' => $user->id,
+            'role' => 'owner',
+        ]);
+
+        return $personalFolder;
+    }
+
+    /**
+     * Get the effective general access setting (resolves inheritance).
+     */
+    public function getEffectiveGeneralAccess(): string
+    {
+        // Handle null values (existing records before migration)
+        if ($this->general_access === null || $this->general_access === 'inherit') {
+            // Inherit from parent
+            if ($this->parent_id) {
+                return $this->parent->getEffectiveGeneralAccess();
+            }
+
+            // Root level defaults to private
+            return 'private';
+        }
+
+        return $this->general_access;
+    }
+
+    /**
+     * Get the inherited general access value from parent (for display purposes).
+     */
+    public function getInheritedGeneralAccess(): ?string
+    {
+        if (!$this->parent_id) {
+            return null;
+        }
+
+        return $this->parent->getEffectiveGeneralAccess();
+    }
+
+    /**
+     * Get the display text for inherited general access.
+     */
+    public function getInheritedGeneralAccessDisplay(): ?string
+    {
+        $inherited = $this->getInheritedGeneralAccess();
+
+        if (!$inherited) {
+            return null;
+        }
+
+        $options = self::getGeneralAccessOptions();
+        return $options[$inherited] ?? $inherited;
+    }
+
+    /**
+     * Check if a user has a specific permission on this item.
+     */
+    public function hasPermission($user, string $permission): bool
+    {
+        $effectiveRole = $this->getEffectiveRole($user);
+
+        if (!$effectiveRole) {
+            return false;
+        }
+
+        return match ($permission) {
+            'view' => in_array($effectiveRole, ['viewer', 'editor', 'owner', 'creator']),
+            'edit' => in_array($effectiveRole, ['editor', 'owner', 'creator']),
+            'share' => in_array($effectiveRole, ['owner', 'creator']),
+            'upload' => in_array($effectiveRole, ['editor', 'owner', 'creator']),
+            'manage_permissions' => in_array($effectiveRole, ['owner', 'creator']),
+            default => false,
+        };
+    }
+
+    /**
+     * Check if a user can view this item (including anonymous access).
+     */
+    public function canBeViewedBy($user = null): bool
+    {
+        // If user is logged in, check their effective role
+        if ($user) {
+            return $this->hasPermission($user, 'view');
+        }
+
+        // For anonymous users, check if general access allows viewing
+        $effectiveGeneralAccess = $this->getEffectiveGeneralAccess();
+        return $effectiveGeneralAccess === 'anyone_can_view';
     }
 
     /**
@@ -239,23 +462,7 @@ class LibraryItem extends Model implements HasMedia
      */
     public function registerMediaCollections(): void
     {
-        $this->addMediaCollection('files')
-            ->acceptsMimeTypes([
-                'image/jpeg',
-                'image/png',
-                'image/gif',
-                'image/webp',
-                'application/pdf',
-                'text/plain',
-                'text/csv',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.ms-excel',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.ms-powerpoint',
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-            ])
-            ->singleFile();
+        $this->addMediaCollection('files');
     }
 
     /**
@@ -316,5 +523,66 @@ class LibraryItem extends Model implements HasMedia
         }
 
         return $slug;
+    }
+
+    /**
+     * Generate a unique link token for sharing.
+     */
+    protected static function generateLinkToken(): string
+    {
+        do {
+            $token = Str::random(32);
+        } while (static::where('link_token', $token)->exists());
+
+        return $token;
+    }
+
+    /**
+     * Get the access control options for the general access select.
+     */
+    public static function getAccessControlOptions(): array
+    {
+        return [
+            'inherit' => 'Inherit from parent',
+            'private' => 'Private (owner only)',
+            'link_viewer' => 'Anyone with link — Viewer',
+            'link_editor' => 'Anyone with link — Editor',
+        ];
+    }
+
+    /**
+     * Get the effective access control setting.
+     */
+    public function getEffectiveAccessControl(): string
+    {
+        if (!$this->inherits_from_parent) {
+            if ($this->link_role === 'viewer') {
+                return 'link_viewer';
+            } elseif ($this->link_role === 'editor') {
+                return 'link_editor';
+            } else {
+                return 'private';
+            }
+        }
+
+        // If inheriting from parent, check parent's setting
+        if ($this->parent_id) {
+            return $this->parent->getEffectiveAccessControl();
+        }
+
+        // Root level defaults to private
+        return 'private';
+    }
+
+    /**
+     * Get the general access options.
+     */
+    public static function getGeneralAccessOptions(): array
+    {
+        return [
+            'inherit' => 'Inherit from parent',
+            'private' => 'Private (owner only)',
+            'anyone_can_view' => 'Anyone can view',
+        ];
     }
 }

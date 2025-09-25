@@ -116,7 +116,7 @@ class UserSearchSelect extends Select
         // Fallback to combining first_name and last_name
         $firstName = $user->getAttribute('first_name') ?? '';
         $lastName = $user->getAttribute('last_name') ?? '';
-        
+
         return trim("{$firstName} {$lastName}") ?: $user->getAttribute('email') ?? 'Unknown User';
     }
 }

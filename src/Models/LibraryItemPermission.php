@@ -13,7 +13,7 @@ class LibraryItemPermission extends Model
     protected $fillable = [
         'library_item_id',
         'user_id',
-        'permission',
+        'role',
     ];
 
     protected $casts = [
@@ -36,5 +36,33 @@ class LibraryItemPermission extends Model
     {
         $userModel = config('auth.providers.users.model', 'App\\Models\\User');
         return $this->belongsTo($userModel);
+    }
+
+    /**
+     * Get the available role options.
+     */
+    public static function getRoleOptions(): array
+    {
+        return [
+            'viewer' => 'Viewer',
+            'editor' => 'Editor',
+            'owner' => 'Owner',
+        ];
+    }
+
+    /**
+     * Check if this permission allows editing.
+     */
+    public function canEdit(): bool
+    {
+        return in_array($this->role, ['editor', 'owner']);
+    }
+
+    /**
+     * Check if this permission allows viewing.
+     */
+    public function canView(): bool
+    {
+        return in_array($this->role, ['viewer', 'editor', 'owner']);
     }
 }

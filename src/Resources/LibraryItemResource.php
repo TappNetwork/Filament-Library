@@ -12,12 +12,12 @@ use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
+use Tapp\FilamentLibrary\Tables\Actions\BulkManagePermissionsAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Tapp\FilamentLibrary\Models\LibraryItem;
-use Tapp\FilamentLibrary\Tables\Actions\BulkManagePermissionsAction;
 use Tapp\FilamentLibrary\Tables\Columns\PermissionsColumn;
 
 class LibraryItemResource extends Resource
@@ -33,19 +33,24 @@ class LibraryItemResource extends Resource
         return 'heroicon-o-folder';
     }
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false; // Don't show in navigation - we use custom navigation items
+    }
+
     public static function getNavigationGroup(): ?string
     {
-        return 'Resource Library';
+        return null;
     }
 
     public static function getNavigationSort(): ?int
     {
-        return 10;
+        return null;
     }
 
     public static function getNavigationLabel(): string
     {
-        return 'All Folders';
+        return 'Library Items';
     }
 
     protected static ?string $modelLabel = 'Library Item';
@@ -264,7 +269,7 @@ class LibraryItemResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            \App\Filament\Resources\LibraryItemResource\RelationManagers\ResourcePermissionsRelationManager::class,
         ];
     }
 
@@ -272,6 +277,11 @@ class LibraryItemResource extends Resource
     {
         return [
             'index' => Pages\ListLibraryItems::route('/'),
+            'my-documents' => Pages\MyLibrary::route('/my-documents'),
+            'shared-with-me' => Pages\SharedWithMe::route('/shared-with-me'),
+            'created-by-me' => Pages\CreatedByMe::route('/created-by-me'),
+            'public' => Pages\PublicLibrary::route('/public'),
+            'search-all' => Pages\SearchAll::route('/search-all'),
             'create-folder' => Pages\CreateFolder::route('/create-folder'),
             'create-file' => Pages\CreateFile::route('/create-file'),
             'create-link' => Pages\CreateLink::route('/create-link'),
