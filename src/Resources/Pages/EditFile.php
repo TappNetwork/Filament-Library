@@ -157,7 +157,7 @@ class EditFile extends EditRecord
                     ->preload()
                     ->disabled(function () {
                         // Only allow changes if user has library admin access (Admin role)
-                        return !\Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin(auth()->user());
+                        return ! \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin(auth()->user());
                     })
                     ->helperText('Creator receives owner permissions'),
             ]);
