@@ -360,7 +360,7 @@ class LibraryItem extends Model implements HasMedia
     public function hasPermission($user, string $permission): bool
     {
         // Admin users always have all permissions
-        if ($user && $user->hasRole('Admin')) {
+        if ($user && \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user)) {
             return true;
         }
 

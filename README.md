@@ -1,62 +1,123 @@
-# :package_description
+# Filament Library Plugin
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3A"Fix+PHP+code+styling"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
+A comprehensive file and document management system for Filament applications, featuring Google Drive-style permissions, automatic inheritance, and flexible access controls.
 
-<!--delete-->
----
-This repo can be used to scaffold a Filament plugin. Follow these steps to get started:
+## Features
 
-1. Press the "Use this template" button at the top of this repo to create a new repo with the contents of this skeleton.
-2. Run "php ./configure.php" to run a script that will replace all placeholders throughout all the files.
-3. Make something great!
----
-<!--/delete-->
-
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+- **📁 File & Folder Management** - Upload files, create folders, and organize content
+- **🔗 External Links** - Add and manage external links with descriptions
+- **👥 Advanced Permissions** - Google Drive-style ownership with Creator, Owner, Editor, and Viewer roles
+- **🔄 Automatic Inheritance** - Permissions automatically inherit from parent folders
+- **🔍 Multiple Views** - Public Library, My Documents, Shared with Me, Created by Me, and Search All
+- **⚙️ Configurable Admin Access** - Flexible admin role configuration
+- **🎨 Filament Integration** - Native Filament UI components and navigation
 
 ## Installation
 
 You can install the package via composer:
 
 ```bash
-composer require :vendor_slug/:package_slug
+composer require tapp/filament-library
 ```
 
 You can publish and run the migrations with:
 
 ```bash
-php artisan vendor:publish --tag=":package_slug-migrations"
+php artisan vendor:publish --tag="filament-library-migrations"
 php artisan migrate
 ```
 
 You can publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag=":package_slug-config"
+php artisan vendor:publish --tag="filament-library-config"
 ```
 
-Optionally, you can publish the views using
+## Basic Usage
 
-```bash
-php artisan vendor:publish --tag=":package_slug-views"
-```
-
-This is the contents of the published config file:
+### 1. Add to Filament Panel
 
 ```php
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
+
+public function panel(Panel $panel): Panel
+{
+    return $panel
+        ->plugins([
+            FilamentLibraryPlugin::make(),
+        ]);
+}
+```
+
+### 2. Configure Admin Access
+
+```php
+// In your AppServiceProvider
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
+
+public function boot()
+{
+    // Option 1: Use different role name
+    FilamentLibraryPlugin::setLibraryAdminCallback(function ($user) {
+        return $user->hasRole('super-admin');
+    });
+    
+    // Option 2: Custom logic
+    FilamentLibraryPlugin::setLibraryAdminCallback(function ($user) {
+        return $user->is_superuser || $user->hasRole('library-manager');
+    });
+}
+```
+
+### 3. Navigation
+
+The plugin automatically adds navigation items:
+- **Library** - Main library view
+- **Search All** - Search across all accessible content
+- **My Documents** - Personal documents and folders
+- **Shared with Me** - Items shared by other users
+- **Created by Me** - Items you created
+
+## Permissions System
+
+The plugin features a sophisticated permissions system inspired by Google Drive. See [Permissions Documentation](docs/permissions.md) for complete details.
+
+### Quick Overview
+
+- **Creator** - Permanent, always has access, cannot be changed
+- **Owner** - Manages sharing, can be transferred, has full permissions
+- **Editor** - Can view and edit content, cannot manage sharing
+- **Viewer** - Can only view content
+
+### Automatic Permissions
+
+- **Personal Folders** - Automatically created for new users
+- **Permission Inheritance** - Child items inherit parent folder permissions
+- **Admin Override** - Library admins can access all content
+
+## Configuration
+
+### Admin Role Configuration
+
+```php
+// config/filament-library.php
 return [
+    'admin_role' => 'Admin', // Default admin role
+    'admin_callback' => null, // Custom callback function
 ];
 ```
 
-## Usage
+### Environment Variables
 
-```php
-$variable = new VendorName\Skeleton();
-echo $variable->echoPhrase('Hello, VendorName!');
+```env
+LIBRARY_ADMIN_ROLE=super-admin
 ```
+
+## Documentation
+
+- [Permissions System](docs/permissions.md) - Complete permissions guide
+- [Customization Guide](docs/customization.md) - Customizing admin access
+- [API Reference](docs/api.md) - Developer documentation
 
 ## Testing
 
@@ -71,15 +132,6 @@ Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed re
 ## Contributing
 
 Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
-
-## Security Vulnerabilities
-
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
-
-## Credits
-
-- [:author_name](https://github.com/:author_username)
-- [All Contributors](../../contributors)
 
 ## License
 

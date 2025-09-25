@@ -21,7 +21,7 @@ class PublicLibrary extends ListRecords
             $q->where('general_access', 'anyone_can_view');
 
             // Admins can see all items (including private/inherit)
-            if ($user && $user->hasRole('Admin')) {
+            if ($user && \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user)) {
                 $q->orWhere(function ($adminQuery) {
                     $adminQuery->whereIn('general_access', ['private', 'inherit'])
                         ->whereNull('parent_id'); // Only root-level items

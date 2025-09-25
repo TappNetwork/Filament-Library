@@ -8,9 +8,53 @@ use Filament\Panel;
 
 class FilamentLibraryPlugin implements Plugin
 {
+    protected static $libraryAdminCallback = null;
+
     public function getId(): string
     {
         return 'filament-library';
+    }
+
+    /**
+     * Set a custom callback to determine if a user is a library admin.
+     *
+     * @param callable $callback Function that receives a user and returns bool
+     */
+    public static function setLibraryAdminCallback(callable $callback): void
+    {
+        static::$libraryAdminCallback = $callback;
+    }
+
+    /**
+     * Check if a user is a library admin.
+     *
+     * @param \Illuminate\Contracts\Auth\Authenticatable|null $user
+     * @return bool
+     */
+    public static function isLibraryAdmin($user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        // Use custom callback if set
+        if (static::$libraryAdminCallback) {
+            return call_user_func(static::$libraryAdminCallback, $user);
+        }
+
+        // Check for config-based callback
+        $configCallback = config('filament-library.admin_callback');
+        if ($configCallback && is_callable($configCallback)) {
+            return call_user_func($configCallback, $user);
+        }
+
+        // Default implementation - check for configured admin role
+        $adminRole = config('filament-library.admin_role', 'Admin');
+        if (method_exists($user, 'hasRole')) {
+            return $user->hasRole($adminRole);
+        }
+
+        return false;
     }
 
     public function register(Panel $panel): void

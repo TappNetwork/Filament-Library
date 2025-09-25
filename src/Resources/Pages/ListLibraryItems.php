@@ -69,7 +69,7 @@ class ListLibraryItems extends ListRecords
                         return true; // Always allow in subfolders
                     }
                     // At root level, only allow admins
-                    return auth()->user()?->hasRole('Admin') ?? false;
+                    return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin(auth()->user());
                 })
                 ->schema([
                     TextInput::make('name')
@@ -99,7 +99,7 @@ class ListLibraryItems extends ListRecords
                         return true; // Always allow in subfolders
                     }
                     // At root level, only allow admins
-                    return auth()->user()?->hasRole('Admin') ?? false;
+                    return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin(auth()->user());
                 })
                 ->schema([
                     FileUpload::make('file')
@@ -182,7 +182,7 @@ class ListLibraryItems extends ListRecords
                     return true; // Always allow in subfolders
                 }
                 // At root level, only allow admins
-                return auth()->user()?->hasRole('Admin') ?? false;
+                return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin(auth()->user());
             });
 
         return $actions;
@@ -202,7 +202,7 @@ class ListLibraryItems extends ListRecords
                     $q->where('general_access', 'anyone_can_view');
 
                     // Admins can see all items (including private/inherit)
-                    if ($user && $user->hasRole('Admin')) {
+                    if ($user && \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user)) {
                         $q->orWhere(function ($adminQuery) {
                             $adminQuery->whereIn('general_access', ['private', 'inherit']);
                         });

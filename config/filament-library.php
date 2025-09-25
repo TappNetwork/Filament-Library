@@ -3,43 +3,39 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | URL Configuration
+    | Library Admin Configuration
     |--------------------------------------------------------------------------
     |
-    | Configuration for URL generation and expiration times.
+    | Configure how library admin access is determined. You can either:
+    | 1. Use the default role-based system (requires Spatie Permission)
+    | 2. Set a custom callback function
     |
     */
-    'url' => [
-        'temporary_expiration_minutes' => env('FILAMENT_LIBRARY_URL_EXPIRATION_MINUTES', 60),
-    ],
 
     /*
     |--------------------------------------------------------------------------
-    | Cache Configuration
+    | Default Admin Role
     |--------------------------------------------------------------------------
     |
-    | Configuration for caching behavior.
+    | The default role name used to determine library admin access.
+    | This is used when no custom callback is set.
     |
     */
-    'cache' => [
-        'breadcrumbs_ttl_seconds' => env('FILAMENT_LIBRARY_BREADCRUMBS_TTL', 300),
-    ],
-
+    'admin_role' => env('LIBRARY_ADMIN_ROLE', 'Admin'),
 
     /*
     |--------------------------------------------------------------------------
-    | Video Configuration
+    | Custom Admin Callback
     |--------------------------------------------------------------------------
     |
-    | Configuration for video URL detection.
+    | Set a custom callback to determine library admin access.
+    | This overrides the default role-based system.
+    |
+    | Example:
+    | 'admin_callback' => function($user) {
+    |     return $user->hasRole('super-admin') || $user->is_superuser;
+    | }
     |
     */
-    'video' => [
-        'supported_domains' => [
-            'youtube.com',
-            'youtu.be',
-            'vimeo.com',
-            'wistia.com',
-        ],
-    ],
+    'admin_callback' => null,
 ];
