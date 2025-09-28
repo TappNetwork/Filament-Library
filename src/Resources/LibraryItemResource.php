@@ -190,6 +190,7 @@ class LibraryItemResource extends Resource
                     Action::make('view')
                         ->label('View')
                         ->icon('heroicon-o-eye')
+                        ->visible(fn (LibraryItem $record): bool => auth()->user() && $record->hasPermission(auth()->user(), 'view'))
                         ->url(function (LibraryItem $record): string {
                             // Use the same logic as recordUrl - cache URL generation to reduce computation
                             $cacheKey = 'record_url_' . $record->id . '_' . $record->type;
@@ -202,11 +203,13 @@ class LibraryItemResource extends Resource
                         }),
                     EditAction::make()
                         ->color('gray')
+                        ->visible(fn (LibraryItem $record): bool => auth()->user() && $record->hasPermission(auth()->user(), 'edit'))
                         ->url(function (LibraryItem $record): string {
                             return static::getEditUrl($record);
                         }),
                     DeleteAction::make()
                         ->color('gray')
+                        ->visible(fn (LibraryItem $record): bool => auth()->user() && $record->hasPermission(auth()->user(), 'delete'))
                         ->before(function (LibraryItem $record) {
                             // Store parent_id before deletion
                             static::$deletedParentId = $record->parent_id;
@@ -217,8 +220,10 @@ class LibraryItemResource extends Resource
 
                             return static::getUrl('index', $parentId ? ['parent' => $parentId] : []);
                         }),
-                    RestoreAction::make(),
+                    RestoreAction::make()
+                        ->visible(fn (LibraryItem $record): bool => auth()->user() && $record->hasPermission(auth()->user(), 'delete')),
                     ForceDeleteAction::make()
+                        ->visible(fn (LibraryItem $record): bool => auth()->user() && $record->hasPermission(auth()->user(), 'delete'))
                         ->before(function (LibraryItem $record) {
                             // Store parent_id before deletion
                             static::$deletedParentId = $record->parent_id;
@@ -236,16 +241,20 @@ class LibraryItemResource extends Resource
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    BulkManagePermissionsAction::make(),
+                    BulkManagePermissionsAction::make()
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('manage_permissions', LibraryItem::class)),
                     DeleteBulkAction::make()
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class))
                         ->successRedirectUrl(function () {
                             // For bulk actions, redirect to current folder (maintain current location)
                             $currentParent = request()->get('parent');
 
                             return static::getUrl('index', $currentParent ? ['parent' => $currentParent] : []);
                         }),
-                    RestoreBulkAction::make(),
+                    RestoreBulkAction::make()
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class)),
                     ForceDeleteBulkAction::make()
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class))
                         ->successRedirectUrl(function () {
                             // For bulk actions, redirect to current folder (maintain current location)
                             $currentParent = request()->get('parent');

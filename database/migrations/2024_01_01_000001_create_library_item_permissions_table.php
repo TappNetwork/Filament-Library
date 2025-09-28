@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('library_item_permissions', function (Blueprint $table) {
+        Schema::create('resource_permissions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('library_item_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->enum('permission', ['view', 'edit']);
+            $table->enum('role', ['owner', 'editor', 'viewer']);
             $table->timestamps();
 
-            $table->unique(['library_item_id', 'user_id', 'permission'], 'lib_item_perms_unique');
+            $table->unique(['library_item_id', 'user_id'], 'resource_perms_unique');
         });
     }
 
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('library_item_permissions');
+        Schema::dropIfExists('resource_permissions');
     }
 };

@@ -18,11 +18,7 @@ class MyLibrary extends ListRecords
         // Show only the current user's personal folder and its contents
         $user = auth()->user();
         if ($user) {
-            $personalFolder = \Tapp\FilamentLibrary\Models\LibraryItem::where('name', $user->first_name . "'s Personal Folder")
-                ->where('type', 'folder')
-                ->where('parent_id', null)
-                ->where('created_by', $user->id)
-                ->first();
+            $personalFolder = \Tapp\FilamentLibrary\Models\LibraryItem::getPersonalFolder($user);
 
             if ($personalFolder) {
                 $query->where('parent_id', $personalFolder->id);

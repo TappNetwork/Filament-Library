@@ -280,20 +280,17 @@ class LibraryItem extends Model implements HasMedia
      */
     public static function ensurePersonalFolder(\App\Models\User $user): self
     {
-        // Check if user already has a personal folder
-        $personalFolder = static::where('name', $user->first_name . "'s Personal Folder")
-            ->where('type', 'folder')
-            ->where('parent_id', null)
-            ->where('created_by', $user->id)
-            ->first();
-
-        if ($personalFolder) {
-            return $personalFolder;
+        // Check if user already has a personal folder via the relationship
+        if ($user->personal_folder_id) {
+            $personalFolder = static::find($user->personal_folder_id);
+            if ($personalFolder) {
+                return $personalFolder;
+            }
         }
 
         // Create personal folder
         $personalFolder = static::create([
-            'name' => $user->first_name . "'s Personal Folder",
+            'name' => static::getPersonalFolderName($user),
             'type' => 'folder',
             'parent_id' => null,
             'created_by' => $user->id,
@@ -307,7 +304,42 @@ class LibraryItem extends Model implements HasMedia
             'role' => 'owner',
         ]);
 
+        // Update the user's personal_folder_id
+        $user->update(['personal_folder_id' => $personalFolder->id]);
+
         return $personalFolder;
+    }
+
+    /**
+     * Get a user's personal folder.
+     */
+    public static function getPersonalFolder(\App\Models\User $user): ?self
+    {
+        if (!$user->personal_folder_id) {
+            return null;
+        }
+
+        return static::find($user->personal_folder_id);
+    }
+
+    /**
+     * Generate the personal folder name for a user.
+     */
+    public static function getPersonalFolderName(\App\Models\User $user): string
+    {
+        // Try to get a display name from various user fields
+        $name = $user->first_name ?? $user->name ?? $user->email ?? 'User';
+
+        // Clean the name (remove special characters that might cause issues)
+        $name = preg_replace('/[^\w\s-]/', '', $name);
+        $name = trim($name);
+
+        // Fallback if name is empty
+        if (empty($name)) {
+            $name = 'User';
+        }
+
+        return $name . "'s Personal Folder";
     }
 
     /**
@@ -377,6 +409,7 @@ class LibraryItem extends Model implements HasMedia
             'view' => in_array($effectiveRole, ['viewer', 'editor', 'owner', 'creator']),
             'edit' => in_array($effectiveRole, ['editor', 'owner', 'creator']),
             'share' => in_array($effectiveRole, ['owner', 'creator']),
+            'delete' => in_array($effectiveRole, ['owner', 'creator']),
             'upload' => in_array($effectiveRole, ['editor', 'owner', 'creator']),
             'manage_permissions' => in_array($effectiveRole, ['owner', 'creator']),
             default => false,

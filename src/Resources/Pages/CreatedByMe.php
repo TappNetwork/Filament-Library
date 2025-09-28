@@ -17,7 +17,13 @@ class CreatedByMe extends ListRecords
 
         $user = auth()->user();
         if ($user) {
+            $personalFolder = \Tapp\FilamentLibrary\Models\LibraryItem::getPersonalFolder($user);
             $query->where('created_by', $user->id);
+
+            // Exclude personal folder if it exists
+            if ($personalFolder) {
+                $query->where('id', '!=', $personalFolder->id);
+            }
         } else {
             $query->whereRaw('1 = 0');
         }

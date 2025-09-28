@@ -20,6 +20,21 @@ You can install the package via composer:
 composer require tapp/filament-library
 ```
 
+### Database Setup
+
+The package will automatically publish and run migrations. You'll need to add the `LibraryUser` trait to your User model:
+
+```php
+// app/Models/User.php
+use Tapp\FilamentLibrary\Traits\LibraryUser;
+
+class User extends Authenticatable
+{
+    use LibraryUser;
+    // ... other traits and methods
+}
+```
+
 You can publish and run the migrations with:
 
 ```bash

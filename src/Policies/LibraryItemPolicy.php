@@ -69,8 +69,8 @@ class LibraryItemPolicy
             return $user->canEditLibraryItem($libraryItem);
         }
 
-        // Fallback: check if user is creator or has permission
-        return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'edit');
+        // Only creators and owners can delete items
+        return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'delete');
     }
 
     /**
@@ -92,8 +92,8 @@ class LibraryItemPolicy
             return $user->canEditLibraryItem($libraryItem);
         }
 
-        // Fallback: check if user is creator or has permission
-        return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'edit');
+        // Only creators and owners can permanently delete items
+        return $libraryItem->created_by === $user->id || $libraryItem->hasPermission($user, 'delete');
     }
 
     /**

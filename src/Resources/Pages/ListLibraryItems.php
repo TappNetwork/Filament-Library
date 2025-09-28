@@ -52,6 +52,12 @@ class ListLibraryItems extends ListRecords
                 ->label('Edit')
                 ->icon('heroicon-o-pencil')
                 ->color('gray')
+                ->visible(function () {
+                    $user = auth()->user();
+                    if (!$user || !$this->parentFolder) return false;
+
+                    return $this->parentFolder->hasPermission($user, 'edit');
+                })
                 ->url(
                     fn (): string => static::getResource()::getUrl('edit', ['record' => $this->parentFolder])
                 );
@@ -63,14 +69,16 @@ class ListLibraryItems extends ListRecords
                 ->label('Create Folder')
                 ->icon('heroicon-o-folder-plus')
                 ->visible(function () {
-                    // Only allow folder creation if we're in a personal folder or subfolder
-                    // Or if user is admin and at root level
-                    if ($this->parentId !== null) {
-                        return true; // Always allow in subfolders
+                    $user = auth()->user();
+                    if (!$user) return false;
+
+                    // If we're in a folder, check if user has upload permission
+                    if ($this->parentId && $this->parentFolder) {
+                        return $this->parentFolder->hasPermission($user, 'upload');
                     }
 
                     // At root level, only allow admins
-                    return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin(auth()->user());
+                    return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user);
                 })
                 ->schema([
                     TextInput::make('name')
@@ -94,14 +102,16 @@ class ListLibraryItems extends ListRecords
                 ->label('Upload File')
                 ->icon('heroicon-o-document-plus')
                 ->visible(function () {
-                    // Only allow file upload if we're in a personal folder or subfolder
-                    // Or if user is admin and at root level
-                    if ($this->parentId !== null) {
-                        return true; // Always allow in subfolders
+                    $user = auth()->user();
+                    if (!$user) return false;
+
+                    // If we're in a folder, check if user has upload permission
+                    if ($this->parentId && $this->parentFolder) {
+                        return $this->parentFolder->hasPermission($user, 'upload');
                     }
 
                     // At root level, only allow admins
-                    return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin(auth()->user());
+                    return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user);
                 })
                 ->schema([
                     FileUpload::make('file')
@@ -139,6 +149,18 @@ class ListLibraryItems extends ListRecords
             Action::make('create_link')
                 ->label('Add Link')
                 ->icon('heroicon-o-link')
+                ->visible(function () {
+                    $user = auth()->user();
+                    if (!$user) return false;
+
+                    // If we're in a folder, check if user has upload permission
+                    if ($this->parentId && $this->parentFolder) {
+                        return $this->parentFolder->hasPermission($user, 'upload');
+                    }
+
+                    // At root level, only allow admins
+                    return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user);
+                })
                 ->schema([
                     TextInput::make('name')
                         ->label('Link Name')
