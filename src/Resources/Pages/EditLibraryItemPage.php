@@ -25,6 +25,7 @@ abstract class EditLibraryItemPage extends EditRecord
                     if ($parent) {
                         return static::getResource()::getUrl('index', ['parent' => $parent->id]);
                     }
+
                     return static::getResource()::getUrl('index');
                 });
         }
@@ -39,6 +40,7 @@ abstract class EditLibraryItemPage extends EditRecord
                 if ($record->type === 'folder') {
                     return static::getResource()::getUrl('index', ['parent' => $record->id]);
                 }
+
                 return static::getResource()::getUrl('view', ['record' => $record->id]);
             });
 
@@ -101,11 +103,13 @@ abstract class EditLibraryItemPage extends EditRecord
 
                 return $query->limit(50)->get()->mapWithKeys(function ($user) {
                     $displayName = $this->getUserDisplayName($user);
+
                     return [$user->id => $displayName];
                 });
             })
             ->getOptionLabelUsing(function ($value) {
                 $user = \App\Models\User::find($value);
+
                 return $user ? $this->getUserDisplayName($user) : '';
             })
             ->disabled(function () {
@@ -113,7 +117,7 @@ abstract class EditLibraryItemPage extends EditRecord
                 $record = $this->getRecord();
 
                 // Allow changes if user is library admin OR if user is the creator
-                return !\Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user) &&
+                return ! \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user) &&
                        $record->created_by !== $user->id;
             })
             ->helperText('Creator receives owner permissions');
@@ -150,7 +154,7 @@ abstract class EditLibraryItemPage extends EditRecord
         static $breadcrumbCache = [];
         $recordId = $this->getRecord()->id;
 
-        if (!isset($breadcrumbCache[$recordId])) {
+        if (! isset($breadcrumbCache[$recordId])) {
             $path = [];
             $current = $this->getRecord();
 
@@ -158,7 +162,7 @@ abstract class EditLibraryItemPage extends EditRecord
             while ($current && $current->parent_id) {
                 $path[] = [
                     'name' => $current->name,
-                    'url' => static::getResource()::getUrl('index', ['parent' => $current->id])
+                    'url' => static::getResource()::getUrl('index', ['parent' => $current->id]),
                 ];
                 $current = $current->parent;
             }

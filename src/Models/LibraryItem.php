@@ -315,7 +315,7 @@ class LibraryItem extends Model implements HasMedia
      */
     public static function getPersonalFolder(\App\Models\User $user): ?self
     {
-        if (!$user->personal_folder_id) {
+        if (! $user->personal_folder_id) {
             return null;
         }
 

@@ -54,7 +54,9 @@ class ListLibraryItems extends ListRecords
                 ->color('gray')
                 ->visible(function () {
                     $user = auth()->user();
-                    if (!$user || !$this->parentFolder) return false;
+                    if (! $user || ! $this->parentFolder) {
+                        return false;
+                    }
 
                     return $this->parentFolder->hasPermission($user, 'edit');
                 })
@@ -70,7 +72,9 @@ class ListLibraryItems extends ListRecords
                 ->icon('heroicon-o-folder-plus')
                 ->visible(function () {
                     $user = auth()->user();
-                    if (!$user) return false;
+                    if (! $user) {
+                        return false;
+                    }
 
                     // If we're in a folder, check if user has upload permission
                     if ($this->parentId && $this->parentFolder) {
@@ -103,7 +107,9 @@ class ListLibraryItems extends ListRecords
                 ->icon('heroicon-o-document-plus')
                 ->visible(function () {
                     $user = auth()->user();
-                    if (!$user) return false;
+                    if (! $user) {
+                        return false;
+                    }
 
                     // If we're in a folder, check if user has upload permission
                     if ($this->parentId && $this->parentFolder) {
@@ -151,7 +157,9 @@ class ListLibraryItems extends ListRecords
                 ->icon('heroicon-o-link')
                 ->visible(function () {
                     $user = auth()->user();
-                    if (!$user) return false;
+                    if (! $user) {
+                        return false;
+                    }
 
                     // If we're in a folder, check if user has upload permission
                     if ($this->parentId && $this->parentFolder) {

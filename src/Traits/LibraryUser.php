@@ -8,7 +8,7 @@ trait LibraryUser
 {
     /**
      * Get the user's personal folder.
-     * 
+     *
      * This trait provides library-related functionality for users.
      * It can be extended in the future to include additional
      * library features like favorites, recent items, etc.

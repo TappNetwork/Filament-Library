@@ -2,8 +2,6 @@
 
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
-use Filament\Actions\Action;
-use Filament\Actions\DeleteAction;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class EditFile extends EditLibraryItemPage
@@ -80,5 +78,4 @@ class EditFile extends EditLibraryItemPage
                 $this->getCreatorSelectField(),
             ]);
     }
-
 }

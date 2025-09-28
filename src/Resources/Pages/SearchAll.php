@@ -28,10 +28,10 @@ class SearchAll extends ListRecords
                 // Public items
                     ->orWhere('general_access', 'anyone_can_view');
             })
-                ->whereNotIn('id', function($query) {
+                ->whereNotIn('id', function ($query) {
                     $query->select('personal_folder_id')
-                          ->from('users')
-                          ->whereNotNull('personal_folder_id');
+                        ->from('users')
+                        ->whereNotNull('personal_folder_id');
                 }); // Exclude personal folders
         } else {
             // For non-authenticated users, show only public items

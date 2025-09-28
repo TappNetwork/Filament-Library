@@ -16,7 +16,6 @@ class EditFolder extends EditLibraryItemPage
         return 'Edit Folder';
     }
 
-
     public function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
         return $schema
@@ -63,5 +62,4 @@ class EditFolder extends EditLibraryItemPage
                 $this->getCreatorSelectField(),
             ]);
     }
-
 }

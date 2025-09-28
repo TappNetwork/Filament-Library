@@ -15,7 +15,6 @@ class EditLink extends EditLibraryItemPage
         return 'Edit External Link';
     }
 
-
     public function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
         return $schema
@@ -67,5 +66,4 @@ class EditLink extends EditLibraryItemPage
                 $this->getCreatorSelectField(),
             ]);
     }
-
 }
