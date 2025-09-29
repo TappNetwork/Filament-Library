@@ -32,5 +32,3 @@ class SeedLibraryCommand extends Command
         return self::SUCCESS;
     }
 }
-
-

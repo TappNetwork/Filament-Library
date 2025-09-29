@@ -73,5 +73,3 @@ trait HasLibraryAccess
         return LibraryItem::whereNull('parent_id')->forUser($this)->get();
     }
 }
-
-
