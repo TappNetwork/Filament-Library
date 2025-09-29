@@ -37,3 +37,4 @@ class RedirectToCorrectEditPage
         return $next($request);
     }
 }
+

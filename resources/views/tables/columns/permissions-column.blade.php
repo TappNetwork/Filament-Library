@@ -17,7 +17,7 @@
                 {{ $isCreator ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200' }}">
 
                 @if($isCreator)
-                    <x-heroicon-o-crown class="w-3 h-3" />
+                    <x-heroicon-o-star class="w-3 h-3" />
                     <span class="font-medium">{{ $user->name }}</span>
                     <span class="text-blue-600 dark:text-blue-400">(Owner)</span>
                 @else
@@ -34,6 +34,7 @@
         @endforeach
     @endif
 </div>
+
 
 
 
