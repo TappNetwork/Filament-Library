@@ -143,6 +143,7 @@ class LibraryItemResource extends Resource
                     ->limit(50)
                     ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
                         $state = $column->getState();
+
                         return strlen($state) > 50 ? $state : null;
                     })
                     ->icon(fn (?LibraryItem $record): string => $record?->getDisplayIcon() ?? 'heroicon-o-document')

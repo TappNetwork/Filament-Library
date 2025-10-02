@@ -21,7 +21,3 @@ class CreateLink extends CreateRecord
         return $data;
     }
 }
-
-
-
-
