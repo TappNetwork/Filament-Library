@@ -3,51 +3,14 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | Library Admin Configuration
+    | User Model
     |--------------------------------------------------------------------------
     |
-    | Configure how library admin access is determined. You can either:
-    | 1. Use the default role-based system (requires Spatie Permission)
-    | 2. Set a custom callback function
+    | This is the user model that will be used for relationships in the
+    | filament-library package. You can override this to use your own
+    | user model.
     |
     */
+    'user_model' => env('FILAMENT_LIBRARY_USER_MODEL', 'App\\Models\\User'),
 
-    /*
-    |--------------------------------------------------------------------------
-    | Default Admin Role
-    |--------------------------------------------------------------------------
-    |
-    | The default role name used to determine library admin access.
-    | This is used when no custom callback is set.
-    |
-    */
-    'admin_role' => env('LIBRARY_ADMIN_ROLE', 'Admin'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Cache Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Configure caching options for the library system.
-    |
-    */
-    'cache' => [
-        'breadcrumbs_ttl_seconds' => env('FILAMENT_LIBRARY_BREADCRUMBS_TTL', 300),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Custom Admin Callback
-    |--------------------------------------------------------------------------
-    |
-    | Set a custom callback to determine library admin access.
-    | This overrides the default role-based system.
-    |
-    | Example:
-    | 'admin_callback' => function($user) {
-    |     return $user->hasRole('super-admin') || $user->is_superuser;
-    | }
-    |
-    */
-    'admin_callback' => null,
 ];

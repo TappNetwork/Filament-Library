@@ -18,7 +18,7 @@ class SharedWithMe extends ListRecords
         $user = auth()->user();
         if ($user) {
             // Show items where user has explicit permissions (not creator)
-            $query->whereHas('resourcePermissions', function ($q) use ($user) {
+            $query->whereHas('permissions', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             })
                 ->where('created_by', '!=', $user->id); // Exclude items created by user

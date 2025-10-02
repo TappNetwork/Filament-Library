@@ -10,7 +10,7 @@ class LibraryItemPermission extends Model
 {
     use HasFactory;
 
-    protected $table = 'resource_permissions';
+    protected $table = 'library_item_permissions';
 
     protected $fillable = [
         'library_item_id',

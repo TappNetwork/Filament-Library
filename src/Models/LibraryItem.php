@@ -5,6 +5,7 @@ namespace Tapp\FilamentLibrary\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
@@ -58,10 +59,10 @@ class LibraryItem extends Model implements HasMedia
         static::created(function (self $item) {
             // Copy parent folder permissions to the new item
             if ($item->parent_id) {
-                $parentPermissions = $item->parent->resourcePermissions()->get();
+                $parentPermissions = $item->parent->permissions()->get();
 
                 foreach ($parentPermissions as $permission) {
-                    $item->resourcePermissions()->create([
+                    $item->permissions()->create([
                         'user_id' => $permission->user_id,
                         'role' => $permission->role,
                     ]);
@@ -137,14 +138,6 @@ class LibraryItem extends Model implements HasMedia
     }
 
     /**
-     * Get the resource permissions for this item.
-     */
-    public function resourcePermissions(): HasMany
-    {
-        return $this->hasMany(\App\Models\ResourcePermission::class);
-    }
-
-    /**
      * Scope to get only folders.
      */
     public function scopeFolders($query)
@@ -202,7 +195,7 @@ class LibraryItem extends Model implements HasMedia
         }
 
         // Check direct resource permissions
-        $directPermission = $this->resourcePermissions()
+        $directPermission = $this->permissions()
             ->where('user_id', $user->id)
             ->first();
 
@@ -230,7 +223,7 @@ class LibraryItem extends Model implements HasMedia
      */
     public function getCurrentOwner(): ?\App\Models\User
     {
-        $ownerPermission = $this->resourcePermissions()
+        $ownerPermission = $this->permissions()
             ->where('role', 'owner')
             ->first();
 
@@ -258,17 +251,17 @@ class LibraryItem extends Model implements HasMedia
     public function transferOwnership(\App\Models\User $newOwner): void
     {
         // Remove existing owner permissions
-        $this->resourcePermissions()->where('role', 'owner')->delete();
+        $this->permissions()->where('role', 'owner')->delete();
 
         // Check if the new owner already has a permission for this item
-        $existingPermission = $this->resourcePermissions()->where('user_id', $newOwner->id)->first();
+        $existingPermission = $this->permissions()->where('user_id', $newOwner->id)->first();
 
         if ($existingPermission) {
             // Update existing permission to owner
             $existingPermission->update(['role' => 'owner']);
         } else {
             // Create new owner permission
-            $this->resourcePermissions()->create([
+            $this->permissions()->create([
                 'user_id' => $newOwner->id,
                 'role' => 'owner',
             ]);
@@ -299,7 +292,7 @@ class LibraryItem extends Model implements HasMedia
         ]);
 
         // Set the user as owner of their personal folder
-        $personalFolder->resourcePermissions()->create([
+        $personalFolder->permissions()->create([
             'user_id' => $user->id,
             'role' => 'owner',
         ]);
@@ -608,5 +601,63 @@ class LibraryItem extends Model implements HasMedia
             'private' => 'Private (owner only)',
             'anyone_can_view' => 'Anyone can view',
         ];
+    }
+
+    /**
+     * Get the tags for this library item.
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(LibraryItemTag::class, 'library_item_tag_pivot')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the users who favorited this library item.
+     * Note: This uses a generic user model - projects should extend this
+     * or override this relationship in their own LibraryItem model.
+     */
+    public function favoritedBy(): BelongsToMany
+    {
+        // Use a configurable user model or fallback to a generic approach
+        $userModel = config('filament-library.user_model', 'App\\Models\\User');
+
+        return $this->belongsToMany($userModel, 'library_item_favorites')
+            ->withTimestamps();
+    }
+
+    /**
+     * Toggle favorite status for the current user.
+     */
+    public function toggleFavorite(): void
+    {
+        if (auth()->check()) {
+            $user = auth()->user();
+            if ($user->favoriteLibraryItems()->where('library_item_id', $this->id)->exists()) {
+                $user->favoriteLibraryItems()->detach($this->id);
+            } else {
+                $user->favoriteLibraryItems()->attach($this->id);
+            }
+        }
+    }
+
+    /**
+     * Check if this item is favorited by the current user.
+     */
+    public function isFavorite(): bool
+    {
+        if (!auth()->check()) {
+            return false;
+        }
+
+        return auth()->user()->favoriteLibraryItems()->where('library_item_id', $this->id)->exists();
+    }
+
+    /**
+     * Get the is_favorite attribute.
+     */
+    public function getIsFavoriteAttribute(): bool
+    {
+        return $this->isFavorite();
     }
 }

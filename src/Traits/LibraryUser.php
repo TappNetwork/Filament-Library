@@ -25,4 +25,13 @@ trait LibraryUser
     {
         return LibraryItem::ensurePersonalFolder($this);
     }
+
+    /**
+     * Get the library items favorited by this user.
+     */
+    public function favoriteLibraryItems()
+    {
+        return $this->belongsToMany(LibraryItem::class, 'library_item_favorites')
+            ->withTimestamps();
+    }
 }

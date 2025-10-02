@@ -22,7 +22,7 @@ class SearchAll extends ListRecords
                 // Items created by user
                 $q->where('created_by', $user->id)
                 // Items with explicit permissions
-                    ->orWhereHas('resourcePermissions', function ($permQuery) use ($user) {
+                    ->orWhereHas('permissions', function ($permQuery) use ($user) {
                         $permQuery->where('user_id', $user->id);
                     })
                 // Public items

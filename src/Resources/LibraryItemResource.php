@@ -18,7 +18,6 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Tables\Actions\BulkManagePermissionsAction;
-use Tapp\FilamentLibrary\Tables\Columns\PermissionsColumn;
 
 class LibraryItemResource extends Resource
 {
@@ -128,11 +127,24 @@ class LibraryItemResource extends Resource
 
     public static function table(Table $table): Table
     {
+        // This table configuration is used by ALL list pages:
+        // - ListLibraryItems (main library view)
+        // - PublicLibrary (public files)
+        // - MyLibrary (personal documents)
+        // - CreatedByMe (user's created items)
+        // - SharedWithMe (shared items)
+        // - SearchAll (search results)
+        // The list pages only override getTableQuery() for filtering, not the columns
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable()
+                    ->limit(50)
+                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                        $state = $column->getState();
+                        return strlen($state) > 50 ? $state : null;
+                    })
                     ->icon(fn (?LibraryItem $record): string => $record?->getDisplayIcon() ?? 'heroicon-o-document')
                     ->iconPosition('before')
                     ->url(function (?LibraryItem $record): ?string {
@@ -172,8 +184,24 @@ class LibraryItemResource extends Resource
                     ->visible(fn (?LibraryItem $record) => $record && $record->type === 'link')
                     ->limit(50)
                     ->tooltip(fn (?LibraryItem $record) => $record?->external_url),
-                PermissionsColumn::make('permissions')
+                Tables\Columns\ViewColumn::make('tags')
+                    ->label('Tags')
+                    ->view('filament-library::tables.columns.tags-column')
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('general_access')
                     ->label('Permissions')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'private' => 'danger',
+                        'anyone_can_view' => 'success',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'private' => 'Private',
+                        'anyone_can_view' => 'Public',
+                        default => ucfirst(str_replace('_', ' ', $state)),
+                    })
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([

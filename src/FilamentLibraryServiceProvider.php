@@ -165,7 +165,8 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
         return [
             '2024_01_01_000000_create_library_items_table',
             '2024_01_01_000001_create_library_item_permissions_table',
-            '2024_01_01_000002_add_external_link_support_to_library_items_table',
+            '2024_01_01_000002_create_library_item_tags_table',
+            '2024_01_01_000003_create_library_item_favorites_table',
         ];
     }
 }
