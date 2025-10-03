@@ -131,7 +131,7 @@ The library items table includes a toggleable "Permissions" column that shows:
 
 ### "Method not found" errors
 
-If you see errors like `canViewRootLibraryItems()`, the plugin provides fallback implementations. The permission system will work without requiring the `HasLibraryAccess` trait on your User model.
+If you see errors like `canViewRootLibraryItems()`, these methods have been moved to the `LibraryItemPolicy`. The permission system now uses Laravel's standard policy pattern for authorization.
 
 ### Performance issues
 

@@ -8,10 +8,6 @@ trait LibraryUser
 {
     /**
      * Get the user's personal folder.
-     *
-     * This trait provides library-related functionality for users.
-     * It can be extended in the future to include additional
-     * library features like favorites, recent items, etc.
      */
     public function personalFolder()
     {
@@ -33,5 +29,24 @@ trait LibraryUser
     {
         return $this->belongsToMany(LibraryItem::class, 'library_item_favorites')
             ->withTimestamps();
+    }
+
+    /**
+     * Check if the user is a library admin.
+     *
+     * Library admins can:
+     * - View all library items (including root items)
+     * - Edit any library item
+     * - Delete any library item
+     * - Manage permissions on any item
+     * - Access all library functionality
+     *
+     * Override this method to add role-based logic.
+     */
+    public function isLibraryAdmin(): bool
+    {
+        // Default implementation - override this method to add role-based logic
+        // For example: return $this->hasRole('admin') || $this->hasRole('library-admin');
+        return false;
     }
 }

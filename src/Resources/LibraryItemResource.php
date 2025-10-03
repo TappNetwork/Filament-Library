@@ -187,7 +187,6 @@ class LibraryItemResource extends Resource
                 Tables\Columns\ViewColumn::make('tags')
                     ->label('Tags')
                     ->view('filament-library::tables.columns.tags-column')
-                    ->searchable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('general_access')
                     ->label('Permissions')
@@ -203,6 +202,14 @@ class LibraryItemResource extends Resource
                         default => ucfirst(str_replace('_', ' ', $state)),
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\IconColumn::make('is_favorite')
+                    ->label('')
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-s-star' : 'heroicon-o-star')
+                    ->color(fn (bool $state): string => $state ? 'warning' : 'gray')
+                    ->action(function (LibraryItem $record): void {
+                        $record->toggleFavorite();
+                    })
+                    ->tooltip(fn (bool $state): string => $state ? 'Remove from favorites' : 'Add to favorites'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
@@ -211,6 +218,12 @@ class LibraryItemResource extends Resource
                         'file' => 'File',
                         'link' => 'External Link',
                     ]),
+                Tables\Filters\SelectFilter::make('tags')
+                    ->label('Tags')
+                    ->relationship('tags', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->multiple(),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->recordActions([
@@ -317,6 +330,7 @@ class LibraryItemResource extends Resource
             'my-documents' => Pages\MyLibrary::route('/my-documents'),
             'shared-with-me' => Pages\SharedWithMe::route('/shared-with-me'),
             'created-by-me' => Pages\CreatedByMe::route('/created-by-me'),
+            'favorites' => Pages\Favorites::route('/favorites'),
             'public' => Pages\PublicLibrary::route('/public'),
             'search-all' => Pages\SearchAll::route('/search-all'),
             'create-folder' => Pages\CreateFolder::route('/create-folder'),

@@ -93,6 +93,12 @@ class FilamentLibraryPlugin implements Plugin
                     ->group('Resource Library')
                     ->sort(5)
                     ->isActiveWhen(fn () => request()->is('library/created-by-me')),
+                NavigationItem::make('Favorites')
+                    ->url('/library/favorites')
+                    ->icon('heroicon-o-star')
+                    ->group('Resource Library')
+                    ->sort(6)
+                    ->isActiveWhen(fn () => request()->is('library/favorites')),
             ]);
     }
 
