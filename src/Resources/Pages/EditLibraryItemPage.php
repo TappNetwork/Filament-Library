@@ -156,10 +156,10 @@ abstract class EditLibraryItemPage extends EditRecord
 
         if (! isset($breadcrumbCache[$recordId])) {
             $path = [];
-            $current = $this->getRecord();
+            $current = $this->getRecord()->parent; // Start with parent, not current item
 
             // Generate URLs more efficiently
-            while ($current && $current->parent_id) {
+            while ($current) {
                 $path[] = [
                     'name' => $current->name,
                     'url' => static::getResource()::getUrl('index', ['parent' => $current->id]),

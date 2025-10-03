@@ -113,7 +113,7 @@ class MyLibrary extends ListRecords
                     $libraryItem->addMediaFromDisk($filePath, 'public')
                         ->usingName($fileName)
                         ->usingFileName($fileName)
-                        ->toMediaCollection('files');
+                        ->toMediaCollection();
 
                     $this->redirect(static::getResource()::getUrl('my-documents'));
                 }),

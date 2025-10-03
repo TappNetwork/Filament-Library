@@ -148,7 +148,7 @@ class ListLibraryItems extends ListRecords
                     $libraryItem->addMediaFromDisk($filePath, 'public')
                         ->usingName($fileName)
                         ->usingFileName($fileName)
-                        ->toMediaCollection('files');
+                        ->toMediaCollection();
 
                     $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
                 }),

@@ -498,7 +498,7 @@ class LibraryItem extends Model implements HasMedia
      */
     public function registerMediaCollections(): void
     {
-        $this->addMediaCollection('files');
+        // Using default collection - no need to register custom collection
     }
 
     /**
@@ -516,7 +516,7 @@ class LibraryItem extends Model implements HasMedia
      */
     public function getSecureUrl(?int $expirationMinutes = null): string
     {
-        $media = $this->getFirstMedia('files');
+        $media = $this->getFirstMedia();
 
         if (! $media) {
             return '';

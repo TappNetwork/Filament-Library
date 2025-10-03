@@ -52,9 +52,8 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
             $package->hasTranslations();
         }
 
-        if (file_exists($package->basePath('/../resources/views'))) {
-            $package->hasViews(static::$viewNamespace);
-        }
+        // Views are loaded manually to avoid automatic publishing
+        // Users can publish them manually with: php artisan vendor:publish --tag=filament-library-views
     }
 
     public function packageRegistered(): void {}
@@ -89,6 +88,14 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
                 ], 'filament-library-stubs');
             }
         }
+
+        // Load views manually from src directory
+        $this->loadViewsFrom(__DIR__ . '/Resources/views', static::$viewNamespace);
+
+        // Publish views manually (optional)
+        $this->publishes([
+            __DIR__ . '/Resources/views' => resource_path('views/vendor/filament-library'),
+        ], 'filament-library-views');
 
         // Testing - No custom test mixins needed
     }

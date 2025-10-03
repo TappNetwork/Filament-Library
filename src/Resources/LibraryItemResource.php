@@ -95,7 +95,6 @@ class LibraryItemResource extends Resource
                 // File form fields
                 \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('files')
                     ->label('File')
-                    ->collection('files')
                     ->visible(fn (callable $get) => $get('type') === 'file')
                     ->required(fn (callable $get) => $get('type') === 'file'),
 

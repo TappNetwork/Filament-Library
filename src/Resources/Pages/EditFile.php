@@ -37,8 +37,7 @@ class EditFile extends EditLibraryItemPage
                     ->maxLength(255),
 
                 \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('files')
-                    ->label('File')
-                    ->collection('files'),
+                    ->label('File'),
 
                 \Filament\Forms\Components\Textarea::make('link_description')
                     ->label('Description')

@@ -193,33 +193,6 @@ class ViewLibraryItem extends ViewRecord
                     ])
                     ->columnSpanFull(),
 
-                // Media section for files
-                Section::make('Media')
-                    ->schema([
-                        RepeatableEntry::make('media')
-                            ->label('')
-                            ->schema([
-                                Flex::make([
-                                    ImageEntry::make('preview')
-                                        ->state(fn ($media) => $media->getUrl('thumb'))
-                                        ->width(300)
-                                        ->height(300)
-                                        ->visible(fn ($media) => $media->hasGeneratedConversion('thumb'))
-                                        ->label(''),
-                                    Grid::make(1)
-                                        ->schema([
-                                            TextEntry::make('name')
-                                                ->label('File Name'),
-                                            TextEntry::make('size')
-                                                ->label('File Size')
-                                                ->formatStateUsing(fn ($state) => number_format($state / 1024 / 1024, 2) . ' MB'),
-                                        ]),
-                                ])
-                                    ->from('lg'),
-                            ])
-                            ->visible(fn () => $record->type === 'file' && $record->getMedia()->count() > 0),
-                    ])
-                    ->visible(fn () => $record->type === 'file' && $record->getMedia()->count() > 0),
             ]);
     }
 }
