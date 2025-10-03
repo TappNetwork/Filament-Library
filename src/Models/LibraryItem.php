@@ -646,7 +646,7 @@ class LibraryItem extends Model implements HasMedia
      */
     public function isFavorite(): bool
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return false;
         }
 

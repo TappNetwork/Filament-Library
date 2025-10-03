@@ -29,7 +29,7 @@ class LibraryItemTag extends Model
             'primary', 'secondary', 'success', 'danger', 'warning', 'info',
             'gray', 'slate', 'zinc', 'neutral', 'stone', 'red', 'orange',
             'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan',
-            'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'
+            'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose',
         ];
 
         return $colors[$this->id % count($colors)];
