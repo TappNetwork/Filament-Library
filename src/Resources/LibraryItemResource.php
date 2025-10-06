@@ -270,9 +270,9 @@ class LibraryItemResource extends Resource
                             return static::getUrl('index', $parentId ? ['parent' => $parentId] : []);
                         }),
                     RestoreAction::make()
-                        ->visible(fn (LibraryItem $record): bool => auth()->user() && $record->hasPermission(auth()->user(), 'delete')),
+                        ->visible(fn (LibraryItem $record): bool => auth()->user() && $record->hasPermission(auth()->user(), 'delete') && $record->deleted_at !== null),
                     ForceDeleteAction::make()
-                        ->visible(fn (LibraryItem $record): bool => auth()->user() && $record->hasPermission(auth()->user(), 'delete'))
+                        ->visible(fn (LibraryItem $record): bool => auth()->user() && $record->hasPermission(auth()->user(), 'delete') && $record->deleted_at !== null)
                         ->before(function (LibraryItem $record) {
                             // Store parent_id before deletion
                             static::$deletedParentId = $record->parent_id;
@@ -301,9 +301,11 @@ class LibraryItemResource extends Resource
                             return static::getUrl('index', $currentParent ? ['parent' => $currentParent] : []);
                         }),
                     RestoreBulkAction::make()
-                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class)),
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class))
+                        ->deselectAllRecordsAfterCompletion(),
                     ForceDeleteBulkAction::make()
                         ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class))
+                        ->deselectAllRecordsAfterCompletion()
                         ->successRedirectUrl(function () {
                             // For bulk actions, redirect to current folder (maintain current location)
                             $currentParent = request()->get('parent');
