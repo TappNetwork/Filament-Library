@@ -290,8 +290,7 @@ class LibraryItemResource extends Resource
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    BulkManagePermissionsAction::make()
-                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('manage_permissions', LibraryItem::class)),
+                    BulkManagePermissionsAction::make(),
                     DeleteBulkAction::make()
                         ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class))
                         ->successRedirectUrl(function () {

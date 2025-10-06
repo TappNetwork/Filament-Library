@@ -4,10 +4,10 @@ namespace Tapp\FilamentLibrary\Tables\Actions;
 
 use Filament\Actions\BulkAction;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
 use Illuminate\Database\Eloquent\Collection;
 use Tapp\FilamentLibrary\Forms\Components\UserSearchSelect;
 use Tapp\FilamentLibrary\Services\PermissionService;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 
 class BulkManagePermissionsAction extends BulkAction
 {
@@ -23,6 +23,7 @@ class BulkManagePermissionsAction extends BulkAction
         $this->label('Manage Permissions')
             ->icon('heroicon-o-shield-check')
             ->color('warning')
+            ->visible(fn (): bool => auth()->user() && FilamentLibraryPlugin::isLibraryAdmin(auth()->user()))
             ->form([
                 UserSearchSelect::make('user_ids')
                     ->label('Users')
@@ -35,15 +36,11 @@ class BulkManagePermissionsAction extends BulkAction
                     ->options([
                         'view' => 'View Only',
                         'edit' => 'Edit',
+                        'owner' => 'Owner',
                     ])
                     ->default('view')
                     ->required()
                     ->helperText('Choose the permission level to grant'),
-
-                Toggle::make('cascade_to_children')
-                    ->label('Cascade to Children')
-                    ->helperText('Apply these permissions to all items inside selected folders')
-                    ->default(false),
             ])
             ->action(function (Collection $records, array $data) {
                 $permissionService = app(PermissionService::class);
