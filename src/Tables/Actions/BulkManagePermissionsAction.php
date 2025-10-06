@@ -4,7 +4,7 @@ namespace Tapp\FilamentLibrary\Tables\Actions;
 
 use Filament\Actions\BulkAction;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Fieldset;
 use Illuminate\Database\Eloquent\Collection;
 use Tapp\FilamentLibrary\Forms\Components\UserSearchSelect;
 use Tapp\FilamentLibrary\Services\PermissionService;
@@ -26,8 +26,7 @@ class BulkManagePermissionsAction extends BulkAction
             ->color('warning')
             ->visible(fn (): bool => auth()->user() && FilamentLibraryPlugin::isLibraryAdmin(auth()->user()))
             ->form([
-                Section::make('General Access')
-                    ->description('Set the overall access level for these items')
+                Fieldset::make('General Access')
                     ->schema([
                         Select::make('general_access')
                             ->label('General Access')
@@ -40,8 +39,7 @@ class BulkManagePermissionsAction extends BulkAction
                             ->helperText('This determines who can see these items by default'),
                     ]),
 
-                Section::make('User Permissions')
-                    ->description('Grant specific permissions to selected users')
+                Fieldset::make('User Permissions')
                     ->schema([
                         UserSearchSelect::make('user_ids')
                             ->label('Users')
