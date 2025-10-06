@@ -2,6 +2,11 @@
 
 namespace Tapp\FilamentLibrary\Tables\Actions;
 
+/**
+ * NOTE: This bulk action is currently unused in the LibraryItemResource.
+ * It was removed from the toolbar actions but kept for potential future use.
+ */
+
 use Filament\Actions\BulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Placeholder;
@@ -26,10 +31,6 @@ class BulkManagePermissionsAction extends BulkAction
             ->color('warning')
             ->visible(fn (): bool => auth()->user() && FilamentLibraryPlugin::isLibraryAdmin(auth()->user()))
             ->form([
-                Placeholder::make('general_access_section')
-                    ->label('General Access')
-                    ->content('Set the overall access level for these items'),
-
                 Select::make('general_access')
                     ->label('General Access')
                     ->options([
@@ -39,7 +40,6 @@ class BulkManagePermissionsAction extends BulkAction
                     ->default('private')
                     ->required()
                     ->helperText('This determines who can see these items by default'),
-
                 Placeholder::make('user_permissions_section')
                     ->label('User Permissions')
                     ->content('Grant specific permissions to selected users'),

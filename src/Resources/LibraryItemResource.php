@@ -17,7 +17,6 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Tapp\FilamentLibrary\Models\LibraryItem;
-use Tapp\FilamentLibrary\Tables\Actions\BulkManagePermissionsAction;
 
 class LibraryItemResource extends Resource
 {
@@ -290,7 +289,6 @@ class LibraryItemResource extends Resource
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    BulkManagePermissionsAction::make(),
                     DeleteBulkAction::make()
                         ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class))
                         ->successRedirectUrl(function () {
