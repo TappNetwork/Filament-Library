@@ -301,11 +301,9 @@ class LibraryItemResource extends Resource
                             return static::getUrl('index', $currentParent ? ['parent' => $currentParent] : []);
                         }),
                     RestoreBulkAction::make()
-                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class))
-                        ->deselectAllRecordsAfterCompletion(),
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class)),
                     ForceDeleteBulkAction::make()
                         ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class))
-                        ->deselectAllRecordsAfterCompletion()
                         ->successRedirectUrl(function () {
                             // For bulk actions, redirect to current folder (maintain current location)
                             $currentParent = request()->get('parent');
