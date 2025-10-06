@@ -22,14 +22,17 @@ class LibraryItemTag extends Model
 
     /**
      * Get the color for this tag based on its ID.
+     * Uses Filament's standard semantic color names for proper styling.
      */
     public function getColorFromId(): string
     {
         $colors = [
-            'primary', 'secondary', 'success', 'danger', 'warning', 'info',
-            'gray', 'slate', 'zinc', 'neutral', 'stone', 'red', 'orange',
-            'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan',
-            'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose',
+            'primary',
+            'success',
+            'warning',
+            'danger',
+            'info',
+            'gray',
         ];
 
         return $colors[$this->id % count($colors)];

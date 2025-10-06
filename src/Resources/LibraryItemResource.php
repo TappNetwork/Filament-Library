@@ -159,16 +159,20 @@ class LibraryItemResource extends Resource
                             default => null,
                         };
                     }),
+                Tables\Columns\ViewColumn::make('tags')
+                    ->label('Tags')
+                    ->view('filament-library::tables.columns.tags-column')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('updater.name')
                     ->label('Modified By')
                     ->searchable()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Modified At')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Created By')
                     ->searchable()
@@ -183,23 +187,26 @@ class LibraryItemResource extends Resource
                     ->label('URL')
                     ->visible(fn (?LibraryItem $record) => $record && $record->type === 'link')
                     ->limit(50)
-                    ->tooltip(fn (?LibraryItem $record) => $record?->external_url),
-                Tables\Columns\ViewColumn::make('tags')
-                    ->label('Tags')
-                    ->view('filament-library::tables.columns.tags-column')
-                    ->toggleable(),
+                    ->tooltip(fn (?LibraryItem $record) => $record?->external_url)
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('general_access')
                     ->label('Permissions')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'private' => 'danger',
-                        'anyone_can_view' => 'success',
-                        default => 'gray',
+                    ->color(function (string $state, ?LibraryItem $record): string {
+                        $effectiveAccess = $record?->getEffectiveAccessControl() ?? $state;
+                        return match ($effectiveAccess) {
+                            'private' => 'danger',
+                            'anyone_can_view' => 'success',
+                            default => 'gray',
+                        };
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'private' => 'Private',
-                        'anyone_can_view' => 'Public',
-                        default => ucfirst(str_replace('_', ' ', $state)),
+                    ->formatStateUsing(function (string $state, ?LibraryItem $record): string {
+                        $effectiveAccess = $record?->getEffectiveAccessControl() ?? $state;
+                        return match ($effectiveAccess) {
+                            'private' => 'Private',
+                            'anyone_can_view' => 'Public',
+                            default => ucfirst(str_replace('_', ' ', $effectiveAccess)),
+                        };
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('is_favorite')
@@ -209,7 +216,8 @@ class LibraryItemResource extends Resource
                     ->action(function (LibraryItem $record): void {
                         $record->toggleFavorite();
                     })
-                    ->tooltip(fn (bool $state): string => $state ? 'Remove from favorites' : 'Add to favorites'),
+                    ->tooltip(fn (bool $state): string => $state ? 'Remove from favorites' : 'Add to favorites')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
