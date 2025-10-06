@@ -46,6 +46,7 @@ class PermissionService
         $role = match ($permission) {
             'view' => 'viewer',
             'edit' => 'editor',
+            'owner' => 'owner',
             default => 'viewer',
         };
 
@@ -84,9 +85,13 @@ class PermissionService
     {
         $userIds = $data['user_ids'] ?? [];
         $permission = $data['permission'] ?? 'view';
-        $cascadeToChildren = $data['cascade_to_children'] ?? false;
+        $generalAccess = $data['general_access'] ?? 'private';
 
         foreach ($items as $item) {
+            // Update the general access level for the item
+            $item->update(['general_access' => $generalAccess]);
+
+            // Assign permissions to users
             foreach ($userIds as $userId) {
                 $userModel = $this->getUserModel();
                 $this->assignPermission(
@@ -94,11 +99,6 @@ class PermissionService
                     $item,
                     $permission
                 );
-            }
-
-            // Cascade permissions to children if requested
-            if ($cascadeToChildren && $item->type === 'folder') {
-                $this->cascadePermissionsToChildren($item, $userIds, $permission);
             }
         }
     }

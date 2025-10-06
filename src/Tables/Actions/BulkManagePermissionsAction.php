@@ -41,6 +41,16 @@ class BulkManagePermissionsAction extends BulkAction
                     ->default('view')
                     ->required()
                     ->helperText('Choose the permission level to grant'),
+
+                Select::make('general_access')
+                    ->label('General Access')
+                    ->options([
+                        'private' => 'Private (owner only)',
+                        'anyone_can_view' => 'Anyone can view',
+                    ])
+                    ->default('private')
+                    ->required()
+                    ->helperText('Set the general access level for these items'),
             ])
             ->action(function (Collection $records, array $data) {
                 $permissionService = app(PermissionService::class);
