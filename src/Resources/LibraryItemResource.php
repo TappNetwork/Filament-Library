@@ -211,14 +211,14 @@ class LibraryItemResource extends Resource
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('is_favorite')
-                    ->label('')
+                    ->label('Favorite')
                     ->icon(fn (bool $state): string => $state ? 'heroicon-s-star' : 'heroicon-o-star')
                     ->color(fn (bool $state): string => $state ? 'warning' : 'gray')
                     ->action(function (LibraryItem $record): void {
                         $record->toggleFavorite();
                     })
                     ->tooltip(fn (bool $state): string => $state ? 'Remove from favorites' : 'Add to favorites')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
