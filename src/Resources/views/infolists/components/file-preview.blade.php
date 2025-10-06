@@ -1,41 +1,38 @@
 @php
-    $media = $record->getFirstMedia('files');
-    $mimeType = $media?->mime_type;
-
-    // Use the secure URL method from the model
+    $media = $record->getFirstMedia();
     $fileUrl = $record->getSecureUrl();
-
-    // Get file extension for better type detection
-    $extension = strtolower(pathinfo($media?->name, PATHINFO_EXTENSION));
 @endphp
 
-@php
-    // Define previewable file types
-    $previewableImages = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
-    $previewableDocuments = ['pdf'];
-    $previewableVideos = ['mp4', 'webm', 'ogg', 'avi', 'mov'];
-    $previewableAudio = ['mp3', 'wav', 'ogg', 'm4a', 'aac'];
+@if($media && $fileUrl)
+    @php
+        $mimeType = $media->mime_type;
+        $extension = strtolower(pathinfo($media->name, PATHINFO_EXTENSION));
 
-    // Check if file can be previewed
-    $canPreview = false;
-    $previewType = null;
+        // Define previewable file types
+        $previewableImages = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+        $previewableDocuments = ['pdf'];
+        $previewableVideos = ['mp4', 'webm', 'ogg', 'avi', 'mov'];
+        $previewableAudio = ['mp3', 'wav', 'ogg', 'm4a', 'aac'];
 
-    if (str_starts_with($mimeType, 'image/') || in_array($extension, $previewableImages)) {
-        $canPreview = true;
-        $previewType = 'image';
-    } elseif (in_array($extension, $previewableDocuments) || $mimeType === 'application/pdf') {
-        $canPreview = true;
-        $previewType = 'pdf';
-    } elseif (str_starts_with($mimeType, 'video/') || in_array($extension, $previewableVideos)) {
-        $canPreview = true;
-        $previewType = 'video';
-    } elseif (str_starts_with($mimeType, 'audio/') || in_array($extension, $previewableAudio)) {
-        $canPreview = true;
-        $previewType = 'audio';
-    }
-@endphp
+        // Check if file can be previewed
+        $canPreview = false;
+        $previewType = null;
 
-@if($media)
+        if (str_starts_with($mimeType, 'image/') || in_array($extension, $previewableImages)) {
+            $canPreview = true;
+            $previewType = 'image';
+        } elseif (in_array($extension, $previewableDocuments) || $mimeType === 'application/pdf') {
+            $canPreview = true;
+            $previewType = 'pdf';
+        } elseif (str_starts_with($mimeType, 'video/') || in_array($extension, $previewableVideos)) {
+            $canPreview = true;
+            $previewType = 'video';
+        } elseif (str_starts_with($mimeType, 'audio/') || in_array($extension, $previewableAudio)) {
+            $canPreview = true;
+            $previewType = 'audio';
+        }
+    @endphp
+
     <div class="w-full">
         @if($canPreview)
             @if($previewType === 'image')
@@ -63,7 +60,7 @@
                 </div>
             @endif
         @else
-            {{-- File cannot be previewed --}}
+            {{-- File cannot be previewed - show download option --}}
             <x-filament::section>
                 <div class="filament-library-unpreviewable">
                     <div class="filament-library-unpreviewable-message">

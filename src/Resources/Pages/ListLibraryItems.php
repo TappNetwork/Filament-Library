@@ -28,6 +28,7 @@ class ListLibraryItems extends ListRecords
         if ($this->parentId) {
             $this->parentFolder = LibraryItem::find($this->parentId);
         }
+
     }
 
     protected function getHeaderActions(): array
@@ -51,6 +52,14 @@ class ListLibraryItems extends ListRecords
                 ->label('Edit')
                 ->icon('heroicon-o-pencil')
                 ->color('gray')
+                ->visible(function () {
+                    $user = auth()->user();
+                    if (! $user || ! $this->parentFolder) {
+                        return false;
+                    }
+
+                    return $this->parentFolder->hasPermission($user, 'edit');
+                })
                 ->url(
                     fn (): string => static::getResource()::getUrl('edit', ['record' => $this->parentFolder])
                 );
@@ -61,6 +70,20 @@ class ListLibraryItems extends ListRecords
             Action::make('create_folder')
                 ->label('Create Folder')
                 ->icon('heroicon-o-folder-plus')
+                ->visible(function () {
+                    $user = auth()->user();
+                    if (! $user) {
+                        return false;
+                    }
+
+                    // If we're in a folder, check if user has upload permission
+                    if ($this->parentId && $this->parentFolder) {
+                        return $this->parentFolder->hasPermission($user, 'upload');
+                    }
+
+                    // At root level, only allow admins
+                    return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user);
+                })
                 ->schema([
                     TextInput::make('name')
                         ->label('Folder Name')
@@ -82,6 +105,20 @@ class ListLibraryItems extends ListRecords
             Action::make('upload_file')
                 ->label('Upload File')
                 ->icon('heroicon-o-document-plus')
+                ->visible(function () {
+                    $user = auth()->user();
+                    if (! $user) {
+                        return false;
+                    }
+
+                    // If we're in a folder, check if user has upload permission
+                    if ($this->parentId && $this->parentFolder) {
+                        return $this->parentFolder->hasPermission($user, 'upload');
+                    }
+
+                    // At root level, only allow admins
+                    return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user);
+                })
                 ->schema([
                     FileUpload::make('file')
                         ->label('Upload File')
@@ -90,15 +127,16 @@ class ListLibraryItems extends ListRecords
                         ->disk('public')
                         ->directory('library-files')
                         ->visibility('private')
-                        ->preserveFilenames(), // This should preserve original filenames
+                        ->preserveFilenames(),
                 ])
                 ->action(function (array $data): void {
                     $filePath = $data['file'];
 
-                    // Extract filename from the stored path - this should preserve the original name
+                    // Extract filename from the stored path
                     $fileName = basename($filePath);
 
-                    LibraryItem::create([
+                    // Create the library item
+                    $libraryItem = LibraryItem::create([
                         'name' => $fileName,
                         'type' => 'file',
                         'parent_id' => $this->parentId,
@@ -106,11 +144,31 @@ class ListLibraryItems extends ListRecords
                         'updated_by' => auth()->user()?->id,
                     ]);
 
+                    // Associate the uploaded file with the library item using Spatie Media Library
+                    $libraryItem->addMediaFromDisk($filePath, 'public')
+                        ->usingName($fileName)
+                        ->usingFileName($fileName)
+                        ->toMediaCollection();
+
                     $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
                 }),
             Action::make('create_link')
                 ->label('Add Link')
                 ->icon('heroicon-o-link')
+                ->visible(function () {
+                    $user = auth()->user();
+                    if (! $user) {
+                        return false;
+                    }
+
+                    // If we're in a folder, check if user has upload permission
+                    if ($this->parentId && $this->parentFolder) {
+                        return $this->parentFolder->hasPermission($user, 'upload');
+                    }
+
+                    // At root level, only allow admins
+                    return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user);
+                })
                 ->schema([
                     TextInput::make('name')
                         ->label('Link Name')
@@ -148,7 +206,17 @@ class ListLibraryItems extends ListRecords
             ->label('New')
             ->icon('heroicon-o-plus')
             ->color('primary')
-            ->button();
+            ->button()
+            ->visible(function () {
+                // Show the action group if we're in a subfolder (always allow)
+                // Or if we're at root level and user is admin
+                if ($this->parentId !== null) {
+                    return true; // Always allow in subfolders
+                }
+
+                // At root level, only allow admins
+                return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin(auth()->user());
+            });
 
         return $actions;
     }
@@ -160,7 +228,25 @@ class ListLibraryItems extends ListRecords
         if ($this->parentId) {
             $query->where('parent_id', $this->parentId);
         } else {
-            $query->whereNull('parent_id');
+            // Show items at root level based on user permissions
+            $user = auth()->user();
+            $query->whereNull('parent_id')
+                ->where(function ($q) use ($user) {
+                    $q->where('general_access', 'anyone_can_view');
+
+                    // Admins can see all items (including private/inherit)
+                    if ($user && \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user)) {
+                        $q->orWhere(function ($adminQuery) {
+                            $adminQuery->whereIn('general_access', ['private', 'inherit']);
+                        });
+                    }
+
+                    // Creators can see their own items (even if private)
+                    if ($user) {
+                        $q->orWhere('created_by', $user->id);
+                    }
+                })
+                ->where('name', 'not like', "%'s Personal Folder");
         }
 
         return $query;
@@ -172,7 +258,7 @@ class ListLibraryItems extends ListRecords
             return $this->parentFolder->name;
         }
 
-        return 'All Folders';
+        return 'Library';
     }
 
     public function getSubheading(): ?string
@@ -181,13 +267,17 @@ class ListLibraryItems extends ListRecords
             return $this->parentFolder->link_description;
         }
 
+        if (! $this->parentId) {
+            return 'Publicly accessible files and folders';
+        }
+
         return null;
     }
 
     public function getBreadcrumbs(): array
     {
         $breadcrumbs = [
-            static::getResource()::getUrl() => 'All Folders',
+            static::getResource()::getUrl() => 'Library',
         ];
 
         if ($this->parentFolder) {
@@ -214,5 +304,4 @@ class ListLibraryItems extends ListRecords
 
         return $breadcrumbs;
     }
-
 }

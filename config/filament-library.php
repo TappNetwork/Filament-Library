@@ -3,43 +3,14 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | URL Configuration
+    | User Model
     |--------------------------------------------------------------------------
     |
-    | Configuration for URL generation and expiration times.
+    | This is the user model that will be used for relationships in the
+    | filament-library package. You can override this to use your own
+    | user model.
     |
     */
-    'url' => [
-        'temporary_expiration_minutes' => env('FILAMENT_LIBRARY_URL_EXPIRATION_MINUTES', 60),
-    ],
+    'user_model' => env('FILAMENT_LIBRARY_USER_MODEL', 'App\\Models\\User'),
 
-    /*
-    |--------------------------------------------------------------------------
-    | Cache Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Configuration for caching behavior.
-    |
-    */
-    'cache' => [
-        'breadcrumbs_ttl_seconds' => env('FILAMENT_LIBRARY_BREADCRUMBS_TTL', 300),
-    ],
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Video Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Configuration for video URL detection.
-    |
-    */
-    'video' => [
-        'supported_domains' => [
-            'youtube.com',
-            'youtu.be',
-            'vimeo.com',
-            'wistia.com',
-        ],
-    ],
 ];

@@ -16,13 +16,14 @@ class SeedLibraryCommand extends Command
         if (! $this->option('force')) {
             if (! $this->confirm('This will clear all existing library data and create sample data. Continue?')) {
                 $this->info('Operation cancelled.');
+
                 return self::SUCCESS;
             }
         }
 
         $this->info('Seeding library with sample data...');
 
-        $seeder = new LibrarySeeder();
+        $seeder = new LibrarySeeder;
         $seeder->setCommand($this);
         $seeder->run();
 

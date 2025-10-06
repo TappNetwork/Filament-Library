@@ -12,6 +12,8 @@ use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Tapp\FilamentLibrary\Commands\FilamentLibraryCommand;
 use Tapp\FilamentLibrary\Commands\SeedLibraryCommand;
+use Tapp\FilamentLibrary\Models\LibraryItem;
+use Tapp\FilamentLibrary\Policies\LibraryItemPolicy;
 
 class FilamentLibraryServiceProvider extends PackageServiceProvider
 {
@@ -50,9 +52,8 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
             $package->hasTranslations();
         }
 
-        if (file_exists($package->basePath('/../resources/views'))) {
-            $package->hasViews(static::$viewNamespace);
-        }
+        // Views are loaded manually to avoid automatic publishing
+        // Users can publish them manually with: php artisan vendor:publish --tag=filament-library-views
     }
 
     public function packageRegistered(): void {}
@@ -76,6 +77,9 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
         // Register middleware
         $this->app['router']->pushMiddlewareToGroup('web', \Tapp\FilamentLibrary\Middleware\RedirectToCorrectEditPage::class);
 
+        // Register the policy
+        $this->app['Illuminate\Contracts\Auth\Access\Gate']->policy(LibraryItem::class, LibraryItemPolicy::class);
+
         // Handle Stubs
         if (app()->runningInConsole()) {
             foreach (app(Filesystem::class)->files(__DIR__ . '/../stubs/') as $file) {
@@ -85,6 +89,13 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
             }
         }
 
+        // Load views manually from src directory
+        $this->loadViewsFrom(__DIR__ . '/Resources/views', static::$viewNamespace);
+
+        // Publish views manually (optional)
+        $this->publishes([
+            __DIR__ . '/Resources/views' => resource_path('views/vendor/filament-library'),
+        ], 'filament-library-views');
 
         // Testing - No custom test mixins needed
     }
@@ -161,7 +172,8 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
         return [
             '2024_01_01_000000_create_library_items_table',
             '2024_01_01_000001_create_library_item_permissions_table',
-            '2024_01_01_000002_add_external_link_support_to_library_items_table',
+            '2024_01_01_000002_create_library_item_tags_table',
+            '2024_01_01_000003_create_library_item_favorites_table',
         ];
     }
 }

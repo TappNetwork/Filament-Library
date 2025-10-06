@@ -41,16 +41,27 @@ class EditLibraryItem extends EditRecord
     {
         $actions = [];
 
-        // Add "View Folder" action if we have a parent
+        // Add "Up One Level" action if we have a parent
         if ($this->getRecord()->parent_id) {
-            $actions[] = Action::make('view_folder')
-                ->label('View Folder')
+            $actions[] = Action::make('up_one_level')
+                ->label('Up One Level')
                 ->icon('heroicon-o-arrow-up')
                 ->color('gray')
                 ->url(
                     fn (): string => static::getResource()::getUrl('index', ['parent' => $this->getRecord()->parent_id])
                 );
         }
+
+        // Add "View" action - for folders go to list page, for files/links go to view page
+        $viewUrl = $this->getRecord()->type === 'folder'
+            ? static::getResource()::getUrl('index', ['parent' => $this->getRecord()->id])
+            : static::getResource()::getUrl('view', ['record' => $this->getRecord()->id]);
+
+        $actions[] = Action::make('view')
+            ->label('View')
+            ->icon('heroicon-o-eye')
+            ->color('gray')
+            ->url($viewUrl);
 
         $actions[] = DeleteAction::make()
             ->before(function () {
@@ -67,69 +78,17 @@ class EditLibraryItem extends EditRecord
         return $actions;
     }
 
-    protected function mutateFormDataBeforeFill(array $data): array
-    {
-        // Remove fields that shouldn't be editable
-        unset($data['type']);
-        unset($data['parent_id']);
-        unset($data['created_by']);
-
-        return $data;
-    }
-
-
-    protected function mutateFormDataBeforeSave(array $data): array
-    {
-        // Set the updated_by field
-        $data['updated_by'] = auth()->user()?->id;
-
-        return $data;
-    }
-
-    protected function getForms(): array
-    {
-        return [
-            'form' => $this->form(static::getResource()::form(
-                \Filament\Schemas\Schema::make()
-            ))
-                ->statePath('data')
-                ->model($this->getRecord())
-                ->schema([
-                    \Filament\Forms\Components\TextInput::make('name')
-                        ->required()
-                        ->maxLength(255),
-
-                    // Folder form fields
-                    \Filament\Forms\Components\Textarea::make('link_description')
-                        ->label('Description')
-                        ->visible(fn () => $this->getRecord()->type === 'folder')
-                        ->rows(3),
-
-                    // File form fields
-                    \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('files')
-                        ->label('File')
-                        ->collection('files')
-                        ->visible(fn () => $this->getRecord()->type === 'file'),
-
-                    // Link form fields
-                    \Filament\Forms\Components\TextInput::make('external_url')
-                        ->label('URL')
-                        ->url()
-                        ->visible(fn () => $this->getRecord()->type === 'link')
-                        ->required(fn () => $this->getRecord()->type === 'link'),
-
-                    \Filament\Forms\Components\Textarea::make('link_description')
-                        ->label('Description')
-                        ->visible(fn () => $this->getRecord()->type === 'link')
-                        ->rows(3),
-                ]),
-        ];
-    }
+    // NOTE: This page is a redirect middleware only - it never displays a form
+    // Forms are defined in the specific edit pages:
+    // - EditFolder.php (for folders)
+    // - EditFile.php (for files)
+    // - EditLink.php (for external links)
+    // This page automatically redirects to the appropriate edit page based on item type
 
     public function getBreadcrumbs(): array
     {
         $breadcrumbs = [
-            static::getResource()::getUrl() => 'All Folders',
+            static::getResource()::getUrl() => 'Library',
         ];
 
         $record = $this->getRecord();

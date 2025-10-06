@@ -5,6 +5,7 @@ namespace Tapp\FilamentLibrary\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
@@ -27,6 +28,7 @@ class LibraryItem extends Model implements HasMedia
         'updated_by',
         'external_url',
         'link_description',
+        'general_access',
     ];
 
     protected $casts = [
@@ -51,6 +53,20 @@ class LibraryItem extends Model implements HasMedia
             if (auth()->check()) {
                 $item->created_by = auth()->id();
                 $item->updated_by = auth()->id(); // Set both on creation
+            }
+        });
+
+        static::created(function (self $item) {
+            // Copy parent folder permissions to the new item
+            if ($item->parent_id) {
+                $parentPermissions = $item->parent->permissions()->get();
+
+                foreach ($parentPermissions as $permission) {
+                    $item->permissions()->create([
+                        'user_id' => $permission->user_id,
+                        'role' => $permission->role,
+                    ]);
+                }
             }
         });
 
@@ -87,7 +103,22 @@ class LibraryItem extends Model implements HasMedia
      */
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'created_by');
+        return $this->belongsTo(\App\Models\User::class, 'created_by')->withDefault(function () {
+            // Check if 'name' field exists
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'name')) {
+                return [
+                    'name' => 'Unknown User',
+                    'email' => 'deleted@example.com',
+                ];
+            }
+
+            // Fall back to first_name/last_name
+            return [
+                'first_name' => 'Unknown',
+                'last_name' => 'User',
+                'email' => 'deleted@example.com',
+            ];
+        });
     }
 
     /**
@@ -144,26 +175,254 @@ class LibraryItem extends Model implements HasMedia
     }
 
     /**
-     * Check if a user has a specific permission on this item.
+     * Get the effective role for a user on this item.
      */
-    public function hasPermission($user, string $permission): bool
+    public function getEffectiveRole($user): ?string
     {
-        // Check direct permissions
+        if (! $user) {
+            return null;
+        }
+
+        // Check if user is the creator (always has access)
+        if ($this->created_by === $user->id) {
+            // Creator always has access, but check if they're also the owner
+            $currentOwner = $this->getCurrentOwner();
+            if ($currentOwner && $currentOwner->id === $user->id) {
+                return 'owner'; // Creator is also owner
+            }
+
+            return 'creator'; // Creator but not owner
+        }
+
+        // Check direct resource permissions
         $directPermission = $this->permissions()
             ->where('user_id', $user->id)
-            ->where('permission', $permission)
-            ->exists();
+            ->first();
 
         if ($directPermission) {
-            return true;
+            return $directPermission->role;
         }
 
         // Check inherited permissions from parent folders
         if ($this->parent_id) {
-            return $this->parent->hasPermission($user, $permission);
+            return $this->parent->getEffectiveRole($user);
         }
 
-        return false;
+        // Check general access
+        $effectiveGeneralAccess = $this->getEffectiveGeneralAccess();
+
+        if ($effectiveGeneralAccess === 'anyone_can_view') {
+            return 'viewer';
+        }
+
+        return null; // No access
+    }
+
+    /**
+     * Get the current owner of this item.
+     */
+    public function getCurrentOwner(): ?\App\Models\User
+    {
+        $ownerPermission = $this->permissions()
+            ->where('role', 'owner')
+            ->first();
+
+        if ($ownerPermission) {
+            return $ownerPermission->user;
+        }
+
+        // If no owner in permissions table, creator is the owner
+        return $this->creator;
+    }
+
+    /**
+     * Check if the creator is the current owner.
+     */
+    public function isCreatorOwner(): bool
+    {
+        $currentOwner = $this->getCurrentOwner();
+
+        return $currentOwner && $currentOwner->id === $this->created_by;
+    }
+
+    /**
+     * Transfer ownership to another user.
+     */
+    public function transferOwnership(\App\Models\User $newOwner): void
+    {
+        // Remove existing owner permissions
+        $this->permissions()->where('role', 'owner')->delete();
+
+        // Check if the new owner already has a permission for this item
+        $existingPermission = $this->permissions()->where('user_id', $newOwner->id)->first();
+
+        if ($existingPermission) {
+            // Update existing permission to owner
+            $existingPermission->update(['role' => 'owner']);
+        } else {
+            // Create new owner permission
+            $this->permissions()->create([
+                'user_id' => $newOwner->id,
+                'role' => 'owner',
+            ]);
+        }
+    }
+
+    /**
+     * Ensure a user has a personal folder (like Google Drive's "My Drive").
+     */
+    public static function ensurePersonalFolder(\App\Models\User $user): self
+    {
+        // Check if user already has a personal folder via the relationship
+        if ($user->personal_folder_id) {
+            $personalFolder = static::find($user->personal_folder_id);
+            if ($personalFolder) {
+                return $personalFolder;
+            }
+        }
+
+        // Create personal folder
+        $personalFolder = static::create([
+            'name' => static::getPersonalFolderName($user),
+            'type' => 'folder',
+            'parent_id' => null,
+            'created_by' => $user->id,
+            'updated_by' => $user->id,
+            'general_access' => 'private',
+        ]);
+
+        // Set the user as owner of their personal folder
+        $personalFolder->permissions()->create([
+            'user_id' => $user->id,
+            'role' => 'owner',
+        ]);
+
+        // Update the user's personal_folder_id
+        $user->update(['personal_folder_id' => $personalFolder->id]);
+
+        return $personalFolder;
+    }
+
+    /**
+     * Get a user's personal folder.
+     */
+    public static function getPersonalFolder(\App\Models\User $user): ?self
+    {
+        if (! $user->personal_folder_id) {
+            return null;
+        }
+
+        return static::find($user->personal_folder_id);
+    }
+
+    /**
+     * Generate the personal folder name for a user.
+     */
+    public static function getPersonalFolderName(\App\Models\User $user): string
+    {
+        // Try to get a display name from various user fields
+        $name = $user->first_name ?? $user->name ?? $user->email ?? 'User';
+
+        // Clean the name (remove special characters that might cause issues)
+        $name = preg_replace('/[^\w\s-]/', '', $name);
+        $name = trim($name);
+
+        // Fallback if name is empty
+        if (empty($name)) {
+            $name = 'User';
+        }
+
+        return $name . "'s Personal Folder";
+    }
+
+    /**
+     * Get the effective general access setting (resolves inheritance).
+     */
+    public function getEffectiveGeneralAccess(): string
+    {
+        // Handle null values (existing records before migration)
+        if ($this->general_access === null || $this->general_access === 'inherit') {
+            // Inherit from parent
+            if ($this->parent_id) {
+                return $this->parent->getEffectiveGeneralAccess();
+            }
+
+            // Root level defaults to private
+            return 'private';
+        }
+
+        return $this->general_access;
+    }
+
+    /**
+     * Get the inherited general access value from parent (for display purposes).
+     */
+    public function getInheritedGeneralAccess(): ?string
+    {
+        if (! $this->parent_id) {
+            return null;
+        }
+
+        return $this->parent->getEffectiveGeneralAccess();
+    }
+
+    /**
+     * Get the display text for inherited general access.
+     */
+    public function getInheritedGeneralAccessDisplay(): ?string
+    {
+        $inherited = $this->getInheritedGeneralAccess();
+
+        if (! $inherited) {
+            return null;
+        }
+
+        $options = self::getGeneralAccessOptions();
+
+        return $options[$inherited] ?? $inherited;
+    }
+
+    /**
+     * Check if a user has a specific permission on this item.
+     */
+    public function hasPermission($user, string $permission): bool
+    {
+        // Admin users always have all permissions
+        if ($user && \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user)) {
+            return true;
+        }
+
+        $effectiveRole = $this->getEffectiveRole($user);
+
+        if (! $effectiveRole) {
+            return false;
+        }
+
+        return match ($permission) {
+            'view' => in_array($effectiveRole, ['viewer', 'editor', 'owner', 'creator']),
+            'edit' => in_array($effectiveRole, ['editor', 'owner', 'creator']),
+            'share' => in_array($effectiveRole, ['owner', 'creator']),
+            'delete' => in_array($effectiveRole, ['owner', 'creator']),
+            'upload' => in_array($effectiveRole, ['editor', 'owner', 'creator']),
+            'manage_permissions' => in_array($effectiveRole, ['owner', 'creator']),
+            default => false,
+        };
+    }
+
+    /**
+     * Check if a user can view this item (including anonymous access).
+     */
+    public function canBeViewedBy($user = null): bool
+    {
+        // If user is logged in, check their effective role
+        if ($user) {
+            return $this->hasPermission($user, 'view');
+        }
+
+        // For anonymous users, check if general access allows viewing
+        $effectiveGeneralAccess = $this->getEffectiveGeneralAccess();
+
+        return $effectiveGeneralAccess === 'anyone_can_view';
     }
 
     /**
@@ -239,23 +498,7 @@ class LibraryItem extends Model implements HasMedia
      */
     public function registerMediaCollections(): void
     {
-        $this->addMediaCollection('files')
-            ->acceptsMimeTypes([
-                'image/jpeg',
-                'image/png',
-                'image/gif',
-                'image/webp',
-                'application/pdf',
-                'text/plain',
-                'text/csv',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.ms-excel',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.ms-powerpoint',
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-            ])
-            ->singleFile();
+        // Using default collection - no need to register custom collection
     }
 
     /**
@@ -273,9 +516,9 @@ class LibraryItem extends Model implements HasMedia
      */
     public function getSecureUrl(?int $expirationMinutes = null): string
     {
-        $media = $this->getFirstMedia('files');
+        $media = $this->getFirstMedia();
 
-        if (!$media) {
+        if (! $media) {
             return '';
         }
 
@@ -294,7 +537,6 @@ class LibraryItem extends Model implements HasMedia
             return $url;
         }
     }
-
 
     /**
      * Generate a unique slug for the given name and parent.
@@ -316,5 +558,106 @@ class LibraryItem extends Model implements HasMedia
         }
 
         return $slug;
+    }
+
+    /**
+     * Get the access control options for the general access select.
+     */
+    public static function getAccessControlOptions(): array
+    {
+        return [
+            'inherit' => 'Inherit from parent',
+            'private' => 'Private (owner only)',
+            'anyone_can_view' => 'Anyone can view',
+        ];
+    }
+
+    /**
+     * Get the effective access control setting.
+     */
+    public function getEffectiveAccessControl(): string
+    {
+        // If not inheriting, use the item's own setting
+        if ($this->general_access && $this->general_access !== 'inherit') {
+            return $this->general_access;
+        }
+
+        // If inheriting from parent, check parent's access control
+        if ($this->parent_id) {
+            return $this->parent->getEffectiveAccessControl();
+        }
+
+        // Root level items default to private
+        return 'private';
+    }
+
+    /**
+     * Get the general access options.
+     */
+    public static function getGeneralAccessOptions(): array
+    {
+        return [
+            'inherit' => 'Inherit from parent',
+            'private' => 'Private (owner only)',
+            'anyone_can_view' => 'Anyone can view',
+        ];
+    }
+
+    /**
+     * Get the tags for this library item.
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(LibraryItemTag::class, 'library_item_tag_pivot')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the users who favorited this library item.
+     * Note: This uses a generic user model - projects should extend this
+     * or override this relationship in their own LibraryItem model.
+     */
+    public function favoritedBy(): BelongsToMany
+    {
+        // Use a configurable user model or fallback to a generic approach
+        $userModel = config('filament-library.user_model', 'App\\Models\\User');
+
+        return $this->belongsToMany($userModel, 'library_item_favorites')
+            ->withTimestamps();
+    }
+
+    /**
+     * Toggle favorite status for the current user.
+     */
+    public function toggleFavorite(): void
+    {
+        if (auth()->check()) {
+            $user = auth()->user();
+            if ($user->favoriteLibraryItems()->where('library_item_id', $this->id)->exists()) {
+                $user->favoriteLibraryItems()->detach($this->id);
+            } else {
+                $user->favoriteLibraryItems()->attach($this->id);
+            }
+        }
+    }
+
+    /**
+     * Check if this item is favorited by the current user.
+     */
+    public function isFavorite(): bool
+    {
+        if (! auth()->check()) {
+            return false;
+        }
+
+        return auth()->user()->favoriteLibraryItems()->where('library_item_id', $this->id)->exists();
+    }
+
+    /**
+     * Get the is_favorite attribute.
+     */
+    public function getIsFavoriteAttribute(): bool
+    {
+        return $this->isFavorite();
     }
 }

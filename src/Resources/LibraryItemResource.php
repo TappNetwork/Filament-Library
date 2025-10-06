@@ -31,19 +31,24 @@ class LibraryItemResource extends Resource
         return 'heroicon-o-folder';
     }
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false; // Don't show in navigation - we use custom navigation items
+    }
+
     public static function getNavigationGroup(): ?string
     {
-        return 'Resource Library';
+        return null;
     }
 
     public static function getNavigationSort(): ?int
     {
-        return 10;
+        return null;
     }
 
     public static function getNavigationLabel(): string
     {
-        return 'All Folders';
+        return 'Library Items';
     }
 
     protected static ?string $modelLabel = 'Library Item';
@@ -89,7 +94,6 @@ class LibraryItemResource extends Resource
                 // File form fields
                 \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('files')
                     ->label('File')
-                    ->collection('files')
                     ->visible(fn (callable $get) => $get('type') === 'file')
                     ->required(fn (callable $get) => $get('type') === 'file'),
 
@@ -121,15 +125,29 @@ class LibraryItemResource extends Resource
 
     public static function table(Table $table): Table
     {
+        // This table configuration is used by ALL list pages:
+        // - ListLibraryItems (main library view)
+        // - PublicLibrary (public files)
+        // - MyLibrary (personal documents)
+        // - CreatedByMe (user's created items)
+        // - SharedWithMe (shared items)
+        // - SearchAll (search results)
+        // The list pages only override getTableQuery() for filtering, not the columns
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable()
+                    ->limit(50)
+                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                        $state = $column->getState();
+
+                        return strlen($state) > 50 ? $state : null;
+                    })
                     ->icon(fn (?LibraryItem $record): string => $record?->getDisplayIcon() ?? 'heroicon-o-document')
                     ->iconPosition('before')
                     ->url(function (?LibraryItem $record): ?string {
-                        if (!$record) {
+                        if (! $record) {
                             return null;
                         }
 
@@ -140,16 +158,20 @@ class LibraryItemResource extends Resource
                             default => null,
                         };
                     }),
+                Tables\Columns\ViewColumn::make('tags')
+                    ->label('Tags')
+                    ->view('filament-library::tables.columns.tags-column')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('updater.name')
                     ->label('Modified By')
                     ->searchable()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Modified At')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Created By')
                     ->searchable()
@@ -164,7 +186,39 @@ class LibraryItemResource extends Resource
                     ->label('URL')
                     ->visible(fn (?LibraryItem $record) => $record && $record->type === 'link')
                     ->limit(50)
-                    ->tooltip(fn (?LibraryItem $record) => $record?->external_url),
+                    ->tooltip(fn (?LibraryItem $record) => $record?->external_url)
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('general_access')
+                    ->label('Permissions')
+                    ->badge()
+                    ->color(function (string $state, ?LibraryItem $record): string {
+                        $effectiveAccess = $record?->getEffectiveAccessControl() ?? $state;
+
+                        return match ($effectiveAccess) {
+                            'private' => 'danger',
+                            'anyone_can_view' => 'success',
+                            default => 'gray',
+                        };
+                    })
+                    ->formatStateUsing(function (string $state, ?LibraryItem $record): string {
+                        $effectiveAccess = $record?->getEffectiveAccessControl() ?? $state;
+
+                        return match ($effectiveAccess) {
+                            'private' => 'Private',
+                            'anyone_can_view' => 'Public',
+                            default => ucfirst(str_replace('_', ' ', $effectiveAccess)),
+                        };
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\IconColumn::make('is_favorite')
+                    ->label('')
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-s-star' : 'heroicon-o-star')
+                    ->color(fn (bool $state): string => $state ? 'warning' : 'gray')
+                    ->action(function (LibraryItem $record): void {
+                        $record->toggleFavorite();
+                    })
+                    ->tooltip(fn (bool $state): string => $state ? 'Remove from favorites' : 'Add to favorites')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
@@ -173,6 +227,12 @@ class LibraryItemResource extends Resource
                         'file' => 'File',
                         'link' => 'External Link',
                     ]),
+                Tables\Filters\SelectFilter::make('tags')
+                    ->label('Tags')
+                    ->relationship('tags', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->multiple(),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->recordActions([
@@ -180,6 +240,7 @@ class LibraryItemResource extends Resource
                     Action::make('view')
                         ->label('View')
                         ->icon('heroicon-o-eye')
+                        ->visible(fn (LibraryItem $record): bool => auth()->user() && $record->hasPermission(auth()->user(), 'view'))
                         ->url(function (LibraryItem $record): string {
                             // Use the same logic as recordUrl - cache URL generation to reduce computation
                             $cacheKey = 'record_url_' . $record->id . '_' . $record->type;
@@ -192,11 +253,13 @@ class LibraryItemResource extends Resource
                         }),
                     EditAction::make()
                         ->color('gray')
+                        ->visible(fn (LibraryItem $record): bool => auth()->user() && $record->hasPermission(auth()->user(), 'edit'))
                         ->url(function (LibraryItem $record): string {
                             return static::getEditUrl($record);
                         }),
                     DeleteAction::make()
                         ->color('gray')
+                        ->visible(fn (LibraryItem $record): bool => auth()->user() && $record->hasPermission(auth()->user(), 'delete'))
                         ->before(function (LibraryItem $record) {
                             // Store parent_id before deletion
                             static::$deletedParentId = $record->parent_id;
@@ -207,8 +270,10 @@ class LibraryItemResource extends Resource
 
                             return static::getUrl('index', $parentId ? ['parent' => $parentId] : []);
                         }),
-                    RestoreAction::make(),
+                    RestoreAction::make()
+                        ->visible(fn (LibraryItem $record): bool => auth()->user() && $record->hasPermission(auth()->user(), 'delete') && $record->deleted_at !== null),
                     ForceDeleteAction::make()
+                        ->visible(fn (LibraryItem $record): bool => auth()->user() && $record->hasPermission(auth()->user(), 'delete') && $record->deleted_at !== null)
                         ->before(function (LibraryItem $record) {
                             // Store parent_id before deletion
                             static::$deletedParentId = $record->parent_id;
@@ -227,14 +292,17 @@ class LibraryItemResource extends Resource
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class))
                         ->successRedirectUrl(function () {
                             // For bulk actions, redirect to current folder (maintain current location)
                             $currentParent = request()->get('parent');
 
                             return static::getUrl('index', $currentParent ? ['parent' => $currentParent] : []);
                         }),
-                    RestoreBulkAction::make(),
+                    RestoreBulkAction::make()
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class)),
                     ForceDeleteBulkAction::make()
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class))
                         ->successRedirectUrl(function () {
                             // For bulk actions, redirect to current folder (maintain current location)
                             $currentParent = request()->get('parent');
@@ -258,7 +326,7 @@ class LibraryItemResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            \App\Filament\Resources\LibraryItemResource\RelationManagers\ResourcePermissionsRelationManager::class,
         ];
     }
 
@@ -266,6 +334,12 @@ class LibraryItemResource extends Resource
     {
         return [
             'index' => Pages\ListLibraryItems::route('/'),
+            'my-documents' => Pages\MyLibrary::route('/my-documents'),
+            'shared-with-me' => Pages\SharedWithMe::route('/shared-with-me'),
+            'created-by-me' => Pages\CreatedByMe::route('/created-by-me'),
+            'favorites' => Pages\Favorites::route('/favorites'),
+            'public' => Pages\PublicLibrary::route('/public'),
+            'search-all' => Pages\SearchAll::route('/search-all'),
             'create-folder' => Pages\CreateFolder::route('/create-folder'),
             'create-file' => Pages\CreateFile::route('/create-file'),
             'create-link' => Pages\CreateLink::route('/create-link'),

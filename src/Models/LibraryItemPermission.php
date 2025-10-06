@@ -10,10 +10,12 @@ class LibraryItemPermission extends Model
 {
     use HasFactory;
 
+    protected $table = 'library_item_permissions';
+
     protected $fillable = [
         'library_item_id',
         'user_id',
-        'permission',
+        'role',
     ];
 
     protected $casts = [
@@ -34,6 +36,36 @@ class LibraryItemPermission extends Model
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class);
+        $userModel = config('auth.providers.users.model', 'App\\Models\\User');
+
+        return $this->belongsTo($userModel);
+    }
+
+    /**
+     * Get the available role options.
+     */
+    public static function getRoleOptions(): array
+    {
+        return [
+            'viewer' => 'Viewer',
+            'editor' => 'Editor',
+            'owner' => 'Owner',
+        ];
+    }
+
+    /**
+     * Check if this permission allows editing.
+     */
+    public function canEdit(): bool
+    {
+        return in_array($this->role, ['editor', 'owner']);
+    }
+
+    /**
+     * Check if this permission allows viewing.
+     */
+    public function canView(): bool
+    {
+        return in_array($this->role, ['viewer', 'editor', 'owner']);
     }
 }

@@ -3,13 +3,10 @@
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Actions\Action;
-use Filament\Infolists\Components\ImageEntry;
-use Filament\Infolists\Components\RepeatableEntry;
-use Filament\Schemas\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Pages\ViewRecord;
-use Filament\Schemas\Components\Flex;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Tapp\FilamentLibrary\Infolists\Components\VideoEmbed;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
@@ -39,14 +36,24 @@ class ViewLibraryItem extends ViewRecord
         return "View {$type}";
     }
 
+    public function mount(int | string $record): void
+    {
+        parent::mount($record);
+
+        // Redirect folders to their list page since view page isn't useful for folders
+        if ($this->getRecord()->type === 'folder') {
+            $this->redirect(static::getResource()::getUrl('index', ['parent' => $this->getRecord()->id]));
+        }
+    }
+
     protected function getHeaderActions(): array
     {
         $actions = [];
 
-        // Add "View Folder" action if we have a parent
+        // Add "Up One Level" action if we have a parent
         if ($this->getRecord()->parent_id) {
-            $actions[] = Action::make('view_folder')
-                ->label('View Folder')
+            $actions[] = Action::make('up_one_level')
+                ->label('Up One Level')
                 ->icon('heroicon-o-arrow-up')
                 ->color('gray')
                 ->url(
@@ -94,7 +101,7 @@ class ViewLibraryItem extends ViewRecord
     public function getBreadcrumbs(): array
     {
         $breadcrumbs = [
-            static::getResource()::getUrl() => 'All Folders',
+            static::getResource()::getUrl() => 'Library',
         ];
 
         $record = $this->getRecord();
@@ -183,33 +190,6 @@ class ViewLibraryItem extends ViewRecord
                     ])
                     ->columnSpanFull(),
 
-                // Media section for files
-                Section::make('Media')
-                    ->schema([
-                        RepeatableEntry::make('media')
-                            ->label('')
-                            ->schema([
-                                Flex::make([
-                                    ImageEntry::make('preview')
-                                        ->state(fn ($media) => $media->getUrl('thumb'))
-                                        ->width(300)
-                                        ->height(300)
-                                        ->visible(fn ($media) => $media->hasGeneratedConversion('thumb'))
-                                        ->label(''),
-                                    Grid::make(1)
-                                        ->schema([
-                                            TextEntry::make('name')
-                                                ->label('File Name'),
-                                            TextEntry::make('size')
-                                                ->label('File Size')
-                                                ->formatStateUsing(fn ($state) => number_format($state / 1024 / 1024, 2) . ' MB'),
-                                        ]),
-                                ])
-                                    ->from('lg'),
-                            ])
-                            ->visible(fn () => $record->type === 'file' && $record->getMedia()->count() > 0),
-                    ])
-                    ->visible(fn () => $record->type === 'file' && $record->getMedia()->count() > 0),
             ]);
     }
 }
