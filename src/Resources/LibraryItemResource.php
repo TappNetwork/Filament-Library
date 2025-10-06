@@ -193,6 +193,7 @@ class LibraryItemResource extends Resource
                     ->badge()
                     ->color(function (string $state, ?LibraryItem $record): string {
                         $effectiveAccess = $record?->getEffectiveAccessControl() ?? $state;
+
                         return match ($effectiveAccess) {
                             'private' => 'danger',
                             'anyone_can_view' => 'success',
@@ -201,6 +202,7 @@ class LibraryItemResource extends Resource
                     })
                     ->formatStateUsing(function (string $state, ?LibraryItem $record): string {
                         $effectiveAccess = $record?->getEffectiveAccessControl() ?? $state;
+
                         return match ($effectiveAccess) {
                             'private' => 'Private',
                             'anyone_can_view' => 'Public',

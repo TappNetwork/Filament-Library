@@ -8,12 +8,12 @@ namespace Tapp\FilamentLibrary\Tables\Actions;
  */
 
 use Filament\Actions\BulkAction;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\Collection;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Forms\Components\UserSearchSelect;
 use Tapp\FilamentLibrary\Services\PermissionService;
-use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 
 class BulkManagePermissionsAction extends BulkAction
 {
