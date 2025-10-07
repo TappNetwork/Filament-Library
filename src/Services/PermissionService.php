@@ -50,7 +50,7 @@ class PermissionService
             default => 'viewer',
         };
 
-        \App\Models\ResourcePermission::updateOrCreate(
+        \Tapp\FilamentLibrary\Models\LibraryItemPermission::updateOrCreate(
             [
                 'library_item_id' => $item->id,
                 'user_id' => $user->id,
@@ -70,7 +70,7 @@ class PermissionService
      */
     public function removePermission($user, LibraryItem $item, string $permission): void
     {
-        \App\Models\ResourcePermission::where([
+        \Tapp\FilamentLibrary\Models\LibraryItemPermission::where([
             'library_item_id' => $item->id,
             'user_id' => $user->id,
         ])->delete();
