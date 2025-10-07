@@ -326,7 +326,7 @@ class LibraryItemResource extends Resource
     public static function getRelations(): array
     {
         return [
-            \App\Filament\Resources\LibraryItemResource\RelationManagers\ResourcePermissionsRelationManager::class,
+            \Tapp\FilamentLibrary\Resources\RelationManagers\LibraryItemPermissionsRelationManager::class,
         ];
     }
 
