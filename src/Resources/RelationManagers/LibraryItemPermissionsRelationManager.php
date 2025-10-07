@@ -12,7 +12,10 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Tapp\FilamentLibrary\Forms\Components\UserSearchSelect;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema as SchemaFacade;
+use Tapp\FilamentLibrary\Models\LibraryItemPermission;
+use App\Models\User;
 
 class LibraryItemPermissionsRelationManager extends RelationManager
 {
@@ -24,66 +27,175 @@ class LibraryItemPermissionsRelationManager extends RelationManager
 
     protected static ?string $pluralModelLabel = 'Permissions';
 
+
+    public static function canAccess(): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Admins can always access
+        if ($user->hasRole('Admin')) {
+            return true;
+        }
+
+        // For non-admins, check if they have share permission on the current record
+        $record = static::getOwnerRecord();
+        if ($record && $record->hasPermission($user, 'share')) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return $ownerRecord->hasPermission(auth()->user(), 'share');
+    }
+
+    /**
+     * Get the display name for a user, supporting both 'name' and 'first_name/last_name' fields.
+     */
+    private function getUserDisplayName($user): string
+    {
+        if (!$user) {
+            return 'Unknown User';
+        }
+
+        // Check if user has a name accessor or name field with a value
+        if ($user->name) {
+            return $user->name . ' (' . $user->email . ')';
+        }
+
+        // Fall back to first_name/last_name if available
+        if (SchemaFacade::hasColumn('users', 'first_name') && SchemaFacade::hasColumn('users', 'last_name')) {
+            $firstName = $user->first_name ?? '';
+            $lastName = $user->last_name ?? '';
+            $fullName = trim($firstName . ' ' . $lastName);
+
+            if ($fullName) {
+                return $fullName . ' (' . $user->email . ')';
+            }
+        }
+
+        // Fall back to email only
+        return $user->email;
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                UserSearchSelect::make('user_id')
+                Forms\Components\Select::make('user_id')
                     ->label('User')
-                    ->required()
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->getSearchResultsUsing(fn (string $search): array =>
+                        User::where(function ($query) use ($search) {
+                            // Search first_name and last_name fields if they exist
+                            if (SchemaFacade::hasColumn('users', 'first_name') && SchemaFacade::hasColumn('users', 'last_name')) {
+                                $query->orWhere('first_name', 'like', "%{$search}%")
+                                      ->orWhere('last_name', 'like', "%{$search}%");
+                            }
+                            // Search name field if it exists and first/last don't
+                            elseif (SchemaFacade::hasColumn('users', 'name')) {
+                                $query->orWhere('name', 'like', "%{$search}%");
+                            }
+                            // Always search email
+                            $query->orWhere('email', 'like', "%{$search}%");
+                        })
+                        ->limit(50)
+                        ->get()
+                        ->mapWithKeys(fn ($user) => [
+                            $user->id => $this->getUserDisplayName($user)
+                        ])
+                        ->toArray()
+                    )
+                    ->getOptionLabelUsing(fn ($value): ?string =>
+                        $this->getUserDisplayName(User::find($value))
+                    )
+                    ->required(),
+
                 Forms\Components\Select::make('role')
                     ->label('Role')
-                    ->options(\Tapp\FilamentLibrary\Models\LibraryItemPermission::getRoleOptions())
-                    ->required()
-                    ->default('viewer'),
+                    ->options(LibraryItemPermission::getRoleOptions())
+                    ->required(),
             ]);
     }
 
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('user.name')
+            ->recordTitleAttribute('role')
             ->columns([
-                Tables\Columns\TextColumn::make('user.name')
+                Tables\Columns\TextColumn::make('user')
                     ->label('User')
-                    ->searchable()
-                    ->sortable(),
+                    ->formatStateUsing(fn ($record) => $this->getUserDisplayName($record->user))
+                    ->searchable(function ($query, $search) {
+                        return $query->where(function ($query) use ($search) {
+                            // Search first_name and last_name fields if they exist
+                            if (SchemaFacade::hasColumn('users', 'first_name') && SchemaFacade::hasColumn('users', 'last_name')) {
+                                $query->orWhere('first_name', 'like', "%{$search}%")
+                                      ->orWhere('last_name', 'like', "%{$search}%");
+                            }
+                            // Search name field if it exists and first/last don't
+                            elseif (SchemaFacade::hasColumn('users', 'name')) {
+                                $query->orWhere('name', 'like', "%{$search}%");
+                            }
+                            // Always search email
+                            $query->orWhere('email', 'like', "%{$search}%");
+                        });
+                    }),
+
                 Tables\Columns\TextColumn::make('user.email')
                     ->label('Email')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('role')
                     ->label('Role')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'viewer' => 'info',
-                        'editor' => 'success',
-                        'owner' => 'warning',
+                        'owner' => 'danger',
+                        'editor' => 'warning',
+                        'viewer' => 'success',
                         default => 'gray',
                     }),
+
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Granted')
+                    ->label('Added')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('role')
-                    ->options(\Tapp\FilamentLibrary\Models\LibraryItemPermission::getRoleOptions()),
+                    ->options(LibraryItemPermission::getRoleOptions()),
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()
+                    ->visible(fn () => $this->ownerRecord->hasPermission(auth()->user(), 'share')),
             ])
+            ->heading('User Permissions')
+            ->description('Owner: Share and edit. Editor/Viewer: Standard permissions.')
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->visible(fn () => $this->ownerRecord->hasPermission(auth()->user(), 'share')),
+                DeleteAction::make()
+                    ->visible(fn () => $this->ownerRecord->hasPermission(auth()->user(), 'share')),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->visible(fn () => $this->ownerRecord->hasPermission(auth()->user(), 'share')),
                 ]),
+            ])
+            ->emptyStateHeading('No permissions assigned')
+            ->emptyStateDescription('Add users to grant them specific permissions on this item.')
+            ->emptyStateActions([
+                CreateAction::make()
+                    ->label('Add Permission')
+                    ->visible(fn () => $this->ownerRecord->hasPermission(auth()->user(), 'share')),
             ]);
     }
 }
