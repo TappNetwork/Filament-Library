@@ -2,6 +2,7 @@
 
 namespace Tapp\FilamentLibrary\Resources\RelationManagers;
 
+use App\Models\User;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -15,7 +16,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
 use Tapp\FilamentLibrary\Models\LibraryItemPermission;
-use App\Models\User;
 
 class LibraryItemPermissionsRelationManager extends RelationManager
 {
@@ -27,11 +27,10 @@ class LibraryItemPermissionsRelationManager extends RelationManager
 
     protected static ?string $pluralModelLabel = 'Permissions';
 
-
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -59,7 +58,7 @@ class LibraryItemPermissionsRelationManager extends RelationManager
      */
     private function getUserDisplayName($user): string
     {
-        if (!$user) {
+        if (! $user) {
             return 'Unknown User';
         }
 
@@ -91,12 +90,12 @@ class LibraryItemPermissionsRelationManager extends RelationManager
                     ->label('User')
                     ->searchable()
                     ->preload()
-                    ->getSearchResultsUsing(fn (string $search): array =>
-                        User::where(function ($query) use ($search) {
+                    ->getSearchResultsUsing(
+                        fn (string $search): array => User::where(function ($query) use ($search) {
                             // Search first_name and last_name fields if they exist
                             if (SchemaFacade::hasColumn('users', 'first_name') && SchemaFacade::hasColumn('users', 'last_name')) {
                                 $query->orWhere('first_name', 'like', "%{$search}%")
-                                      ->orWhere('last_name', 'like', "%{$search}%");
+                                    ->orWhere('last_name', 'like', "%{$search}%");
                             }
                             // Search name field if it exists and first/last don't
                             elseif (SchemaFacade::hasColumn('users', 'name')) {
@@ -105,15 +104,15 @@ class LibraryItemPermissionsRelationManager extends RelationManager
                             // Always search email
                             $query->orWhere('email', 'like', "%{$search}%");
                         })
-                        ->limit(50)
-                        ->get()
-                        ->mapWithKeys(fn ($user) => [
-                            $user->id => $this->getUserDisplayName($user)
-                        ])
-                        ->toArray()
+                            ->limit(50)
+                            ->get()
+                            ->mapWithKeys(fn ($user) => [
+                                $user->id => $this->getUserDisplayName($user),
+                            ])
+                            ->toArray()
                     )
-                    ->getOptionLabelUsing(fn ($value): ?string =>
-                        $this->getUserDisplayName(User::find($value))
+                    ->getOptionLabelUsing(
+                        fn ($value): ?string => $this->getUserDisplayName(User::find($value))
                     )
                     ->required(),
 
@@ -137,7 +136,7 @@ class LibraryItemPermissionsRelationManager extends RelationManager
                             // Search first_name and last_name fields if they exist
                             if (SchemaFacade::hasColumn('users', 'first_name') && SchemaFacade::hasColumn('users', 'last_name')) {
                                 $query->orWhere('first_name', 'like', "%{$search}%")
-                                      ->orWhere('last_name', 'like', "%{$search}%");
+                                    ->orWhere('last_name', 'like', "%{$search}%");
                             }
                             // Search name field if it exists and first/last don't
                             elseif (SchemaFacade::hasColumn('users', 'name')) {
