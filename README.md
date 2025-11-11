@@ -35,6 +35,9 @@ class User extends Authenticatable
 }
 ```
 
+> [!WARNING]  
+> If you are using multi-tenancy please see the "Multi-Tenancy Support" instructions below **before** publishing and running migrations.
+
 You can publish and run the migrations with:
 
 ```bash
@@ -109,6 +112,35 @@ The plugin features a sophisticated permissions system inspired by Google Drive.
 - **Personal Folders** - Automatically created for new users
 - **Permission Inheritance** - Child items inherit parent folder permissions
 - **Admin Override** - Library admins can access all content
+
+## Multi-Tenancy Support
+
+Filament Library includes built-in support for multi-tenancy, allowing you to scope library items, permissions, and tags to specific tenants (e.g., teams, organizations, workspaces).
+
+### ⚠️ Important: Enable Tenancy Before Migrations
+
+**You MUST configure and enable tenancy in the config file BEFORE running the migrations.** The migrations check the tenancy configuration to determine whether to add tenant columns to the database tables. If you enable tenancy after running migrations, you'll need to manually add the tenant columns to your database.
+
+### Quick Setup
+
+1. **Configure your Filament panel with tenancy** (see [Filament Tenancy docs](https://filamentphp.com/docs/4.x/users/tenancy))
+2. **Publish the config file**:
+   ```bash
+   php artisan vendor:publish --tag="filament-library-config"
+   ```
+3. **Enable tenancy in `config/filament-library.php`**:
+   ```php
+   'tenancy' => [
+       'enabled' => true, // ⚠️ Set this BEFORE running migrations!
+       'model' => \App\Models\Team::class,
+   ],
+   ```
+4. **Run migrations**:
+   ```bash
+   php artisan migrate
+   ```
+
+For complete setup instructions, troubleshooting, and advanced configuration, see [TENANCY.md](TENANCY.md).
 
 ## Configuration
 

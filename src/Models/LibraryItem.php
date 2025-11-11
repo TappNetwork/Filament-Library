@@ -12,9 +12,11 @@ use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Tapp\FilamentLibrary\Models\Traits\BelongsToTenant;
 
 class LibraryItem extends Model implements HasMedia
 {
+    use BelongsToTenant;
     use HasFactory;
     use InteractsWithMedia;
     use SoftDeletes;
