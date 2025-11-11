@@ -105,4 +105,3 @@ trait BelongsToTenant
         return config('filament-library.tenancy.column') ?? 'team_id';
     }
 }
-
