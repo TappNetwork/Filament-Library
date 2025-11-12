@@ -5,12 +5,14 @@ A comprehensive file and document management system for Filament applications, f
 ## Features
 
 - **📁 File & Folder Management** - Upload files, create folders, and organize content
-- **🔗 External Links** - Add and manage external links with descriptions
+- **🔗 External Links** - Add and manage external links with descriptions (including video embeds)
 - **👥 Advanced Permissions** - Google Drive-style ownership with Creator, Owner, Editor, and Viewer roles
 - **🔄 Automatic Inheritance** - Permissions automatically inherit from parent folders
-- **🔍 Multiple Views** - Public Library, My Documents, Shared with Me, Created by Me, and Search All
+- **🔍 Multiple Views** - Public Library, My Documents, Shared with Me, Created by Me, Favorites, and Search All
+- **🏷️ Tags & Favorites** - Organize items with tags and mark favorites for quick access
 - **⚙️ Configurable Admin Access** - Flexible admin role configuration
 - **🎨 Filament Integration** - Native Filament UI components and navigation
+- **🏢 Multi-Tenancy Support** - Optional team/organization scoping for all library content
 
 ## Installation
 
@@ -89,16 +91,17 @@ public function boot()
 
 ### 3. Navigation
 
-The plugin automatically adds navigation items:
+The plugin automatically adds navigation items under "Resource Library":
 - **Library** - Main library view
 - **Search All** - Search across all accessible content
 - **My Documents** - Personal documents and folders
 - **Shared with Me** - Items shared by other users
 - **Created by Me** - Items you created
+- **Favorites** - Items you've marked as favorites
 
 ## Permissions System
 
-The plugin features a sophisticated permissions system inspired by Google Drive. See [Permissions Documentation](docs/permissions.md) for complete details.
+The plugin features a sophisticated permissions system inspired by Google Drive.
 
 ### Quick Overview
 
@@ -144,27 +147,64 @@ For complete setup instructions, troubleshooting, and advanced configuration, se
 
 ## Configuration
 
-### Admin Role Configuration
+The config file (`config/filament-library.php`) includes the following options:
+
+### User Model
 
 ```php
-// config/filament-library.php
-return [
-    'admin_role' => 'Admin', // Default admin role
-    'admin_callback' => null, // Custom callback function
-];
+'user_model' => env('FILAMENT_LIBRARY_USER_MODEL', 'App\\Models\\User'),
 ```
 
-### Environment Variables
+Specify the user model for the application.
 
-```env
-LIBRARY_ADMIN_ROLE=super-admin
+### Video Link Support (Optional)
+
+The library supports video links from various platforms. To customize supported domains, add this to your config:
+
+```php
+'video' => [
+    'supported_domains' => [
+        'youtube.com',
+        'youtu.be',
+        'vimeo.com',
+        'wistia.com',
+    ],
+],
 ```
 
-## Documentation
+### Secure File URLs (Optional)
 
-- [Permissions System](docs/permissions.md) - Complete permissions guide
-- [Customization Guide](docs/customization.md) - Customizing admin access
-- [API Reference](docs/api.md) - Developer documentation
+Configure how long temporary download URLs remain valid:
+
+```php
+'url' => [
+    'temporary_expiration_minutes' => 60, // Default: 60 minutes
+],
+```
+
+### Admin Access Configuration (Optional)
+
+To configure which users can access admin features, add this to your config:
+
+```php
+'admin_role' => 'Admin', // Role name to check
+'admin_callback' => null, // Custom callback function
+```
+
+Or set it programmatically in your `AppServiceProvider`:
+
+```php
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
+
+public function boot()
+{
+    FilamentLibraryPlugin::setLibraryAdminCallback(function ($user) {
+        return $user->hasRole('super-admin');
+    });
+}
+```
+
+**Note:** By default, users have an `isLibraryAdmin()` method that returns `false`. You can override this in your User model for custom logic.
 
 ## Testing
 

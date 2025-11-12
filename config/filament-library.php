@@ -15,6 +15,41 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Video Link Support
+    |--------------------------------------------------------------------------
+    |
+    | Configure which video platforms are supported for link embeds.
+    | When a library item is a link to one of these domains, it will be
+    | treated as a video link and displayed accordingly.
+    |
+    */
+    'video' => [
+        'supported_domains' => [
+            'youtube.com',
+            'youtu.be',
+            'vimeo.com',
+            'wistia.com',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | URL Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure how library item URLs are generated and secured.
+    |
+    */
+    'url' => [
+        /*
+        | Number of minutes that temporary URLs remain valid.
+        | Used when generating secure download links for files.
+        */
+        'temporary_expiration_minutes' => 60,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Multi-Tenancy Configuration
     |--------------------------------------------------------------------------
     |
