@@ -29,5 +29,3 @@ return new class extends Migration
         Schema::dropIfExists('library_item_role_permissions');
     }
 };
-
-

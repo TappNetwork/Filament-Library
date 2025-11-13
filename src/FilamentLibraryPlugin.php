@@ -74,8 +74,6 @@ class FilamentLibraryPlugin implements Plugin
      * Check if a user has a specific role.
      *
      * @param  \Illuminate\Contracts\Auth\Authenticatable|null  $user
-     * @param  string  $roleName
-     * @return bool
      */
     public static function hasRole($user, string $roleName): bool
     {

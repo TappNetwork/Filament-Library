@@ -30,5 +30,3 @@ class LibraryItemRolePermission extends Model
         return $this->belongsTo(LibraryItem::class);
     }
 }
-
-
