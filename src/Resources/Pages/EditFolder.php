@@ -28,6 +28,26 @@ class EditFolder extends EditLibraryItemPage
                     ->label('Description')
                     ->rows(3),
 
+                \Filament\Forms\Components\Select::make('tags')
+                    ->label('Tags')
+                    ->relationship('tags', 'name')
+                    ->multiple()
+                    ->searchable()
+                    ->preload()
+                    ->createOptionForm([
+                        \Filament\Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255),
+                    ])
+                    ->createOptionUsing(function (array $data): int {
+                        $tag = \Tapp\FilamentLibrary\Models\LibraryItemTag::create([
+                            'name' => $data['name'],
+                            'slug' => \Illuminate\Support\Str::slug($data['name']),
+                        ]);
+
+                        return $tag->id;
+                    }),
+
                 Select::make('general_access')
                     ->label('General Access')
                     ->options(function () {

@@ -37,11 +37,32 @@ class EditFile extends EditLibraryItemPage
                     ->maxLength(255),
 
                 \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('files')
-                    ->label('File'),
+                    ->label('File')
+                    ->maxSize(512000), // 500MB
 
                 \Filament\Forms\Components\Textarea::make('link_description')
                     ->label('Description')
                     ->rows(3),
+
+                \Filament\Forms\Components\Select::make('tags')
+                    ->label('Tags')
+                    ->relationship('tags', 'name')
+                    ->multiple()
+                    ->searchable()
+                    ->preload()
+                    ->createOptionForm([
+                        \Filament\Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255),
+                    ])
+                    ->createOptionUsing(function (array $data): int {
+                        $tag = \Tapp\FilamentLibrary\Models\LibraryItemTag::create([
+                            'name' => $data['name'],
+                            'slug' => \Illuminate\Support\Str::slug($data['name']),
+                        ]);
+
+                        return $tag->id;
+                    }),
 
                 \Filament\Forms\Components\Select::make('general_access')
                     ->label('General Access')
