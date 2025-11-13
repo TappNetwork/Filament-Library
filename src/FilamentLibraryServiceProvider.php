@@ -174,6 +174,7 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
             '2024_01_01_000001_create_library_item_permissions_table',
             '2024_01_01_000002_create_library_item_tags_table',
             '2024_01_01_000003_create_library_item_favorites_table',
+            '2024_01_01_000004_create_library_item_role_permissions_table',
         ];
     }
 }
