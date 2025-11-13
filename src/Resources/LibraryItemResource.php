@@ -95,7 +95,8 @@ class LibraryItemResource extends Resource
                 \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('files')
                     ->label('File')
                     ->visible(fn (callable $get) => $get('type') === 'file')
-                    ->required(fn (callable $get) => $get('type') === 'file'),
+                    ->required(fn (callable $get) => $get('type') === 'file')
+                    ->maxSize(512000), // 500MB
 
                 // Link form fields
                 \Filament\Forms\Components\TextInput::make('external_url')
