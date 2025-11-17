@@ -180,9 +180,6 @@ class ListLibraryItems extends ListRecords
                         ->required()
                         ->url()
                         ->placeholder('https://example.com'),
-                    TextInput::make('link_icon')
-                        ->label('Icon (Heroicon name)')
-                        ->placeholder('heroicon-o-link'),
                     Textarea::make('link_description')
                         ->label('Description')
                         ->rows(3)
@@ -193,7 +190,6 @@ class ListLibraryItems extends ListRecords
                         'name' => $data['name'],
                         'type' => 'link',
                         'external_url' => $data['external_url'],
-                        'link_icon' => $data['link_icon'] ?? 'heroicon-o-link',
                         'link_description' => $data['link_description'] ?? null,
                         'parent_id' => $this->parentId,
                         'created_by' => auth()->user()?->id,

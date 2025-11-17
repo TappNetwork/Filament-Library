@@ -4,9 +4,11 @@ namespace Tapp\FilamentLibrary\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Tapp\FilamentLibrary\Models\Traits\BelongsToTenant;
 
 class LibraryItemTag extends Model
 {
+    use BelongsToTenant;
     use HasFactory;
 
     protected $fillable = [

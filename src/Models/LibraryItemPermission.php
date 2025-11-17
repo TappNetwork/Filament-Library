@@ -5,9 +5,11 @@ namespace Tapp\FilamentLibrary\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Tapp\FilamentLibrary\Models\Traits\BelongsToTenant;
 
 class LibraryItemPermission extends Model
 {
+    use BelongsToTenant;
     use HasFactory;
 
     protected $table = 'library_item_permissions';
@@ -36,9 +38,7 @@ class LibraryItemPermission extends Model
      */
     public function user(): BelongsTo
     {
-        $userModel = config('auth.providers.users.model', 'App\\Models\\User');
-
-        return $this->belongsTo($userModel);
+        return $this->belongsTo(config('filament-library.user_model'));
     }
 
     /**
