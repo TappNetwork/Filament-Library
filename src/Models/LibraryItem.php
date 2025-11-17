@@ -105,21 +105,17 @@ class LibraryItem extends Model implements HasMedia
      */
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'created_by')->withDefault(function () {
+        return $this->belongsTo(config('filament-library.user_model'), 'created_by')->withDefault(function ($instance) {
             // Check if 'name' field exists
             if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'name')) {
-                return [
-                    'name' => 'Unknown User',
-                    'email' => 'deleted@example.com',
-                ];
+                $instance->name = 'Unknown User';
+                $instance->email = 'deleted@example.com';
+            } else {
+                // Fall back to first_name/last_name
+                $instance->first_name = 'Unknown';
+                $instance->last_name = 'User';
+                $instance->email = 'deleted@example.com';
             }
-
-            // Fall back to first_name/last_name
-            return [
-                'first_name' => 'Unknown',
-                'last_name' => 'User',
-                'email' => 'deleted@example.com',
-            ];
         });
     }
 
@@ -128,7 +124,7 @@ class LibraryItem extends Model implements HasMedia
      */
     public function updater(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'updated_by');
+        return $this->belongsTo(config('filament-library.user_model'), 'updated_by');
     }
 
     /**
@@ -223,7 +219,7 @@ class LibraryItem extends Model implements HasMedia
     /**
      * Get the current owner of this item.
      */
-    public function getCurrentOwner(): ?\App\Models\User
+    public function getCurrentOwner(): ?Model
     {
         $ownerPermission = $this->permissions()
             ->where('role', 'owner')
@@ -250,7 +246,7 @@ class LibraryItem extends Model implements HasMedia
     /**
      * Transfer ownership to another user.
      */
-    public function transferOwnership(\App\Models\User $newOwner): void
+    public function transferOwnership(Model $newOwner): void
     {
         // Remove existing owner permissions
         $this->permissions()->where('role', 'owner')->delete();
@@ -273,7 +269,7 @@ class LibraryItem extends Model implements HasMedia
     /**
      * Ensure a user has a personal folder (like Google Drive's "My Drive").
      */
-    public static function ensurePersonalFolder(\App\Models\User $user): self
+    public static function ensurePersonalFolder(Model $user): self
     {
         // Check if user already has a personal folder via the relationship
         if ($user->personal_folder_id) {
@@ -308,7 +304,7 @@ class LibraryItem extends Model implements HasMedia
     /**
      * Get a user's personal folder.
      */
-    public static function getPersonalFolder(\App\Models\User $user): ?self
+    public static function getPersonalFolder(Model $user): ?self
     {
         if (! $user->personal_folder_id) {
             return null;
@@ -320,7 +316,7 @@ class LibraryItem extends Model implements HasMedia
     /**
      * Generate the personal folder name for a user.
      */
-    public static function getPersonalFolderName(\App\Models\User $user): string
+    public static function getPersonalFolderName(Model $user): string
     {
         // Try to get a display name from various user fields
         $name = $user->first_name ?? $user->name ?? $user->email ?? 'User';
