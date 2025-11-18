@@ -10,6 +10,10 @@ class FilamentLibraryPlugin implements Plugin
 {
     protected static $libraryAdminCallback = null;
 
+    protected static $roleCheckerCallback = null;
+
+    protected static $availableRolesCallback = null;
+
     public function getId(): string
     {
         return 'filament-library';
@@ -54,6 +58,77 @@ class FilamentLibraryPlugin implements Plugin
         }
 
         return false;
+    }
+
+    /**
+     * Set a custom callback to check if a user has a specific role.
+     *
+     * @param  callable  $callback  Function that receives a user and role name, returns bool
+     */
+    public static function setRoleCheckerCallback(callable $callback): void
+    {
+        static::$roleCheckerCallback = $callback;
+    }
+
+    /**
+     * Check if a user has a specific role.
+     *
+     * @param  \Illuminate\Contracts\Auth\Authenticatable|null  $user
+     */
+    public static function hasRole($user, string $roleName): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        // Use custom callback if set
+        if (static::$roleCheckerCallback) {
+            return call_user_func(static::$roleCheckerCallback, $user, $roleName);
+        }
+
+        // Check for config-based callback
+        $configCallback = config('filament-library.role_checker_callback');
+        if ($configCallback && is_callable($configCallback)) {
+            return call_user_func($configCallback, $user, $roleName);
+        }
+
+        // Default implementation - check if user has hasRole method
+        if (method_exists($user, 'hasRole')) {
+            return $user->hasRole($roleName);
+        }
+
+        return false;
+    }
+
+    /**
+     * Set a custom callback to get available roles for selection.
+     *
+     * @param  callable  $callback  Function that returns an array of role names => labels
+     */
+    public static function setAvailableRolesCallback(callable $callback): void
+    {
+        static::$availableRolesCallback = $callback;
+    }
+
+    /**
+     * Get available roles for selection.
+     *
+     * @return array<string, string> Array of role names => labels
+     */
+    public static function getAvailableRoles(): array
+    {
+        // Use custom callback if set
+        if (static::$availableRolesCallback) {
+            return call_user_func(static::$availableRolesCallback);
+        }
+
+        // Check for config-based callback
+        $configCallback = config('filament-library.available_roles_callback');
+        if ($configCallback && is_callable($configCallback)) {
+            return call_user_func($configCallback);
+        }
+
+        return [];
     }
 
     public function register(Panel $panel): void

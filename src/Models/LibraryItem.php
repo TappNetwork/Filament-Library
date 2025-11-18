@@ -138,6 +138,14 @@ class LibraryItem extends Model implements HasMedia
     }
 
     /**
+     * Get the role-based permissions for this item.
+     */
+    public function rolePermissions(): HasMany
+    {
+        return $this->hasMany(LibraryItemRolePermission::class);
+    }
+
+    /**
      * Scope to get only folders.
      */
     public function scopeFolders($query)
@@ -175,12 +183,77 @@ class LibraryItem extends Model implements HasMedia
     }
 
     /**
+     * Check if this item (or its parent folders) has role-based restrictions.
+     */
+    public function hasRoleRestrictions(): bool
+    {
+        // Check if this item has role restrictions
+        if ($this->rolePermissions()->exists()) {
+            return true;
+        }
+
+        // Check parent folders recursively
+        if ($this->parent_id) {
+            return $this->parent->hasRoleRestrictions();
+        }
+
+        return false;
+    }
+
+    /**
+     * Get all required role names for this item (including inherited from parents).
+     */
+    public function getRequiredRoleNames(): array
+    {
+        $roleNames = $this->rolePermissions()->pluck('role_name')->toArray();
+
+        // Check parent folders recursively
+        if ($this->parent_id) {
+            $parentRoles = $this->parent->getRequiredRoleNames();
+            $roleNames = array_merge($roleNames, $parentRoles);
+        }
+
+        return array_unique($roleNames);
+    }
+
+    /**
+     * Check if a user has access based on role restrictions.
+     */
+    public function hasRoleAccess($user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        $requiredRoles = $this->getRequiredRoleNames();
+
+        // If no role restrictions, allow access (will be checked by normal permissions)
+        if (empty($requiredRoles)) {
+            return true;
+        }
+
+        // User must have at least one of the required roles
+        foreach ($requiredRoles as $roleName) {
+            if (\Tapp\FilamentLibrary\FilamentLibraryPlugin::hasRole($user, $roleName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Get the effective role for a user on this item.
      */
     public function getEffectiveRole($user): ?string
     {
         if (! $user) {
             return null;
+        }
+
+        // Check role-based restrictions first
+        if ($this->hasRoleRestrictions() && ! $this->hasRoleAccess($user)) {
+            return null; // Denied by role restrictions
         }
 
         // Check if user is the creator (always has access)
@@ -390,6 +463,11 @@ class LibraryItem extends Model implements HasMedia
         // Admin users always have all permissions
         if ($user && \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user)) {
             return true;
+        }
+
+        // Check role-based restrictions first
+        if ($this->hasRoleRestrictions() && ! $this->hasRoleAccess($user)) {
+            return false; // Denied by role restrictions
         }
 
         $effectiveRole = $this->getEffectiveRole($user);

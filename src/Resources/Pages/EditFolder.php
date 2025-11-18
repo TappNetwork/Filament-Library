@@ -3,6 +3,7 @@
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Forms\Components\Select;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class EditFolder extends EditLibraryItemPage
@@ -78,8 +79,49 @@ class EditFolder extends EditLibraryItemPage
                     })
                     ->visible(fn () => $this->getRecord()->hasPermission(auth()->user(), 'share')),
 
+                Select::make('role_permissions')
+                    ->label('Required Roles')
+                    ->helperText('Only users with at least one of these roles can access this folder. Leave empty to allow all users (subject to other permissions).')
+                    ->options(function () {
+                        return FilamentLibraryPlugin::getAvailableRoles();
+                    })
+                    ->multiple()
+                    ->searchable()
+                    ->default(function () {
+                        return $this->getRecord()->rolePermissions()->pluck('role_name')->toArray();
+                    })
+                    ->dehydrated(false) // Don't save to model directly, we handle it in mutateFormDataBeforeSave
+                    ->visible(fn () => $this->getRecord()->hasPermission(auth()->user(), 'share')),
+
                 // Creator select field
                 $this->getCreatorSelectField(),
             ]);
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        // Handle role permissions separately
+        $rolePermissions = $data['role_permissions'] ?? [];
+        unset($data['role_permissions']);
+
+        return $data;
+    }
+
+    protected function afterSave(): void
+    {
+        parent::afterSave();
+
+        $record = $this->getRecord();
+        $rolePermissions = $this->form->getState()['role_permissions'] ?? [];
+
+        // Sync role permissions
+        $record->rolePermissions()->delete();
+        if (is_array($rolePermissions) && ! empty($rolePermissions)) {
+            foreach ($rolePermissions as $roleName) {
+                $record->rolePermissions()->create([
+                    'role_name' => $roleName,
+                ]);
+            }
+        }
     }
 }
