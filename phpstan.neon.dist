@@ -10,7 +10,6 @@ parameters:
     tmpDir: build/phpstan
     checkOctaneCompatibility: true
     checkModelProperties: true
-    checkMissingIterableValueType: false
     ignoreErrors:
         - '#Class App\\Models\\User not found#'
         - '#Call to static method .* on an unknown class App\\Models\\User#'
