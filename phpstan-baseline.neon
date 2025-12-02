@@ -20,10 +20,6 @@ parameters:
 			count: 1
 			path: src/Forms/Components/UserSearchSelect.php
 
-		-
-			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$type\\.$#"
-			count: 1
-			path: src/Middleware/RedirectToCorrectEditPage.php
 
 		-
 			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$created_by\\.$#"
@@ -42,7 +38,7 @@ parameters:
 
 		-
 			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$name\\.$#"
-			count: 4
+			count: 3
 			path: src/Models/LibraryItem.php
 
 		-
@@ -65,10 +61,6 @@ parameters:
 			count: 2
 			path: src/Models/LibraryItem.php
 
-		-
-			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItemPermission\\:\\:\\$role\\.$#"
-			count: 2
-			path: src/Models/LibraryItem.php
 
 		-
 			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItemPermission\\:\\:\\$user_id\\.$#"
@@ -307,7 +299,7 @@ parameters:
 
 		-
 			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$name\\.$#"
-			count: 2
+			count: 1
 			path: src/Resources/Pages/ListLibraryItems.php
 
 		-
@@ -380,21 +372,6 @@ parameters:
 			count: 1
 			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
 
-		-
-			message: """
-				#^Call to deprecated method actions\\(\\) of class Filament\\\\Tables\\\\Table\\:
-				Use `recordActions\\(\\)` instead\\.$#
-			"""
-			count: 1
-			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
-
-		-
-			message: """
-				#^Call to deprecated method bulkActions\\(\\) of class Filament\\\\Tables\\\\Table\\:
-				Use `toolbarActions\\(\\)` instead\\.$#
-			"""
-			count: 1
-			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
 
 		-
 			message: "#^Call to static method find\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
@@ -421,26 +398,7 @@ parameters:
 			count: 1
 			path: src/Services/PermissionService.php
 
-		-
-			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$type\\.$#"
-			count: 1
-			path: src/Services/PermissionService.php
 
-		-
-			message: """
-				#^Call to deprecated method form\\(\\) of class Filament\\\\Actions\\\\Action\\:
-				Use `schema\\(\\) instead\\.$#
-			"""
-			count: 1
-			path: src/Tables/Actions/BulkManagePermissionsAction.php
-
-		-
-			message: """
-				#^Call to method make\\(\\) of deprecated class Filament\\\\Infolists\\\\Components\\\\Entry\\:
-				Use `TextEntry` with the `state\\(\\)` method instead\\.$#
-			"""
-			count: 1
-			path: src/Tables/Actions/BulkManagePermissionsAction.php
 
 		-
 			message: "#^Missing parameter \\$notification \\(Closure\\|Filament\\\\Notifications\\\\Notification\\|null\\) in call to method Filament\\\\Actions\\\\Action\\:\\:successNotification\\(\\)\\.$#"
@@ -461,3 +419,64 @@ parameters:
 			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$created_by\\.$#"
 			count: 1
 			path: src/Tables/Columns/PermissionsColumn.php
+
+		-
+			message: "#^Called 'env' outside of the config directory which returns null when the config is cached, use 'config'\\.$#"
+			count: 1
+			path: config/filament-library.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Collection<int, Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem>\\|Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$type\\.$#"
+			count: 1
+			path: src/Middleware/RedirectToCorrectEditPage.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:permissions\\(\\)\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$role\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:getEffectiveRole\\(\\)\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$user\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:getEffectiveGeneralAccess\\(\\)\\.$#"
+			count: 2
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:getEffectiveAccessControl\\(\\)\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$type\\.$#"
+			count: 1
+			path: src/Services/PermissionService.php
+
+		-
+			message: """
+				#^Call to deprecated method form\\(\\) of class Filament\\\\Actions\\\\Action\\:
+				Use `schema\\(\\) instead\\.$#
+			"""
+			count: 1
+			path: src/Tables/Actions/BulkManagePermissionsAction.php
+
+		-
+			message: """
+				#^Call to method make\\(\\) of deprecated class Filament\\\\Infolists\\\\Components\\\\Entry\\:
+				Use `TextEntry` with the `state\\(\\)` method instead\\.$#
+			"""
+			count: 1
+			path: src/Tables/Actions/BulkManagePermissionsAction.php
