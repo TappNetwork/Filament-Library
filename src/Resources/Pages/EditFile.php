@@ -55,20 +55,7 @@ class EditFile extends EditLibraryItemPage
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->rules([
-                                function ($attribute, $value, $fail) {
-                                    if (empty($value)) {
-                                        return;
-                                    }
-
-                                    $slug = \Illuminate\Support\Str::slug($value);
-                                    $existingTag = \Tapp\FilamentLibrary\Models\LibraryItemTag::where('slug', $slug)->first();
-
-                                    if ($existingTag) {
-                                        $fail('A tag with this name already exists.');
-                                    }
-                                },
-                            ])
+                            ->rules([new \Tapp\FilamentLibrary\Rules\UniqueTagName()])
                             ->validationAttribute('tag name'),
                     ])
                     ->createOptionUsing(function (array $data): int {
