@@ -37,7 +37,17 @@ class EditFolder extends EditLibraryItemPage
                     ->createOptionForm([
                         \Filament\Forms\Components\TextInput::make('name')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->rules([
+                                function ($attribute, $value, $fail) {
+                                    $slug = \Illuminate\Support\Str::slug($value);
+                                    $existingTag = \Tapp\FilamentLibrary\Models\LibraryItemTag::where('slug', $slug)->first();
+
+                                    if ($existingTag) {
+                                        $fail('A tag with this name already exists.');
+                                    }
+                                },
+                            ]),
                     ])
                     ->createOptionUsing(function (array $data): int {
                         $tag = \Tapp\FilamentLibrary\Models\LibraryItemTag::create([
