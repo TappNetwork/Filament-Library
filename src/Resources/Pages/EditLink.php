@@ -47,10 +47,10 @@ class EditLink extends EditLibraryItemPage
                                     if (empty($value)) {
                                         return;
                                     }
-                                    
+
                                     $slug = \Illuminate\Support\Str::slug($value);
                                     $existingTag = \Tapp\FilamentLibrary\Models\LibraryItemTag::where('slug', $slug)->first();
-                                    
+
                                     if ($existingTag) {
                                         $fail('A tag with this name already exists.');
                                     }
@@ -68,7 +68,7 @@ class EditLink extends EditLibraryItemPage
                             // Re-validate to trigger form validation display
                             \Illuminate\Support\Facades\Validator::make($data, [
                                 'name' => [
-                                    function ($attribute, $value, $fail) use ($slug, $existingTag) {
+                                    function ($attribute, $value, $fail) use ($existingTag) {
                                         if ($existingTag) {
                                             $fail('A tag with this name already exists.');
                                         }
