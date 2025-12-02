@@ -38,7 +38,7 @@ parameters:
 
 		-
 			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$name\\.$#"
-			count: 3
+			count: 4
 			path: src/Models/LibraryItem.php
 
 		-
@@ -135,6 +135,11 @@ parameters:
 		-
 			message: "#^Parameter \\$user of method Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:getPersonalFolderName\\(\\) has invalid type App\\\\Models\\\\User\\.$#"
 			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItemPermission\\:\\:\\$role\\.$#"
+			count: 2
 			path: src/Models/LibraryItem.php
 
 		-
