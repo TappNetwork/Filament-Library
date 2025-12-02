@@ -47,27 +47,9 @@ class EditLink extends EditLibraryItemPage
                             ->validationAttribute('tag name'),
                     ])
                     ->createOptionUsing(function (array $data): int {
-                        $slug = \Illuminate\Support\Str::slug($data['name']);
-
-                        // Check if a tag with this slug already exists
-                        $existingTag = \Tapp\FilamentLibrary\Models\LibraryItemTag::where('slug', $slug)->first();
-
-                        if ($existingTag) {
-                            // Re-validate to trigger form validation display
-                            \Illuminate\Support\Facades\Validator::make($data, [
-                                'name' => [
-                                    function ($attribute, $value, $fail) use ($existingTag) {
-                                        if ($existingTag) {
-                                            $fail('A tag with this name already exists.');
-                                        }
-                                    },
-                                ],
-                            ])->validate();
-                        }
-
                         $tag = \Tapp\FilamentLibrary\Models\LibraryItemTag::create([
                             'name' => $data['name'],
-                            'slug' => $slug,
+                            'slug' => \Illuminate\Support\Str::slug($data['name']),
                         ]);
 
                         return $tag->id;
