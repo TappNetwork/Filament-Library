@@ -39,7 +39,7 @@ class EditFolder extends EditLibraryItemPage
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->rules([new \Tapp\FilamentLibrary\Rules\UniqueTagName()])
+                            ->rules([new \Tapp\FilamentLibrary\Rules\UniqueTagName])
                             ->validationAttribute('tag name'),
                     ])
                     ->createOptionUsing(function (array $data): int {

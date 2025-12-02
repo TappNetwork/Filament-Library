@@ -10,8 +10,6 @@ class UniqueTagName implements ValidationRule
     /**
      * Run the validation rule.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
      * @param  \Closure(string, ?string=): \Illuminate\Translation\PotentiallyTranslatedString  $fail
      */
     public function validate(string $attribute, mixed $value, \Closure $fail): void
@@ -28,4 +26,3 @@ class UniqueTagName implements ValidationRule
         }
     }
 }
-
