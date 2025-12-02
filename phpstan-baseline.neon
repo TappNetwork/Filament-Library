@@ -299,7 +299,7 @@ parameters:
 
 		-
 			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$name\\.$#"
-			count: 1
+			count: 2
 			path: src/Resources/Pages/ListLibraryItems.php
 
 		-
@@ -390,6 +390,22 @@ parameters:
 
 		-
 			message: "#^Static call to instance method Filament\\\\Resources\\\\RelationManagers\\\\RelationManager\\:\\:getOwnerRecord\\(\\)\\.$#"
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: """
+				#^Call to deprecated method actions\\(\\) of class Filament\\\\Tables\\\\Table\\:
+				Use `recordActions\\(\\)` instead\\.$#
+			"""
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: """
+				#^Call to deprecated method bulkActions\\(\\) of class Filament\\\\Tables\\\\Table\\:
+				Use `toolbarActions\\(\\)` instead\\.$#
+			"""
 			count: 1
 			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
 
