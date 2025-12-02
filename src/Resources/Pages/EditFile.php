@@ -66,9 +66,20 @@ class EditFile extends EditLibraryItemPage
                             ]),
                     ])
                     ->createOptionUsing(function (array $data): int {
+                        $slug = \Illuminate\Support\Str::slug($data['name']);
+                        
+                        // Check if a tag with this slug already exists
+                        $existingTag = \Tapp\FilamentLibrary\Models\LibraryItemTag::where('slug', $slug)->first();
+                        
+                        if ($existingTag) {
+                            throw \Illuminate\Validation\ValidationException::withMessages([
+                                'name' => ['A tag with this name already exists.'],
+                            ]);
+                        }
+                        
                         $tag = \Tapp\FilamentLibrary\Models\LibraryItemTag::create([
                             'name' => $data['name'],
-                            'slug' => \Illuminate\Support\Str::slug($data['name']),
+                            'slug' => $slug,
                         ]);
 
                         return $tag->id;
