@@ -54,6 +54,7 @@ class EditFile extends EditLibraryItemPage
                         \Filament\Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255)
+                            ->live(onBlur: true)
                             ->rules([
                                 function ($attribute, $value, $fail) {
                                     if (empty($value)) {
