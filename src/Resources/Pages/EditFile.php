@@ -56,6 +56,10 @@ class EditFile extends EditLibraryItemPage
                             ->maxLength(255)
                             ->rules([
                                 function ($attribute, $value, $fail) {
+                                    if (empty($value)) {
+                                        return;
+                                    }
+                                    
                                     $slug = \Illuminate\Support\Str::slug($value);
                                     $existingTag = \Tapp\FilamentLibrary\Models\LibraryItemTag::where('slug', $slug)->first();
 
@@ -63,7 +67,8 @@ class EditFile extends EditLibraryItemPage
                                         $fail('A tag with this name already exists.');
                                     }
                                 },
-                            ]),
+                            ])
+                            ->validationAttribute('tag name'),
                     ])
                     ->createOptionUsing(function (array $data): int {
                         $slug = \Illuminate\Support\Str::slug($data['name']);
@@ -72,9 +77,16 @@ class EditFile extends EditLibraryItemPage
                         $existingTag = \Tapp\FilamentLibrary\Models\LibraryItemTag::where('slug', $slug)->first();
 
                         if ($existingTag) {
-                            throw \Illuminate\Validation\ValidationException::withMessages([
-                                'name' => ['A tag with this name already exists.'],
-                            ]);
+                            // Re-validate to trigger form validation display
+                            \Illuminate\Support\Facades\Validator::make($data, [
+                                'name' => [
+                                    function ($attribute, $value, $fail) use ($slug, $existingTag) {
+                                        if ($existingTag) {
+                                            $fail('A tag with this name already exists.');
+                                        }
+                                    },
+                                ],
+                            ])->validate();
                         }
 
                         $tag = \Tapp\FilamentLibrary\Models\LibraryItemTag::create([
