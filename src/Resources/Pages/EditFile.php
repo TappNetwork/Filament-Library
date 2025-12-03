@@ -53,7 +53,10 @@ class EditFile extends EditLibraryItemPage
                     ->createOptionForm([
                         \Filament\Forms\Components\TextInput::make('name')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->live(onBlur: true)
+                            ->rules([new \Tapp\FilamentLibrary\Rules\UniqueTagName])
+                            ->validationAttribute('tag name'),
                     ])
                     ->createOptionUsing(function (array $data): int {
                         $tag = \Tapp\FilamentLibrary\Models\LibraryItemTag::create([

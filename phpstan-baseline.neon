@@ -1,0 +1,469 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Call to static method first\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: database/seeders/LibrarySeeder.php
+
+		-
+			message: "#^Call to static method where\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: database/seeders/LibrarySeeder.php
+
+		-
+			message: "#^Call to static method created\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/FilamentLibraryPlugin.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$name\\.$#"
+			count: 1
+			path: src/Forms/Components/UserSearchSelect.php
+
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$created_by\\.$#"
+			count: 3
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$external_url\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$general_access\\.$#"
+			count: 2
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$name\\.$#"
+			count: 4
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$parent_id\\.$#"
+			count: 7
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$slug\\.$#"
+			count: 2
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$type\\.$#"
+			count: 3
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$updated_by\\.$#"
+			count: 2
+			path: src/Models/LibraryItem.php
+
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItemPermission\\:\\:\\$user_id\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to property \\$email on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to property \\$first_name on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to property \\$id on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 7
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to property \\$name on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to property \\$personal_folder_id on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 4
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Foundation\\\\Auth\\\\User\\:\\:favoriteLibraryItems\\(\\)\\.$#"
+			count: 4
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Call to method update\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Class App\\\\Models\\\\User not found\\.$#"
+			count: 2
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Method Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:getCurrentOwner\\(\\) has invalid return type App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Method Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:getCurrentOwner\\(\\) should return App\\\\Models\\\\User\\|null but returns Illuminate\\\\Database\\\\Eloquent\\\\Model\\|null\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Parameter \\$newOwner of method Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:transferOwnership\\(\\) has invalid type App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Parameter \\$user of method Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:ensurePersonalFolder\\(\\) has invalid type App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Parameter \\$user of method Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:getPersonalFolder\\(\\) has invalid type App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Parameter \\$user of method Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:getPersonalFolderName\\(\\) has invalid type App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItemPermission\\:\\:\\$role\\.$#"
+			count: 2
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItemPermission\\:\\:\\$role\\.$#"
+			count: 2
+			path: src/Models/LibraryItemPermission.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$created_by\\.$#"
+			count: 7
+			path: src/Policies/LibraryItemPolicy.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$deleted_at\\.$#"
+			count: 2
+			path: src/Resources/LibraryItemResource.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$external_url\\.$#"
+			count: 1
+			path: src/Resources/LibraryItemResource.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$parent_id\\.$#"
+			count: 2
+			path: src/Resources/LibraryItemResource.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$type\\.$#"
+			count: 6
+			path: src/Resources/LibraryItemResource.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$parent_id\\.$#"
+			count: 2
+			path: src/Resources/Pages/EditFile.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:getFirstMedia\\(\\)\\.$#"
+			count: 2
+			path: src/Resources/Pages/EditFile.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:getInheritedGeneralAccessDisplay\\(\\)\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditFile.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:hasPermission\\(\\)\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditFile.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditFile.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$parent_id\\.$#"
+			count: 2
+			path: src/Resources/Pages/EditFolder.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:getInheritedGeneralAccessDisplay\\(\\)\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditFolder.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:hasPermission\\(\\)\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditFolder.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 2
+			path: src/Resources/Pages/EditLibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$name\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditLibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$parent\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditLibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$parent_id\\.$#"
+			count: 3
+			path: src/Resources/Pages/EditLibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$type\\.$#"
+			count: 2
+			path: src/Resources/Pages/EditLibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$created_by\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditLibraryItemPage.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 3
+			path: src/Resources/Pages/EditLibraryItemPage.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$name\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditLibraryItemPage.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$parent\\.$#"
+			count: 2
+			path: src/Resources/Pages/EditLibraryItemPage.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$parent_id\\.$#"
+			count: 2
+			path: src/Resources/Pages/EditLibraryItemPage.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$type\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditLibraryItemPage.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Resources\\\\Pages\\\\EditLibraryItemPage\\:\\:\\$parentId\\.$#"
+			count: 2
+			path: src/Resources/Pages/EditLibraryItemPage.php
+
+		-
+			message: "#^Call to static method find\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditLibraryItemPage.php
+
+		-
+			message: "#^Call to static method query\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditLibraryItemPage.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$parent_id\\.$#"
+			count: 2
+			path: src/Resources/Pages/EditLink.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:getInheritedGeneralAccessDisplay\\(\\)\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditLink.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:hasPermission\\(\\)\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditLink.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$link_description\\.$#"
+			count: 1
+			path: src/Resources/Pages/ListLibraryItems.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$name\\.$#"
+			count: 2
+			path: src/Resources/Pages/ListLibraryItems.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$parent_id\\.$#"
+			count: 1
+			path: src/Resources/Pages/ListLibraryItems.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$external_url\\.$#"
+			count: 1
+			path: src/Resources/Pages/ViewLibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 1
+			path: src/Resources/Pages/ViewLibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$link_description\\.$#"
+			count: 1
+			path: src/Resources/Pages/ViewLibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$name\\.$#"
+			count: 2
+			path: src/Resources/Pages/ViewLibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$parent\\.$#"
+			count: 1
+			path: src/Resources/Pages/ViewLibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$parent_id\\.$#"
+			count: 3
+			path: src/Resources/Pages/ViewLibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$type\\.$#"
+			count: 6
+			path: src/Resources/Pages/ViewLibraryItem.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:getFirstMedia\\(\\)\\.$#"
+			count: 1
+			path: src/Resources/Pages/ViewLibraryItem.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:getSecureUrl\\(\\)\\.$#"
+			count: 1
+			path: src/Resources/Pages/ViewLibraryItem.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:isVideoUrl\\(\\)\\.$#"
+			count: 1
+			path: src/Resources/Pages/ViewLibraryItem.php
+
+		-
+			message: "#^Anonymous function never returns null so it can be removed from the return type\\.$#"
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:hasPermission\\(\\)\\.$#"
+			count: 7
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Foundation\\\\Auth\\\\User\\:\\:hasRole\\(\\)\\.$#"
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+
+		-
+			message: "#^Call to static method find\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: "#^Call to static method where\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: "#^Static call to instance method Filament\\\\Resources\\\\RelationManagers\\\\RelationManager\\:\\:getOwnerRecord\\(\\)\\.$#"
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: """
+				#^Call to deprecated method actions\\(\\) of class Filament\\\\Tables\\\\Table\\:
+				Use `recordActions\\(\\)` instead\\.$#
+			"""
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: """
+				#^Call to deprecated method bulkActions\\(\\) of class Filament\\\\Tables\\\\Table\\:
+				Use `toolbarActions\\(\\)` instead\\.$#
+			"""
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$parent_id\\.$#"
+			count: 1
+			path: src/Services/PermissionService.php
+
+
+
+		-
+			message: "#^Missing parameter \\$notification \\(Closure\\|Filament\\\\Notifications\\\\Notification\\|null\\) in call to method Filament\\\\Actions\\\\Action\\:\\:successNotification\\(\\)\\.$#"
+			count: 1
+			path: src/Tables/Actions/BulkManagePermissionsAction.php
+
+		-
+			message: "#^Unknown parameter \\$body in call to method Filament\\\\Actions\\\\Action\\:\\:successNotification\\(\\)\\.$#"
+			count: 1
+			path: src/Tables/Actions/BulkManagePermissionsAction.php
+
+		-
+			message: "#^Unknown parameter \\$title in call to method Filament\\\\Actions\\\\Action\\:\\:successNotification\\(\\)\\.$#"
+			count: 1
+			path: src/Tables/Actions/BulkManagePermissionsAction.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$created_by\\.$#"
+			count: 1
+			path: src/Tables/Columns/PermissionsColumn.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$type\\.$#"
+			count: 1
+			path: src/Middleware/RedirectToCorrectEditPage.php
+
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$type\\.$#"
+			count: 1
+			path: src/Services/PermissionService.php
+
+		-
+			message: """
+				#^Call to deprecated method form\\(\\) of class Filament\\\\Actions\\\\Action\\:
+				Use `schema\\(\\) instead\\.$#
+			"""
+			count: 1
+			path: src/Tables/Actions/BulkManagePermissionsAction.php
+
+		-
+			message: """
+				#^Call to method make\\(\\) of deprecated class Filament\\\\Infolists\\\\Components\\\\Entry\\:
+				Use `TextEntry` with the `state\\(\\)` method instead\\.$#
+			"""
+			count: 1
+			path: src/Tables/Actions/BulkManagePermissionsAction.php
