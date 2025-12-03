@@ -2,6 +2,14 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.0.1 - 2025-12-03
+
+### What's Changed
+
+* Fix: Add validation for duplicate tags when creating new tags by @scottgrayson in https://github.com/TappNetwork/Filament-Library/pull/11
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.0.0...v1.0.1
+
 ## v1.0.0 - 2025-11-13
 
 ### What's Changed
