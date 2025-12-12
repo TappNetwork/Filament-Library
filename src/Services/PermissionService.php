@@ -81,7 +81,7 @@ class PermissionService
     /**
      * Bulk assign permissions to multiple users for multiple items.
      *
-     * @param \Illuminate\Database\Eloquent\Collection<int, LibraryItem>|array<LibraryItem> $items
+     * @param  \Illuminate\Database\Eloquent\Collection<int, LibraryItem>|array<LibraryItem>  $items
      */
     public function bulkAssignPermissions($items, array $data): void
     {
