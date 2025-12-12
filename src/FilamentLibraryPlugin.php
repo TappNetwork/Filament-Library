@@ -5,6 +5,7 @@ namespace Tapp\FilamentLibrary;
 use Filament\Contracts\Plugin;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
+use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class FilamentLibraryPlugin implements Plugin
 {
@@ -58,47 +59,49 @@ class FilamentLibraryPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
+        $panelId = $panel->getId();
+
         $panel
             ->resources([
-                \Tapp\FilamentLibrary\Resources\LibraryItemResource::class,
+                LibraryItemResource::class,
             ])
             ->navigationItems([
                 NavigationItem::make('Library')
-                    ->url('/library')
+                    ->url(fn () => LibraryItemResource::getUrl('index'))
                     ->icon('heroicon-o-building-library')
                     ->group('Resource Library')
                     ->sort(1)
-                    ->isActiveWhen(fn () => request()->is('library')),
+                    ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.index")),
                 NavigationItem::make('Search All')
-                    ->url('/library/search-all')
+                    ->url(fn () => LibraryItemResource::getUrl('search-all'))
                     ->icon('heroicon-o-magnifying-glass')
                     ->group('Resource Library')
                     ->sort(2)
-                    ->isActiveWhen(fn () => request()->is('library/search-all')),
+                    ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.search-all")),
                 NavigationItem::make('My Documents')
-                    ->url('/library/my-documents')
+                    ->url(fn () => LibraryItemResource::getUrl('my-documents'))
                     ->icon('heroicon-o-folder')
                     ->group('Resource Library')
                     ->sort(3)
-                    ->isActiveWhen(fn () => request()->is('library/my-documents')),
+                    ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.my-documents")),
                 NavigationItem::make('Shared with Me')
-                    ->url('/library/shared-with-me')
+                    ->url(fn () => LibraryItemResource::getUrl('shared-with-me'))
                     ->icon('heroicon-o-share')
                     ->group('Resource Library')
                     ->sort(4)
-                    ->isActiveWhen(fn () => request()->is('library/shared-with-me')),
+                    ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.shared-with-me")),
                 NavigationItem::make('Created by Me')
-                    ->url('/library/created-by-me')
+                    ->url(fn () => LibraryItemResource::getUrl('created-by-me'))
                     ->icon('heroicon-o-user')
                     ->group('Resource Library')
                     ->sort(5)
-                    ->isActiveWhen(fn () => request()->is('library/created-by-me')),
+                    ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.created-by-me")),
                 NavigationItem::make('Favorites')
-                    ->url('/library/favorites')
+                    ->url(fn () => LibraryItemResource::getUrl('favorites'))
                     ->icon('heroicon-o-star')
                     ->group('Resource Library')
                     ->sort(6)
-                    ->isActiveWhen(fn () => request()->is('library/favorites')),
+                    ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.favorites")),
             ]);
     }
 
