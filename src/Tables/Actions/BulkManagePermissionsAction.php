@@ -30,7 +30,7 @@ class BulkManagePermissionsAction extends BulkAction
             ->icon('heroicon-o-shield-check')
             ->color('warning')
             ->visible(fn (): bool => auth()->user() && FilamentLibraryPlugin::isLibraryAdmin(auth()->user()))
-            ->form([
+            ->schema([
                 Select::make('general_access')
                     ->label('General Access')
                     ->options([
@@ -76,9 +76,10 @@ class BulkManagePermissionsAction extends BulkAction
 
     public function success(): void
     {
-        $this->successNotification(
-            title: 'Permissions Updated',
-            body: 'Permissions have been successfully updated for the selected items.',
-        );
+        \Filament\Notifications\Notification::make()
+            ->title('Permissions Updated')
+            ->body('Permissions have been successfully updated for the selected items.')
+            ->success()
+            ->send();
     }
 }

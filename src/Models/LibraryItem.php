@@ -13,6 +13,27 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $slug
+ * @property string $type
+ * @property int|null $parent_id
+ * @property int $created_by
+ * @property int|null $updated_by
+ * @property string|null $external_url
+ * @property string|null $link_description
+ * @property string|null $general_access
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read LibraryItem|null $parent
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, LibraryItem> $children
+ * @property-read \App\Models\User $creator
+ * @property-read \App\Models\User|null $updater
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, LibraryItemPermission> $permissions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, LibraryItemTag> $tags
+ */
 class LibraryItem extends Model implements HasMedia
 {
     use HasFactory;
@@ -58,14 +79,16 @@ class LibraryItem extends Model implements HasMedia
 
         static::created(function (self $item) {
             // Copy parent folder permissions to the new item
-            if ($item->parent_id) {
+            if ($item->parent_id && $item->parent) {
                 $parentPermissions = $item->parent->permissions()->get();
 
                 foreach ($parentPermissions as $permission) {
-                    $item->permissions()->create([
-                        'user_id' => $permission->user_id,
-                        'role' => $permission->role,
-                    ]);
+                    if (isset($permission->user_id) && isset($permission->role)) {
+                        $item->permissions()->create([
+                            'user_id' => $permission->user_id,
+                            'role' => $permission->role,
+                        ]);
+                    }
                 }
             }
         });
@@ -199,7 +222,7 @@ class LibraryItem extends Model implements HasMedia
             ->where('user_id', $user->id)
             ->first();
 
-        if ($directPermission) {
+        if ($directPermission && isset($directPermission->role)) {
             return $directPermission->role;
         }
 
@@ -220,14 +243,16 @@ class LibraryItem extends Model implements HasMedia
 
     /**
      * Get the current owner of this item.
+     *
+     * @return \App\Models\User|\Illuminate\Database\Eloquent\Model|null
      */
-    public function getCurrentOwner(): ?\App\Models\User
+    public function getCurrentOwner()
     {
         $ownerPermission = $this->permissions()
             ->where('role', 'owner')
             ->first();
 
-        if ($ownerPermission) {
+        if ($ownerPermission && $ownerPermission->user) {
             return $ownerPermission->user;
         }
 

@@ -3,6 +3,7 @@
 namespace Tapp\FilamentLibrary\Middleware;
 
 use Closure;
+use Filament\Facades\Filament;
 use Illuminate\Http\Request;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 
@@ -13,20 +14,28 @@ class RedirectToCorrectEditPage
      */
     public function handle(Request $request, Closure $next)
     {
-        // Check if this is an edit route for library items
-        if ($request->routeIs('filament.admin.resources.library.edit')) {
+        $panel = Filament::getCurrentPanel();
+
+        if (! $panel) {
+            return $next($request);
+        }
+
+        $panelId = $panel->getId();
+
+        // Check if this is an edit route for library items in any panel
+        if ($request->routeIs("filament.{$panelId}.resources.library.edit")) {
             $recordId = $request->route('record');
 
             if ($recordId) {
                 $libraryItem = LibraryItem::find($recordId);
 
-                if ($libraryItem) {
+                if ($libraryItem && isset($libraryItem->type)) {
                     // Redirect to the correct edit page based on type
                     $editUrl = match ($libraryItem->type) {
-                        'folder' => route('filament.admin.resources.library.edit-folder', ['record' => $recordId]),
-                        'file' => route('filament.admin.resources.library.edit-file', ['record' => $recordId]),
-                        'link' => route('filament.admin.resources.library.edit-link', ['record' => $recordId]),
-                        default => route('filament.admin.resources.library.edit-folder', ['record' => $recordId]),
+                        'folder' => route("filament.{$panelId}.resources.library.edit-folder", ['record' => $recordId]),
+                        'file' => route("filament.{$panelId}.resources.library.edit-file", ['record' => $recordId]),
+                        'link' => route("filament.{$panelId}.resources.library.edit-link", ['record' => $recordId]),
+                        default => route("filament.{$panelId}.resources.library.edit-folder", ['record' => $recordId]),
                     };
 
                     return redirect($editUrl);

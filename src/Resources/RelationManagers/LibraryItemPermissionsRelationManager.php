@@ -15,6 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
+use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Models\LibraryItemPermission;
 
 class LibraryItemPermissionsRelationManager extends RelationManager
@@ -41,7 +42,7 @@ class LibraryItemPermissionsRelationManager extends RelationManager
 
         // For non-admins, check if they have share permission on the current record
         $record = static::getOwnerRecord();
-        if ($record && $record->hasPermission($user, 'share')) {
+        if ($record instanceof LibraryItem && $record->hasPermission($user, 'share')) {
             return true;
         }
 
@@ -50,7 +51,7 @@ class LibraryItemPermissionsRelationManager extends RelationManager
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
-        return $ownerRecord->hasPermission(auth()->user(), 'share');
+        return $ownerRecord instanceof LibraryItem && $ownerRecord->hasPermission(auth()->user(), 'share');
     }
 
     /**
@@ -173,20 +174,20 @@ class LibraryItemPermissionsRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->visible(fn () => $this->ownerRecord->hasPermission(auth()->user(), 'share')),
+                    ->visible(fn () => $this->ownerRecord instanceof LibraryItem && $this->ownerRecord->hasPermission(auth()->user(), 'share')),
             ])
             ->heading('User Permissions')
             ->description('Owner: Share and edit. Editor/Viewer: Standard permissions.')
-            ->actions([
+            ->recordActions([
                 EditAction::make()
-                    ->visible(fn () => $this->ownerRecord->hasPermission(auth()->user(), 'share')),
+                    ->visible(fn () => $this->ownerRecord instanceof LibraryItem && $this->ownerRecord->hasPermission(auth()->user(), 'share')),
                 DeleteAction::make()
-                    ->visible(fn () => $this->ownerRecord->hasPermission(auth()->user(), 'share')),
+                    ->visible(fn () => $this->ownerRecord instanceof LibraryItem && $this->ownerRecord->hasPermission(auth()->user(), 'share')),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->visible(fn () => $this->ownerRecord->hasPermission(auth()->user(), 'share')),
+                        ->visible(fn () => $this->ownerRecord instanceof LibraryItem && $this->ownerRecord->hasPermission(auth()->user(), 'share')),
                 ]),
             ])
             ->emptyStateHeading('No permissions assigned')
@@ -194,7 +195,7 @@ class LibraryItemPermissionsRelationManager extends RelationManager
             ->emptyStateActions([
                 CreateAction::make()
                     ->label('Add Permission')
-                    ->visible(fn () => $this->ownerRecord->hasPermission(auth()->user(), 'share')),
+                    ->visible(fn () => $this->ownerRecord instanceof LibraryItem && $this->ownerRecord->hasPermission(auth()->user(), 'share')),
             ]);
     }
 }
