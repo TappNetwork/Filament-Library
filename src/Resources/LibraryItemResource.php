@@ -293,7 +293,7 @@ class LibraryItemResource extends Resource
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class))
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('deleteAny', LibraryItem::class))
                         ->successRedirectUrl(function () {
                             // For bulk actions, redirect to current folder (maintain current location)
                             $currentParent = request()->get('parent');
@@ -301,9 +301,9 @@ class LibraryItemResource extends Resource
                             return static::getUrl('index', $currentParent ? ['parent' => $currentParent] : []);
                         }),
                     RestoreBulkAction::make()
-                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class)),
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('restoreAny', LibraryItem::class)),
                     ForceDeleteBulkAction::make()
-                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class))
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('forceDeleteAny', LibraryItem::class))
                         ->successRedirectUrl(function () {
                             // For bulk actions, redirect to current folder (maintain current location)
                             $currentParent = request()->get('parent');
