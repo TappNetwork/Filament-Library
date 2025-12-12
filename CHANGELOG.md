@@ -2,6 +2,18 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.0.2 - 2025-12-12
+
+### What's Changed
+
+* Update navigation items and permissions check by @andreia in https://github.com/TappNetwork/Filament-Library/pull/12
+
+### New Contributors
+
+* @andreia made their first contribution in https://github.com/TappNetwork/Filament-Library/pull/12
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.0.1...v1.0.2
+
 ## v1.0.1 - 2025-12-03
 
 ### What's Changed
