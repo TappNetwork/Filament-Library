@@ -26,6 +26,26 @@ class LibraryItemResource extends Resource
 
     protected static ?string $slug = 'library';
 
+    /**
+     * Determine if the resource is scoped to a tenant.
+     */
+    public static function isScopedToTenant(): bool
+    {
+        return config('filament-library.tenancy.enabled', false);
+    }
+
+    /**
+     * Get the name of the tenant ownership relationship.
+     */
+    public static function getTenantOwnershipRelationshipName(): string
+    {
+        if (! config('filament-library.tenancy.enabled')) {
+            return 'tenant';
+        }
+
+        return LibraryItem::getTenantRelationshipName();
+    }
+
     public static function getNavigationIcon(): ?string
     {
         return 'heroicon-o-folder';
@@ -293,7 +313,7 @@ class LibraryItemResource extends Resource
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class))
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('deleteAny', LibraryItem::class))
                         ->successRedirectUrl(function () {
                             // For bulk actions, redirect to current folder (maintain current location)
                             $currentParent = request()->get('parent');
@@ -301,9 +321,9 @@ class LibraryItemResource extends Resource
                             return static::getUrl('index', $currentParent ? ['parent' => $currentParent] : []);
                         }),
                     RestoreBulkAction::make()
-                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class)),
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('restoreAny', LibraryItem::class)),
                     ForceDeleteBulkAction::make()
-                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('delete', LibraryItem::class))
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('forceDeleteAny', LibraryItem::class))
                         ->successRedirectUrl(function () {
                             // For bulk actions, redirect to current folder (maintain current location)
                             $currentParent = request()->get('parent');

@@ -13,6 +13,15 @@ return new class extends Migration
     {
         Schema::create('library_item_permissions', function (Blueprint $table) {
             $table->id();
+
+            // Add tenant foreign key if tenancy is enabled
+            if (config('filament-library.tenancy.enabled')) {
+                $tenantModel = config('filament-library.tenancy.model');
+                if ($tenantModel) {
+                    $table->foreignIdFor($tenantModel)->constrained()->cascadeOnDelete();
+                }
+            }
+
             $table->foreignId('library_item_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->enum('role', ['owner', 'editor', 'viewer']);

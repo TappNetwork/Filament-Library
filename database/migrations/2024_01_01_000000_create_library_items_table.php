@@ -13,6 +13,15 @@ return new class extends Migration
     {
         Schema::create('library_items', function (Blueprint $table) {
             $table->id();
+
+            // Add tenant foreign key if tenancy is enabled
+            if (config('filament-library.tenancy.enabled')) {
+                $tenantModel = config('filament-library.tenancy.model');
+                if ($tenantModel) {
+                    $table->foreignIdFor($tenantModel)->constrained()->cascadeOnDelete();
+                }
+            }
+
             $table->string('name');
             $table->string('slug');
             $table->enum('type', ['folder', 'file', 'link']);
