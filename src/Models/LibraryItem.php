@@ -29,8 +29,8 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read LibraryItem|null $parent
  * @property-read \Illuminate\Database\Eloquent\Collection<int, LibraryItem> $children
- * @property-read \App\Models\User $creator
- * @property-read \App\Models\User|null $updater
+ * @property-read \Illuminate\Database\Eloquent\Model $creator
+ * @property-read \Illuminate\Database\Eloquent\Model|null $updater
  * @property-read \Illuminate\Database\Eloquent\Collection<int, LibraryItemPermission> $permissions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, LibraryItemTag> $tags
  */
@@ -126,7 +126,9 @@ class LibraryItem extends Model implements HasMedia
      */
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'created_by')->withDefault(function () {
+        $userModel = config('filament-library.user_model', config('auth.providers.users.model', 'App\\Models\\User'));
+
+        return $this->belongsTo($userModel, 'created_by')->withDefault(function () {
             // Check if 'name' field exists
             if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'name')) {
                 return [
@@ -149,7 +151,9 @@ class LibraryItem extends Model implements HasMedia
      */
     public function updater(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'updated_by');
+        $userModel = config('filament-library.user_model', config('auth.providers.users.model', 'App\\Models\\User'));
+
+        return $this->belongsTo($userModel, 'updated_by');
     }
 
     /**
@@ -244,9 +248,9 @@ class LibraryItem extends Model implements HasMedia
     /**
      * Get the current owner of this item.
      *
-     * @return \App\Models\User|\Illuminate\Database\Eloquent\Model|null
+     * @return \Illuminate\Database\Eloquent\Model|null
      */
-    public function getCurrentOwner()
+    public function getCurrentOwner(): ?\Illuminate\Database\Eloquent\Model
     {
         $ownerPermission = $this->permissions()
             ->where('role', 'owner')
@@ -272,8 +276,10 @@ class LibraryItem extends Model implements HasMedia
 
     /**
      * Transfer ownership to another user.
+     *
+     * @param \Illuminate\Database\Eloquent\Model $newOwner
      */
-    public function transferOwnership(\App\Models\User $newOwner): void
+    public function transferOwnership(\Illuminate\Database\Eloquent\Model $newOwner): void
     {
         // Remove existing owner permissions
         $this->permissions()->where('role', 'owner')->delete();
@@ -295,8 +301,10 @@ class LibraryItem extends Model implements HasMedia
 
     /**
      * Ensure a user has a personal folder (like Google Drive's "My Drive").
+     *
+     * @param \Illuminate\Database\Eloquent\Model $user
      */
-    public static function ensurePersonalFolder(\App\Models\User $user): self
+    public static function ensurePersonalFolder(\Illuminate\Database\Eloquent\Model $user): self
     {
         // Check if user already has a personal folder via the relationship
         if ($user->personal_folder_id) {
@@ -330,8 +338,10 @@ class LibraryItem extends Model implements HasMedia
 
     /**
      * Get a user's personal folder.
+     *
+     * @param \Illuminate\Database\Eloquent\Model $user
      */
-    public static function getPersonalFolder(\App\Models\User $user): ?self
+    public static function getPersonalFolder(\Illuminate\Database\Eloquent\Model $user): ?self
     {
         if (! $user->personal_folder_id) {
             return null;
@@ -342,8 +352,10 @@ class LibraryItem extends Model implements HasMedia
 
     /**
      * Generate the personal folder name for a user.
+     *
+     * @param \Illuminate\Database\Eloquent\Model $user
      */
-    public static function getPersonalFolderName(\App\Models\User $user): string
+    public static function getPersonalFolderName(\Illuminate\Database\Eloquent\Model $user): string
     {
         // Try to get a display name from various user fields
         $name = $user->first_name ?? $user->name ?? $user->email ?? 'User';

@@ -29,9 +29,10 @@ class RedirectToCorrectEditPage
             if ($recordId) {
                 $libraryItem = LibraryItem::find($recordId);
 
-                if ($libraryItem && isset($libraryItem->type)) {
+                if ($libraryItem) {
                     // Redirect to the correct edit page based on type
-                    $editUrl = match ($libraryItem->type) {
+                    $type = $libraryItem->type ?? 'folder';
+                    $editUrl = match ($type) {
                         'folder' => route("filament.{$panelId}.resources.library.edit-folder", ['record' => $recordId]),
                         'file' => route("filament.{$panelId}.resources.library.edit-file", ['record' => $recordId]),
                         'link' => route("filament.{$panelId}.resources.library.edit-link", ['record' => $recordId]),
