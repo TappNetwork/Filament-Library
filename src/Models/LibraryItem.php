@@ -247,8 +247,6 @@ class LibraryItem extends Model implements HasMedia
 
     /**
      * Get the current owner of this item.
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
      */
     public function getCurrentOwner(): ?\Illuminate\Database\Eloquent\Model
     {
@@ -276,8 +274,6 @@ class LibraryItem extends Model implements HasMedia
 
     /**
      * Transfer ownership to another user.
-     *
-     * @param \Illuminate\Database\Eloquent\Model $newOwner
      */
     public function transferOwnership(\Illuminate\Database\Eloquent\Model $newOwner): void
     {
@@ -301,8 +297,6 @@ class LibraryItem extends Model implements HasMedia
 
     /**
      * Ensure a user has a personal folder (like Google Drive's "My Drive").
-     *
-     * @param \Illuminate\Database\Eloquent\Model $user
      */
     public static function ensurePersonalFolder(\Illuminate\Database\Eloquent\Model $user): self
     {
@@ -338,8 +332,6 @@ class LibraryItem extends Model implements HasMedia
 
     /**
      * Get a user's personal folder.
-     *
-     * @param \Illuminate\Database\Eloquent\Model $user
      */
     public static function getPersonalFolder(\Illuminate\Database\Eloquent\Model $user): ?self
     {
@@ -352,8 +344,6 @@ class LibraryItem extends Model implements HasMedia
 
     /**
      * Generate the personal folder name for a user.
-     *
-     * @param \Illuminate\Database\Eloquent\Model $user
      */
     public static function getPersonalFolderName(\Illuminate\Database\Eloquent\Model $user): string
     {
