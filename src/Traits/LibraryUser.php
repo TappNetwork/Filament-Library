@@ -2,8 +2,12 @@
 
 namespace Tapp\FilamentLibrary\Traits;
 
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 
+/**
+ * @method BelongsToMany favoriteLibraryItems()
+ */
 trait LibraryUser
 {
     /**
@@ -25,7 +29,7 @@ trait LibraryUser
     /**
      * Get the library items favorited by this user.
      */
-    public function favoriteLibraryItems()
+    public function favoriteLibraryItems(): BelongsToMany
     {
         return $this->belongsToMany(LibraryItem::class, 'library_item_favorites')
             ->withTimestamps();

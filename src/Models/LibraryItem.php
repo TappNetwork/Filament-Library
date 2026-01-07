@@ -659,9 +659,13 @@ class LibraryItem extends Model implements HasMedia
     {
         if (auth()->check()) {
             $user = auth()->user();
+            // Assuming the user model uses LibraryUser trait
+            // @phpstan-ignore-next-line
             if ($user->favoriteLibraryItems()->where('library_item_id', $this->id)->exists()) {
+                // @phpstan-ignore-next-line
                 $user->favoriteLibraryItems()->detach($this->id);
             } else {
+                // @phpstan-ignore-next-line
                 $user->favoriteLibraryItems()->attach($this->id);
             }
         }
@@ -676,7 +680,10 @@ class LibraryItem extends Model implements HasMedia
             return false;
         }
 
-        return auth()->user()->favoriteLibraryItems()->where('library_item_id', $this->id)->exists();
+        $user = auth()->user();
+        // Assuming the user model uses LibraryUser trait
+        // @phpstan-ignore-next-line
+        return $user->favoriteLibraryItems()->where('library_item_id', $this->id)->exists();
     }
 
     /**

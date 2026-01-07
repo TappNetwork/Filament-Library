@@ -50,6 +50,8 @@ trait BelongsToTenant
             if (method_exists($model, 'libraryItem') && isset($model->library_item_id)) {
                 $parentItemId = $model->library_item_id;
                 $parentItemClass = get_class($model->libraryItem()->getRelated());
+
+                /** @var class-string<\Illuminate\Database\Eloquent\Model> $parentItemClass */
                 $parentItem = $parentItemClass::find($parentItemId);
 
                 if ($parentItem) {
