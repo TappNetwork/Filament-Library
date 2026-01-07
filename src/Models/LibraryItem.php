@@ -681,6 +681,7 @@ class LibraryItem extends Model implements HasMedia
         }
 
         $user = auth()->user();
+
         // Assuming the user model uses LibraryUser trait
         // @phpstan-ignore-next-line
         return $user->favoriteLibraryItems()->where('library_item_id', $this->id)->exists();
