@@ -2,6 +2,19 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.0.3 - 2026-01-07
+
+### What's Changed
+
+* Bump dependabot/fetch-metadata from 2.4.0 to 2.5.0 by @dependabot[bot] in https://github.com/TappNetwork/Filament-Library/pull/13
+* Multi-tenancy support by @andreia in https://github.com/TappNetwork/Filament-Library/pull/6
+
+### New Contributors
+
+* @dependabot[bot] made their first contribution in https://github.com/TappNetwork/Filament-Library/pull/13
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.0.2...v1.0.3
+
 ## v1.0.2 - 2025-12-12
 
 ### What's Changed
