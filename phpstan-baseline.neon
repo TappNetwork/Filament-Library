@@ -95,11 +95,6 @@ parameters:
 			path: src/Resources/Pages/EditLibraryItemPage.php
 
 		-
-			message: "#^PHPDoc tag @var with type class-string<Illuminate\\\\Database\\\\Eloquent\\\\Model> is not subtype of native type 'App\\\\\\\\Models\\\\\\\\User'\\.$#"
-			count: 2
-			path: src/Resources/Pages/EditLibraryItemPage.php
-
-		-
 			message: "#^Left side of && is always true\\.$#"
 			count: 1
 			path: src/Resources/Pages/EditFile.php

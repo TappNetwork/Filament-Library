@@ -12,5 +12,4 @@ parameters:
     checkModelProperties: true
 
     ignoreErrors:
-        - '#Class App\\Models\\User not found#'
         - '#Call to static method .* on an unknown class App\\Models\\User#'
