@@ -123,7 +123,7 @@ class ListLibraryItems extends ListRecords
                     FileUpload::make('file')
                         ->label('Upload File')
                         ->required()
-                        ->maxSize(10240) // 10MB
+                        ->maxSize(512000) // 500MB
                         ->disk('public')
                         ->directory('library-files')
                         ->visibility('private')
@@ -250,7 +250,7 @@ class ListLibraryItems extends ListRecords
 
     public function getTitle(): string
     {
-        if ($this->parentFolder) {
+        if ($this->parentFolder && isset($this->parentFolder->name)) {
             return $this->parentFolder->name;
         }
 
@@ -259,7 +259,7 @@ class ListLibraryItems extends ListRecords
 
     public function getSubheading(): ?string
     {
-        if ($this->parentFolder && $this->parentFolder->link_description) {
+        if ($this->parentFolder && isset($this->parentFolder->link_description) && $this->parentFolder->link_description) {
             return $this->parentFolder->link_description;
         }
 
@@ -294,7 +294,9 @@ class ListLibraryItems extends ListRecords
             // Generate URLs more efficiently
             $baseUrl = static::getResource()::getUrl('index');
             foreach ($path as $folder) {
-                $breadcrumbs[$baseUrl . '?parent=' . $folder->id] = $folder->name;
+                if (isset($folder->id) && isset($folder->name)) {
+                    $breadcrumbs[$baseUrl . '?parent=' . $folder->id] = $folder->name;
+                }
             }
         }
 

@@ -1,0 +1,203 @@
+parameters:
+	ignoreErrors:
+		# Database seeders - App\Models\User is application-specific
+		-
+			message: "#^Call to static method first\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: database/seeders/LibrarySeeder.php
+
+		-
+			message: "#^Call to static method where\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: database/seeders/LibrarySeeder.php
+
+		# Config file - env() is allowed in config files
+		-
+			message: "#^Called 'env' outside of the config directory which returns null when the config is cached, use 'config'\\.$#"
+			path: config/filament-library.php
+
+		# Forms - User model is dynamic
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$name\\.$#"
+			count: 1
+			path: src/Forms/Components/UserSearchSelect.php
+
+		# Models - Properties are defined via @property annotations but PHPStan needs explicit ignores for some cases
+		# These are false positives since properties are documented
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$user\\.$#"
+			path: src/Models/LibraryItem.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$personal_folder_id\\.$#"
+			path: src/Models/LibraryItem.php
+
+		# Policies - Properties are documented
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$created_by\\.$#"
+			count: 7
+			path: src/Policies/LibraryItemPolicy.php
+
+		# Resources - Properties are documented
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$deleted_at\\.$#"
+			count: 2
+			path: src/Resources/LibraryItemResource.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$external_url\\.$#"
+			count: 1
+			path: src/Resources/LibraryItemResource.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$parent_id\\.$#"
+			count: 2
+			path: src/Resources/LibraryItemResource.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$type\\.$#"
+			count: 6
+			path: src/Resources/LibraryItemResource.php
+
+		# Pages - Model type hints are generic but we know they're LibraryItem instances
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$parent_id\\.$#"
+			path: src/Resources/Pages
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			path: src/Resources/Pages
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$name\\.$#"
+			path: src/Resources/Pages
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$parent\\.$#"
+			path: src/Resources/Pages
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$type\\.$#"
+			path: src/Resources/Pages
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$created_by\\.$#"
+			path: src/Resources/Pages
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$external_url\\.$#"
+			path: src/Resources/Pages
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$link_description\\.$#"
+			path: src/Resources/Pages
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:getFirstMedia\\(\\)\\.$#"
+			path: src/Resources/Pages
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:getInheritedGeneralAccessDisplay\\(\\)\\.$#"
+			path: src/Resources/Pages
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:hasPermission\\(\\)\\.$#"
+			path: src/Resources/Pages
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:getSecureUrl\\(\\)\\.$#"
+			path: src/Resources/Pages
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:isVideoUrl\\(\\)\\.$#"
+			path: src/Resources/Pages
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Resources\\\\Pages\\\\EditLibraryItemPage\\:\\:\\$parentId\\.$#"
+			count: 2
+			path: src/Resources/Pages/EditLibraryItemPage.php
+
+		-
+			message: "#^Call to static method find\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditLibraryItemPage.php
+
+		-
+			message: "#^Call to static method query\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditLibraryItemPage.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 1
+			path: src/Resources/Pages/EditFile.php
+
+		# Relation Managers - Model type hints are generic
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:hasPermission\\(\\)\\.$#"
+			count: 7
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Foundation\\\\Auth\\\\User\\:\\:hasRole\\(\\)\\.$#"
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: "#^Call to static method find\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: "#^Call to static method where\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: "#^Static call to instance method Filament\\\\Resources\\\\RelationManagers\\\\RelationManager\\:\\:getOwnerRecord\\(\\)\\.$#"
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		-
+			message: "#^Anonymous function never returns null so it can be removed from the return type\\.$#"
+			count: 1
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		# Services - Properties are documented
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$parent_id\\.$#"
+			count: 1
+			path: src/Services/PermissionService.php
+
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$type\\.$#"
+			count: 1
+			path: src/Services/PermissionService.php
+
+		# Tables - Properties are documented
+		-
+			message: "#^Access to an undefined property Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem\\:\\:\\$created_by\\.$#"
+			count: 1
+			path: src/Tables/Columns/PermissionsColumn.php
+
+		# Instanceof checks - These are necessary for type narrowing but PHPStan sees them as always true
+		# This happens because PHPStan doesn't understand the dynamic nature of the ownerRecord
+		-
+			message: "#^Instanceof between Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem and Tapp\\\\FilamentLibrary\\\\Models\\\\LibraryItem will always evaluate to true\\.$#"
+			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
+
+		# Unused traits - These are provided for users to use in their own models
+		-
+			message: "#^Trait Tapp\\\\FilamentLibrary\\\\Traits\\\\HasLibraryFavorites is used zero times and is not analysed\\.$#"
+
+		-
+			message: "#^Trait Tapp\\\\FilamentLibrary\\\\Traits\\\\LibraryUser is used zero times and is not analysed\\.$#"

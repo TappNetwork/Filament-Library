@@ -80,6 +80,8 @@ class PermissionService
 
     /**
      * Bulk assign permissions to multiple users for multiple items.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, LibraryItem>|array<LibraryItem>  $items
      */
     public function bulkAssignPermissions($items, array $data): void
     {
@@ -88,17 +90,24 @@ class PermissionService
         $generalAccess = $data['general_access'] ?? 'private';
 
         foreach ($items as $item) {
+            if (! $item instanceof LibraryItem) {
+                continue;
+            }
+
             // Update the general access level for the item
             $item->update(['general_access' => $generalAccess]);
 
             // Assign permissions to users
             foreach ($userIds as $userId) {
                 $userModel = $this->getUserModel();
-                $this->assignPermission(
-                    $userModel::find($userId),
-                    $item,
-                    $permission
-                );
+                $user = $userModel::find($userId);
+                if ($user) {
+                    $this->assignPermission(
+                        $user,
+                        $item,
+                        $permission
+                    );
+                }
             }
         }
     }
@@ -111,17 +120,24 @@ class PermissionService
         $children = $folder->children;
 
         foreach ($children as $child) {
+            if (! $child instanceof LibraryItem) {
+                continue;
+            }
+
             foreach ($userIds as $userId) {
                 $userModel = $this->getUserModel();
-                $this->assignPermission(
-                    $userModel::find($userId),
-                    $child,
-                    $permission
-                );
+                $user = $userModel::find($userId);
+                if ($user) {
+                    $this->assignPermission(
+                        $user,
+                        $child,
+                        $permission
+                    );
+                }
             }
 
             // Recursively cascade to grandchildren
-            if ($child->type === 'folder') {
+            if (isset($child->type) && $child->type === 'folder') {
                 $this->cascadePermissionsToChildren($child, $userIds, $permission);
             }
         }

@@ -8,12 +8,34 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Tapp\FilamentLibrary\Models\Traits\BelongsToTenant;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $slug
+ * @property string $type
+ * @property int|null $parent_id
+ * @property int $created_by
+ * @property int|null $updated_by
+ * @property string|null $external_url
+ * @property string|null $link_description
+ * @property string|null $general_access
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read LibraryItem|null $parent
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, LibraryItem> $children
+ * @property-read \Illuminate\Database\Eloquent\Model $creator
+ * @property-read \Illuminate\Database\Eloquent\Model|null $updater
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, LibraryItemPermission> $permissions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, LibraryItemTag> $tags
+ */
 class LibraryItem extends Model implements HasMedia
 {
     use BelongsToTenant;
@@ -60,14 +82,16 @@ class LibraryItem extends Model implements HasMedia
 
         static::created(function (self $item) {
             // Copy parent folder permissions to the new item
-            if ($item->parent_id) {
+            if ($item->parent_id && $item->parent) {
                 $parentPermissions = $item->parent->permissions()->get();
 
                 foreach ($parentPermissions as $permission) {
-                    $item->permissions()->create([
-                        'user_id' => $permission->user_id,
-                        'role' => $permission->role,
-                    ]);
+                    if (isset($permission->user_id) && isset($permission->role)) {
+                        $item->permissions()->create([
+                            'user_id' => $permission->user_id,
+                            'role' => $permission->role,
+                        ]);
+                    }
                 }
             }
         });
@@ -105,9 +129,11 @@ class LibraryItem extends Model implements HasMedia
      */
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(config('filament-library.user_model'), 'created_by')->withDefault(function ($instance) {
+        $userModel = config('filament-library.user_model', config('auth.providers.users.model', 'App\\Models\\User'));
+
+        return $this->belongsTo($userModel, 'created_by')->withDefault(function ($instance) {
             // Check if 'name' field exists
-            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'name')) {
+            if (Schema::hasColumn('users', 'name')) {
                 $instance->name = 'Unknown User';
                 $instance->email = 'deleted@example.com';
             } else {
@@ -124,7 +150,9 @@ class LibraryItem extends Model implements HasMedia
      */
     public function updater(): BelongsTo
     {
-        return $this->belongsTo(config('filament-library.user_model'), 'updated_by');
+        $userModel = config('filament-library.user_model', config('auth.providers.users.model', 'App\\Models\\User'));
+
+        return $this->belongsTo($userModel, 'updated_by');
     }
 
     /**
@@ -197,7 +225,7 @@ class LibraryItem extends Model implements HasMedia
             ->where('user_id', $user->id)
             ->first();
 
-        if ($directPermission) {
+        if ($directPermission && isset($directPermission->role)) {
             return $directPermission->role;
         }
 
@@ -225,7 +253,7 @@ class LibraryItem extends Model implements HasMedia
             ->where('role', 'owner')
             ->first();
 
-        if ($ownerPermission) {
+        if ($ownerPermission && $ownerPermission->user) {
             return $ownerPermission->user;
         }
 

@@ -7,6 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Tapp\FilamentLibrary\Models\Traits\BelongsToTenant;
 
+/**
+ * @property int $id
+ * @property int $library_item_id
+ * @property int $user_id
+ * @property string $role
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read LibraryItem $libraryItem
+ * @property-read \Illuminate\Database\Eloquent\Model $user
+ */
 class LibraryItemPermission extends Model
 {
     use BelongsToTenant;

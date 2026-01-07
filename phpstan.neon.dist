@@ -26,4 +26,3 @@ parameters:
         - '#Call to static method make\(\) on an unknown class Filament\\Infolists\\Components\\Section#'
         - '#Call to deprecated method height\(\) of class Filament\\Infolists\\Components\\ImageEntry#'
         - '#Call to deprecated method width\(\) of class Filament\\Infolists\\Components\\ImageEntry#'
-

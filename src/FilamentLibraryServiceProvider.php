@@ -106,7 +106,7 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
     }
 
     /**
-     * @return array<Asset>
+     * @return array<Css|Js>
      */
     protected function getAssets(): array
     {
