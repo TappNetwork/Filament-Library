@@ -11,3 +11,5 @@ parameters:
     checkOctaneCompatibility: true
     checkModelProperties: true
 
+    ignoreErrors:
+        - '#Call to static method .* on an unknown class App\\Models\\User#'

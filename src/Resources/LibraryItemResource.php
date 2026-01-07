@@ -26,6 +26,26 @@ class LibraryItemResource extends Resource
 
     protected static ?string $slug = 'library';
 
+    /**
+     * Determine if the resource is scoped to a tenant.
+     */
+    public static function isScopedToTenant(): bool
+    {
+        return config('filament-library.tenancy.enabled', false);
+    }
+
+    /**
+     * Get the name of the tenant ownership relationship.
+     */
+    public static function getTenantOwnershipRelationshipName(): string
+    {
+        if (! config('filament-library.tenancy.enabled')) {
+            return 'tenant';
+        }
+
+        return LibraryItem::getTenantRelationshipName();
+    }
+
     public static function getNavigationIcon(): ?string
     {
         return 'heroicon-o-folder';

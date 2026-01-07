@@ -42,16 +42,15 @@ class LibraryItemPermissionsRelationManager extends RelationManager
 
         // For non-admins, check if they have share permission on the current record
         $record = static::getOwnerRecord();
-        if ($record instanceof LibraryItem && $record->hasPermission($user, 'share')) {
-            return true;
-        }
 
-        return false;
+        /** @var LibraryItem $record */
+        return $record->hasPermission($user, 'share');
     }
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
-        return $ownerRecord instanceof LibraryItem && $ownerRecord->hasPermission(auth()->user(), 'share');
+        /** @var LibraryItem $ownerRecord */
+        return $ownerRecord->hasPermission(auth()->user(), 'share');
     }
 
     /**
@@ -174,20 +173,40 @@ class LibraryItemPermissionsRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->visible(fn () => $this->ownerRecord instanceof LibraryItem && $this->ownerRecord->hasPermission(auth()->user(), 'share')),
+                    ->visible(function () {
+                        /** @var LibraryItem $ownerRecord */
+                        $ownerRecord = $this->ownerRecord;
+
+                        return $ownerRecord->hasPermission(auth()->user(), 'share');
+                    }),
             ])
             ->heading('User Permissions')
             ->description('Owner: Share and edit. Editor/Viewer: Standard permissions.')
             ->recordActions([
                 EditAction::make()
-                    ->visible(fn () => $this->ownerRecord instanceof LibraryItem && $this->ownerRecord->hasPermission(auth()->user(), 'share')),
+                    ->visible(function () {
+                        /** @var LibraryItem $ownerRecord */
+                        $ownerRecord = $this->ownerRecord;
+
+                        return $ownerRecord->hasPermission(auth()->user(), 'share');
+                    }),
                 DeleteAction::make()
-                    ->visible(fn () => $this->ownerRecord instanceof LibraryItem && $this->ownerRecord->hasPermission(auth()->user(), 'share')),
+                    ->visible(function () {
+                        /** @var LibraryItem $ownerRecord */
+                        $ownerRecord = $this->ownerRecord;
+
+                        return $ownerRecord->hasPermission(auth()->user(), 'share');
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->visible(fn () => $this->ownerRecord instanceof LibraryItem && $this->ownerRecord->hasPermission(auth()->user(), 'share')),
+                        ->visible(function () {
+                            /** @var LibraryItem $ownerRecord */
+                            $ownerRecord = $this->ownerRecord;
+
+                            return $ownerRecord->hasPermission(auth()->user(), 'share');
+                        }),
                 ]),
             ])
             ->emptyStateHeading('No permissions assigned')
@@ -195,7 +214,12 @@ class LibraryItemPermissionsRelationManager extends RelationManager
             ->emptyStateActions([
                 CreateAction::make()
                     ->label('Add Permission')
-                    ->visible(fn () => $this->ownerRecord instanceof LibraryItem && $this->ownerRecord->hasPermission(auth()->user(), 'share')),
+                    ->visible(function () {
+                        /** @var LibraryItem $ownerRecord */
+                        $ownerRecord = $this->ownerRecord;
+
+                        return $ownerRecord->hasPermission(auth()->user(), 'share');
+                    }),
             ]);
     }
 }

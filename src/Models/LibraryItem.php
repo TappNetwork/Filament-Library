@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Tapp\FilamentLibrary\Models\Traits\BelongsToTenant;
 
 /**
  * @property int $id
@@ -36,6 +38,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  */
 class LibraryItem extends Model implements HasMedia
 {
+    use BelongsToTenant;
     use HasFactory;
     use InteractsWithMedia;
     use SoftDeletes;
@@ -128,21 +131,17 @@ class LibraryItem extends Model implements HasMedia
     {
         $userModel = config('filament-library.user_model', config('auth.providers.users.model', 'App\\Models\\User'));
 
-        return $this->belongsTo($userModel, 'created_by')->withDefault(function () {
+        return $this->belongsTo($userModel, 'created_by')->withDefault(function ($instance) {
             // Check if 'name' field exists
-            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'name')) {
-                return [
-                    'name' => 'Unknown User',
-                    'email' => 'deleted@example.com',
-                ];
+            if (Schema::hasColumn('users', 'name')) {
+                $instance->name = 'Unknown User';
+                $instance->email = 'deleted@example.com';
+            } else {
+                // Fall back to first_name/last_name
+                $instance->first_name = 'Unknown';
+                $instance->last_name = 'User';
+                $instance->email = 'deleted@example.com';
             }
-
-            // Fall back to first_name/last_name
-            return [
-                'first_name' => 'Unknown',
-                'last_name' => 'User',
-                'email' => 'deleted@example.com',
-            ];
         });
     }
 
@@ -248,7 +247,7 @@ class LibraryItem extends Model implements HasMedia
     /**
      * Get the current owner of this item.
      */
-    public function getCurrentOwner(): ?\Illuminate\Database\Eloquent\Model
+    public function getCurrentOwner(): ?Model
     {
         $ownerPermission = $this->permissions()
             ->where('role', 'owner')
@@ -275,7 +274,7 @@ class LibraryItem extends Model implements HasMedia
     /**
      * Transfer ownership to another user.
      */
-    public function transferOwnership(\Illuminate\Database\Eloquent\Model $newOwner): void
+    public function transferOwnership(Model $newOwner): void
     {
         // Remove existing owner permissions
         $this->permissions()->where('role', 'owner')->delete();
@@ -298,7 +297,7 @@ class LibraryItem extends Model implements HasMedia
     /**
      * Ensure a user has a personal folder (like Google Drive's "My Drive").
      */
-    public static function ensurePersonalFolder(\Illuminate\Database\Eloquent\Model $user): self
+    public static function ensurePersonalFolder(Model $user): self
     {
         // Check if user already has a personal folder via the relationship
         if ($user->personal_folder_id) {
@@ -333,7 +332,7 @@ class LibraryItem extends Model implements HasMedia
     /**
      * Get a user's personal folder.
      */
-    public static function getPersonalFolder(\Illuminate\Database\Eloquent\Model $user): ?self
+    public static function getPersonalFolder(Model $user): ?self
     {
         if (! $user->personal_folder_id) {
             return null;
@@ -345,7 +344,7 @@ class LibraryItem extends Model implements HasMedia
     /**
      * Generate the personal folder name for a user.
      */
-    public static function getPersonalFolderName(\Illuminate\Database\Eloquent\Model $user): string
+    public static function getPersonalFolderName(Model $user): string
     {
         // Try to get a display name from various user fields
         $name = $user->first_name ?? $user->name ?? $user->email ?? 'User';
@@ -660,9 +659,13 @@ class LibraryItem extends Model implements HasMedia
     {
         if (auth()->check()) {
             $user = auth()->user();
+            // Assuming the user model uses LibraryUser trait
+            // @phpstan-ignore-next-line
             if ($user->favoriteLibraryItems()->where('library_item_id', $this->id)->exists()) {
+                // @phpstan-ignore-next-line
                 $user->favoriteLibraryItems()->detach($this->id);
             } else {
+                // @phpstan-ignore-next-line
                 $user->favoriteLibraryItems()->attach($this->id);
             }
         }
@@ -677,7 +680,11 @@ class LibraryItem extends Model implements HasMedia
             return false;
         }
 
-        return auth()->user()->favoriteLibraryItems()->where('library_item_id', $this->id)->exists();
+        $user = auth()->user();
+
+        // Assuming the user model uses LibraryUser trait
+        // @phpstan-ignore-next-line
+        return $user->favoriteLibraryItems()->where('library_item_id', $this->id)->exists();
     }
 
     /**
