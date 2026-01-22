@@ -2,6 +2,15 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.0.4 - 2026-01-22
+
+### What's Changed
+
+* build(deps): bump actions/checkout from 4 to 6 by @dependabot[bot] in https://github.com/TappNetwork/Filament-Library/pull/10
+* Add Filament 5 support by @andreia in https://github.com/TappNetwork/Filament-Library/pull/14
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.0.3...v1.0.4
+
 ## v1.0.3 - 2026-01-07
 
 ### What's Changed
