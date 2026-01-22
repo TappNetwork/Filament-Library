@@ -2,6 +2,14 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.0.5 - 2026-01-22
+
+### What's Changed
+
+* Update media library to v5 by @andreia in https://github.com/TappNetwork/Filament-Library/pull/15
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.0.4...v1.0.5
+
 ## v1.0.4 - 2026-01-22
 
 ### What's Changed
