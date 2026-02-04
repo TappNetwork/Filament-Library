@@ -170,10 +170,10 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
     protected function getMigrations(): array
     {
         return [
-            '2024_01_01_000000_create_library_items_table',
-            '2024_01_01_000001_create_library_item_permissions_table',
-            '2024_01_01_000002_create_library_item_tags_table',
-            '2024_01_01_000003_create_library_item_favorites_table',
+            'create_library_items_table',
+            'create_library_item_permissions_table',
+            'create_library_item_tags_table',
+            'create_library_item_favorites_table',
         ];
     }
 }

@@ -36,6 +36,13 @@ class TestCase extends Orchestra
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'Tapp\\FilamentLibrary\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
         );
+
+        // Publish and run package migrations (stubs get timestamped when published)
+        $this->artisan('vendor:publish', [
+            '--tag' => 'filament-library-migrations',
+            '--force' => true,
+        ]);
+        $this->artisan('migrate');
     }
 
     protected function getPackageProviders($app)
@@ -69,12 +76,5 @@ class TestCase extends Orchestra
             $table->string('email')->unique();
             $table->timestamps();
         });
-
-        // Run the library migrations
-        $migration = include __DIR__ . '/../database/migrations/2024_01_01_000000_create_library_items_table.php';
-        $migration->up();
-
-        $migration = include __DIR__ . '/../database/migrations/2024_01_01_000001_create_library_item_permissions_table.php';
-        $migration->up();
     }
 }
