@@ -2,6 +2,14 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.0.6 - 2026-02-05
+
+### What's Changed
+
+* Fix: Use migration stubs and avoid duplicate migrations on republish by @scottgrayson in https://github.com/TappNetwork/Filament-Library/pull/16
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.0.5...v1.0.6
+
 ## v1.0.5 - 2026-01-22
 
 ### What's Changed
