@@ -1,1 +1,8 @@
 @import '../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../app/**/*.php';
+@source '../../resources/**/*.blade.php';
+@source '../../vendor/filament/**/*.blade.php';
+
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
