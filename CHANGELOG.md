@@ -2,6 +2,17 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.1.0 - 2026-04-14
+
+### What's Changed
+
+* Bump dependabot/fetch-metadata from 2.5.0 to 3.0.0 by @dependabot[bot] in https://github.com/TappNetwork/Filament-Library/pull/18
+* Bump ramsey/composer-install from 3 to 4 by @dependabot[bot] in https://github.com/TappNetwork/Filament-Library/pull/17
+* Add Laravel 13 support by @swilla in https://github.com/TappNetwork/Filament-Library/pull/20
+* Upgrade Tailwind CSS from v3 to v4 by @swilla in https://github.com/TappNetwork/Filament-Library/pull/21
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.0.6...v1.1.0
+
 ## v1.0.6 - 2026-02-05
 
 ### What's Changed
