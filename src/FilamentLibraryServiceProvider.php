@@ -10,8 +10,10 @@ use Illuminate\Filesystem\Filesystem;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Tapp\FilamentLibrary\Commands\FilamentLibraryCommand;
 use Tapp\FilamentLibrary\Commands\SeedLibraryCommand;
+use Tapp\FilamentLibrary\Events\LibraryFileStored;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Policies\LibraryItemPolicy;
 
@@ -92,6 +94,8 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
         // Load views manually from src directory
         $this->loadViewsFrom(__DIR__ . '/Resources/views', static::$viewNamespace);
 
+        $this->registerLibraryFileStoredEvent();
+
         // Publish views manually (optional)
         $this->publishes([
             __DIR__ . '/Resources/views' => resource_path('views/vendor/filament-library'),
@@ -162,6 +166,31 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
     protected function getScriptData(): array
     {
         return [];
+    }
+
+    /**
+     * When a file is attached to a library item, notify host apps (e.g. for AI auto-tagging).
+     */
+    protected function registerLibraryFileStoredEvent(): void
+    {
+        if (! class_exists(Media::class)) {
+            return;
+        }
+
+        Media::created(function (Media $media): void {
+            $model = $media->model;
+            if (! $model instanceof LibraryItem) {
+                return;
+            }
+
+            $item = $model;
+
+            if ($item->type !== 'file') {
+                return;
+            }
+
+            event(new LibraryFileStored($item, $media));
+        });
     }
 
     /**
