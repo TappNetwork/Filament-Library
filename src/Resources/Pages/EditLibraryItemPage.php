@@ -2,11 +2,13 @@
 
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
+use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Select;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Schema;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 
 abstract class EditLibraryItemPage extends EditRecord
 {
@@ -86,7 +88,7 @@ abstract class EditLibraryItemPage extends EditRecord
             ->label('Creator')
             ->searchable()
             ->getSearchResultsUsing(function (string $search) {
-                $query = \App\Models\User::query();
+                $query = User::query();
 
                 // Check if 'name' field exists and has a value
                 if (Schema::hasColumn('users', 'name')) {
@@ -108,7 +110,7 @@ abstract class EditLibraryItemPage extends EditRecord
                 });
             })
             ->getOptionLabelUsing(function ($value) {
-                $user = \App\Models\User::find($value);
+                $user = User::find($value);
 
                 return $user ? $this->getUserDisplayName($user) : '';
             })
@@ -117,7 +119,7 @@ abstract class EditLibraryItemPage extends EditRecord
                 $record = $this->getRecord();
 
                 // Allow changes if user is library admin OR if user is the creator
-                return ! \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user) &&
+                return ! FilamentLibraryPlugin::isLibraryAdmin($user) &&
                        $record->created_by !== $user->id;
             })
             ->helperText('Creator receives owner permissions');

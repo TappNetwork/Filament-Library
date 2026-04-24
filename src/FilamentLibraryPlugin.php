@@ -2,9 +2,12 @@
 
 namespace Tapp\FilamentLibrary;
 
+use App\Models\User;
 use Filament\Contracts\Plugin;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class FilamentLibraryPlugin implements Plugin
@@ -29,7 +32,7 @@ class FilamentLibraryPlugin implements Plugin
     /**
      * Check if a user is a library admin.
      *
-     * @param  \Illuminate\Contracts\Auth\Authenticatable|null  $user
+     * @param  Authenticatable|null  $user
      */
     public static function isLibraryAdmin($user): bool
     {
@@ -108,8 +111,8 @@ class FilamentLibraryPlugin implements Plugin
     public function boot(Panel $panel): void
     {
         // Ensure users have personal folders when they access the library
-        \App\Models\User::created(function ($user) {
-            \Tapp\FilamentLibrary\Models\LibraryItem::ensurePersonalFolder($user);
+        User::created(function ($user) {
+            LibraryItem::ensurePersonalFolder($user);
         });
     }
 

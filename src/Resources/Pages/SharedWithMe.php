@@ -3,6 +3,7 @@
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class SharedWithMe extends ListRecords
@@ -11,7 +12,7 @@ class SharedWithMe extends ListRecords
 
     protected static ?string $title = 'Shared with Me';
 
-    protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
+    protected function getTableQuery(): Builder
     {
         $query = parent::getTableQuery();
 

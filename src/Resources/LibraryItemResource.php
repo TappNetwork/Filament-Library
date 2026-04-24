@@ -12,11 +12,16 @@ use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Tapp\FilamentLibrary\Models\LibraryItem;
+use Tapp\FilamentLibrary\Resources\RelationManagers\LibraryItemPermissionsRelationManager;
 
 class LibraryItemResource extends Resource
 {
@@ -91,11 +96,11 @@ class LibraryItemResource extends Resource
     {
         return $schema
             ->schema([
-                \Filament\Forms\Components\TextInput::make('name')
+                TextInput::make('name')
                     ->required()
                     ->maxLength(255),
 
-                \Filament\Forms\Components\Select::make('type')
+                Select::make('type')
                     ->options([
                         'folder' => 'Folder',
                         'file' => 'File',
@@ -106,26 +111,26 @@ class LibraryItemResource extends Resource
                     ->afterStateUpdated(fn (callable $set) => $set('external_url', null)),
 
                 // Folder form fields
-                \Filament\Forms\Components\Textarea::make('link_description')
+                Textarea::make('link_description')
                     ->label('Description')
                     ->visible(fn (callable $get) => $get('type') === 'folder')
                     ->rows(3),
 
                 // File form fields
-                \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('files')
+                SpatieMediaLibraryFileUpload::make('files')
                     ->label('File')
                     ->visible(fn (callable $get) => $get('type') === 'file')
                     ->required(fn (callable $get) => $get('type') === 'file')
                     ->maxSize(512000), // 500MB
 
                 // Link form fields
-                \Filament\Forms\Components\TextInput::make('external_url')
+                TextInput::make('external_url')
                     ->label('URL')
                     ->url()
                     ->visible(fn (callable $get) => $get('type') === 'link')
                     ->required(fn (callable $get) => $get('type') === 'link'),
 
-                \Filament\Forms\Components\Textarea::make('link_description')
+                Textarea::make('link_description')
                     ->label('Description')
                     ->visible(fn (callable $get) => $get('type') === 'link')
                     ->rows(3),
@@ -136,7 +141,7 @@ class LibraryItemResource extends Resource
     {
         return $schema
             ->schema([
-                \Filament\Forms\Components\TextInput::make('name')
+                TextInput::make('name')
                     ->label('Folder Name')
                     ->required()
                     ->maxLength(255)
@@ -347,7 +352,7 @@ class LibraryItemResource extends Resource
     public static function getRelations(): array
     {
         return [
-            \Tapp\FilamentLibrary\Resources\RelationManagers\LibraryItemPermissionsRelationManager::class,
+            LibraryItemPermissionsRelationManager::class,
         ];
     }
 

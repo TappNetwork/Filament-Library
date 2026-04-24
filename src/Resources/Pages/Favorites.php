@@ -3,6 +3,7 @@
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class Favorites extends ListRecords
@@ -11,7 +12,7 @@ class Favorites extends ListRecords
 
     protected static ?string $title = 'Favorites';
 
-    protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
+    protected function getTableQuery(): Builder
     {
         $query = parent::getTableQuery();
 

@@ -3,6 +3,7 @@
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class SearchAll extends ListRecords
@@ -11,7 +12,7 @@ class SearchAll extends ListRecords
 
     protected static ?string $title = 'Search All';
 
-    protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
+    protected function getTableQuery(): Builder
     {
         $query = parent::getTableQuery();
 

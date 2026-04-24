@@ -10,6 +10,7 @@ namespace Tapp\FilamentLibrary\Tables\Actions;
 use Filament\Actions\BulkAction;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Collection;
 use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Forms\Components\UserSearchSelect;
@@ -76,7 +77,7 @@ class BulkManagePermissionsAction extends BulkAction
 
     public function success(): void
     {
-        \Filament\Notifications\Notification::make()
+        Notification::make()
             ->title('Permissions Updated')
             ->body('Permissions have been successfully updated for the selected items.')
             ->success()

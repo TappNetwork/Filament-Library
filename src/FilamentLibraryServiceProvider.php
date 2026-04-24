@@ -14,6 +14,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Tapp\FilamentLibrary\Commands\FilamentLibraryCommand;
 use Tapp\FilamentLibrary\Commands\SeedLibraryCommand;
 use Tapp\FilamentLibrary\Events\LibraryFileStored;
+use Tapp\FilamentLibrary\Middleware\RedirectToCorrectEditPage;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Policies\LibraryItemPolicy;
 
@@ -77,7 +78,7 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
         FilamentIcon::register($this->getIcons());
 
         // Register middleware
-        $this->app['router']->pushMiddlewareToGroup('web', \Tapp\FilamentLibrary\Middleware\RedirectToCorrectEditPage::class);
+        $this->app['router']->pushMiddlewareToGroup('web', RedirectToCorrectEditPage::class);
 
         // Register the policy
         $this->app['Illuminate\Contracts\Auth\Access\Gate']->policy(LibraryItem::class, LibraryItemPolicy::class);

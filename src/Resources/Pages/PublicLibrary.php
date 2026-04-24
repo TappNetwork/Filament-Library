@@ -3,6 +3,8 @@
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class PublicLibrary extends ListRecords
@@ -11,7 +13,7 @@ class PublicLibrary extends ListRecords
 
     protected static ?string $title = 'Public Library';
 
-    protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
+    protected function getTableQuery(): Builder
     {
         $query = parent::getTableQuery();
         $user = auth()->user();
@@ -21,7 +23,7 @@ class PublicLibrary extends ListRecords
             $q->where('general_access', 'anyone_can_view');
 
             // Admins can see all items (including private/inherit)
-            if ($user && \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user)) {
+            if ($user && FilamentLibraryPlugin::isLibraryAdmin($user)) {
                 $q->orWhere(function ($adminQuery) {
                     $adminQuery->whereIn('general_access', ['private', 'inherit'])
                         ->whereNull('parent_id'); // Only root-level items

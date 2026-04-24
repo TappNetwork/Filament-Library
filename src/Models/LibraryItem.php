@@ -2,17 +2,20 @@
 
 namespace Tapp\FilamentLibrary\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Models\Traits\BelongsToTenant;
 
 /**
@@ -26,15 +29,15 @@ use Tapp\FilamentLibrary\Models\Traits\BelongsToTenant;
  * @property string|null $external_url
  * @property string|null $link_description
  * @property string|null $general_access
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read LibraryItem|null $parent
- * @property-read \Illuminate\Database\Eloquent\Collection<int, LibraryItem> $children
- * @property-read \Illuminate\Database\Eloquent\Model $creator
- * @property-read \Illuminate\Database\Eloquent\Model|null $updater
- * @property-read \Illuminate\Database\Eloquent\Collection<int, LibraryItemPermission> $permissions
- * @property-read \Illuminate\Database\Eloquent\Collection<int, LibraryItemTag> $tags
+ * @property-read Collection<int, LibraryItem> $children
+ * @property-read Model $creator
+ * @property-read Model|null $updater
+ * @property-read Collection<int, LibraryItemPermission> $permissions
+ * @property-read Collection<int, LibraryItemTag> $tags
  */
 class LibraryItem extends Model implements HasMedia
 {
@@ -414,7 +417,7 @@ class LibraryItem extends Model implements HasMedia
     public function hasPermission($user, string $permission): bool
     {
         // Admin users always have all permissions
-        if ($user && \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user)) {
+        if ($user && FilamentLibraryPlugin::isLibraryAdmin($user)) {
             return true;
         }
 
