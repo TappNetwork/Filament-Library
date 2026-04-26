@@ -2,6 +2,15 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.2.0 - 2026-04-26
+
+### What's Changed
+
+* Bump dependabot/fetch-metadata from 3.0.0 to 3.1.0 by @dependabot[bot] in https://github.com/TappNetwork/Filament-Library/pull/22
+* Add LibraryFileStored event by @andreia in https://github.com/TappNetwork/Filament-Library/pull/23
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.1.0...v1.2.0
+
 ## v1.1.0 - 2026-04-14
 
 ### What's Changed
