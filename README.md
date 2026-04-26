@@ -206,6 +206,33 @@ public function boot()
 
 **Note:** By default, users have an `isLibraryAdmin()` method that returns `false`. You can override this in your User model for custom logic.
 
+## Events
+
+The package dispatches events your application can listen for to extend behavior (for example, search indexing, webhooks after uploads, ...).
+
+### `LibraryFileStored`
+
+[`Tapp\FilamentLibrary\Events\LibraryFileStored`](src/Events/LibraryFileStored.php) is fired after a new file is stored on a library item: when Spatie Media Library creates a `Media` record for a `LibraryItem` whose `type` is `file`.
+
+The event exposes:
+
+- `$libraryItem` — the [`LibraryItem`](src/Models/LibraryItem.php) the file was attached to
+- `$media` — the new [`Media`](https://github.com/spatie/laravel-medialibrary) model instance, or `null` if not available in edge cases
+
+Example listener registration in `AppServiceProvider`:
+
+```php
+use Illuminate\Support\Facades\Event;
+use Tapp\FilamentLibrary\Events\LibraryFileStored;
+
+public function boot(): void
+{
+    Event::listen(LibraryFileStored::class, function (LibraryFileStored $event): void {
+        // e.g. dispatch a job here
+    });
+}
+```
+
 ## Testing
 
 ```bash

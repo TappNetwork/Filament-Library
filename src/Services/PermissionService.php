@@ -2,8 +2,11 @@
 
 namespace Tapp\FilamentLibrary\Services;
 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Tapp\FilamentLibrary\Models\LibraryItem;
+use Tapp\FilamentLibrary\Models\LibraryItemPermission;
 
 class PermissionService
 {
@@ -50,7 +53,7 @@ class PermissionService
             default => 'viewer',
         };
 
-        \Tapp\FilamentLibrary\Models\LibraryItemPermission::updateOrCreate(
+        LibraryItemPermission::updateOrCreate(
             [
                 'library_item_id' => $item->id,
                 'user_id' => $user->id,
@@ -70,7 +73,7 @@ class PermissionService
      */
     public function removePermission($user, LibraryItem $item, string $permission): void
     {
-        \Tapp\FilamentLibrary\Models\LibraryItemPermission::where([
+        LibraryItemPermission::where([
             'library_item_id' => $item->id,
             'user_id' => $user->id,
         ])->delete();
@@ -96,7 +99,7 @@ class PermissionService
             // Assign permissions to users
             foreach ($userIds as $userId) {
                 $userModel = $this->getUserModel();
-                /** @var \Illuminate\Database\Eloquent\Model $user */
+                /** @var Model $user */
                 $user = $userModel::find($userId);
                 if ($user) {
                     $this->assignPermission(
@@ -119,7 +122,7 @@ class PermissionService
         foreach ($children as $child) {
             foreach ($userIds as $userId) {
                 $userModel = $this->getUserModel();
-                /** @var \Illuminate\Database\Eloquent\Model $user */
+                /** @var Model $user */
                 $user = $userModel::find($userId);
                 if ($user) {
                     $this->assignPermission(
@@ -140,7 +143,7 @@ class PermissionService
     /**
      * Get all users who have permissions on an item.
      */
-    public function getUsersWithPermissions(LibraryItem $item): \Illuminate\Support\Collection
+    public function getUsersWithPermissions(LibraryItem $item): Collection
     {
         return $item->permissions()
             ->with('user')

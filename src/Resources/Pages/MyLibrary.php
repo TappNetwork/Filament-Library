@@ -2,7 +2,13 @@
 
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
+use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class MyLibrary extends ListRecords
@@ -11,14 +17,14 @@ class MyLibrary extends ListRecords
 
     protected static ?string $title = 'My Library';
 
-    protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
+    protected function getTableQuery(): Builder
     {
         $query = parent::getTableQuery();
 
         // Show only the current user's personal folder and its contents
         $user = auth()->user();
         if ($user) {
-            $personalFolder = \Tapp\FilamentLibrary\Models\LibraryItem::getPersonalFolder($user);
+            $personalFolder = LibraryItem::getPersonalFolder($user);
 
             if ($personalFolder) {
                 $query->where('parent_id', $personalFolder->id);
@@ -56,12 +62,12 @@ class MyLibrary extends ListRecords
         $actions = [];
 
         // Add "+ New" dropdown action group for personal library
-        $actions[] = \Filament\Actions\ActionGroup::make([
-            \Filament\Actions\Action::make('create_folder')
+        $actions[] = ActionGroup::make([
+            Action::make('create_folder')
                 ->label('Create Folder')
                 ->icon('heroicon-o-folder-plus')
                 ->schema([
-                    \Filament\Forms\Components\TextInput::make('name')
+                    TextInput::make('name')
                         ->label('Folder Name')
                         ->required()
                         ->maxLength(255)
@@ -69,9 +75,9 @@ class MyLibrary extends ListRecords
                 ])
                 ->action(function (array $data): void {
                     $user = auth()->user();
-                    $personalFolder = \Tapp\FilamentLibrary\Models\LibraryItem::ensurePersonalFolder($user);
+                    $personalFolder = LibraryItem::ensurePersonalFolder($user);
 
-                    \Tapp\FilamentLibrary\Models\LibraryItem::create([
+                    LibraryItem::create([
                         'name' => $data['name'],
                         'type' => 'folder',
                         'parent_id' => $personalFolder->id,
@@ -82,11 +88,11 @@ class MyLibrary extends ListRecords
 
                     $this->redirect(static::getResource()::getUrl('my-documents'));
                 }),
-            \Filament\Actions\Action::make('upload_file')
+            Action::make('upload_file')
                 ->label('Upload File')
                 ->icon('heroicon-o-document-plus')
                 ->schema([
-                    \Filament\Forms\Components\FileUpload::make('file')
+                    FileUpload::make('file')
                         ->label('Upload File')
                         ->required()
                         ->maxSize(512000) // 500MB
@@ -97,11 +103,11 @@ class MyLibrary extends ListRecords
                 ])
                 ->action(function (array $data): void {
                     $user = auth()->user();
-                    $personalFolder = \Tapp\FilamentLibrary\Models\LibraryItem::ensurePersonalFolder($user);
+                    $personalFolder = LibraryItem::ensurePersonalFolder($user);
                     $filePath = $data['file'];
                     $fileName = basename($filePath);
 
-                    $libraryItem = \Tapp\FilamentLibrary\Models\LibraryItem::create([
+                    $libraryItem = LibraryItem::create([
                         'name' => $fileName,
                         'type' => 'file',
                         'parent_id' => $personalFolder->id,
@@ -117,16 +123,16 @@ class MyLibrary extends ListRecords
 
                     $this->redirect(static::getResource()::getUrl('my-documents'));
                 }),
-            \Filament\Actions\Action::make('create_link')
+            Action::make('create_link')
                 ->label('Add External Link')
                 ->icon('heroicon-o-link')
                 ->schema([
-                    \Filament\Forms\Components\TextInput::make('name')
+                    TextInput::make('name')
                         ->label('Link Name')
                         ->required()
                         ->maxLength(255)
                         ->placeholder('Enter link name'),
-                    \Filament\Forms\Components\TextInput::make('url')
+                    TextInput::make('url')
                         ->label('URL')
                         ->required()
                         ->url()
@@ -134,9 +140,9 @@ class MyLibrary extends ListRecords
                 ])
                 ->action(function (array $data): void {
                     $user = auth()->user();
-                    $personalFolder = \Tapp\FilamentLibrary\Models\LibraryItem::ensurePersonalFolder($user);
+                    $personalFolder = LibraryItem::ensurePersonalFolder($user);
 
-                    \Tapp\FilamentLibrary\Models\LibraryItem::create([
+                    LibraryItem::create([
                         'name' => $data['name'],
                         'type' => 'link',
                         'url' => $data['url'],

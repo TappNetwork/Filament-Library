@@ -3,7 +3,10 @@
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ViewEntry;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -81,9 +84,9 @@ class ViewLibraryItem extends ViewRecord
                 ->openUrlInNewTab();
         }
 
-        $actions[] = \Filament\Actions\EditAction::make()
+        $actions[] = EditAction::make()
             ->url(fn () => static::getResource()::getEditUrl($this->getRecord()));
-        $actions[] = \Filament\Actions\DeleteAction::make()
+        $actions[] = DeleteAction::make()
             ->before(function () {
                 // Store parent_id before deletion
                 $this->parentId = $this->getRecord()->parent_id;
@@ -148,7 +151,7 @@ class ViewLibraryItem extends ViewRecord
                     ->columnSpanFull(),
 
                 // File preview for files
-                \Filament\Infolists\Components\ViewEntry::make('file_preview')
+                ViewEntry::make('file_preview')
                     ->view('filament-library::infolists.components.file-preview')
                     ->viewData(fn () => ['record' => $record])
                     ->visible(fn () => $record->type === 'file')

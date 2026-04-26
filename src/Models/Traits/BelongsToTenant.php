@@ -2,6 +2,9 @@
 
 namespace Tapp\FilamentLibrary\Models\Traits;
 
+use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Model;
+
 trait BelongsToTenant
 {
     /**
@@ -34,8 +37,8 @@ trait BelongsToTenant
             $tenantRelationshipName = static::getTenantRelationshipName();
 
             // Try to get tenant from Filament context (Filament's standard method)
-            if (class_exists(\Filament\Facades\Filament::class)) {
-                $tenant = \Filament\Facades\Filament::getTenant();
+            if (class_exists(Filament::class)) {
+                $tenant = Filament::getTenant();
 
                 if ($tenant) {
                     // Use Laravel's associate() method on the BelongsTo relationship
@@ -51,7 +54,7 @@ trait BelongsToTenant
                 $parentItemId = $model->library_item_id;
                 $parentItemClass = get_class($model->libraryItem()->getRelated());
 
-                /** @var class-string<\Illuminate\Database\Eloquent\Model> $parentItemClass */
+                /** @var class-string<Model> $parentItemClass */
                 $parentItem = $parentItemClass::find($parentItemId);
 
                 if ($parentItem) {

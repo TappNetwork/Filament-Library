@@ -3,6 +3,8 @@
 namespace Tapp\FilamentLibrary\Rules;
 
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Support\Str;
+use Illuminate\Translation\PotentiallyTranslatedString;
 use Tapp\FilamentLibrary\Models\LibraryItemTag;
 
 class UniqueTagName implements ValidationRule
@@ -10,7 +12,7 @@ class UniqueTagName implements ValidationRule
     /**
      * Run the validation rule.
      *
-     * @param  \Closure(string, ?string=): \Illuminate\Translation\PotentiallyTranslatedString  $fail
+     * @param  \Closure(string, ?string=): PotentiallyTranslatedString  $fail
      */
     public function validate(string $attribute, mixed $value, \Closure $fail): void
     {
@@ -18,7 +20,7 @@ class UniqueTagName implements ValidationRule
             return;
         }
 
-        $slug = \Illuminate\Support\Str::slug($value);
+        $slug = Str::slug($value);
         $existingTag = LibraryItemTag::where('slug', $slug)->first();
 
         if ($existingTag) {

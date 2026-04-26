@@ -8,6 +8,8 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
@@ -82,7 +84,7 @@ class ListLibraryItems extends ListRecords
                     }
 
                     // At root level, only allow admins
-                    return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user);
+                    return FilamentLibraryPlugin::isLibraryAdmin($user);
                 })
                 ->schema([
                     TextInput::make('name')
@@ -117,7 +119,7 @@ class ListLibraryItems extends ListRecords
                     }
 
                     // At root level, only allow admins
-                    return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user);
+                    return FilamentLibraryPlugin::isLibraryAdmin($user);
                 })
                 ->schema([
                     FileUpload::make('file')
@@ -167,7 +169,7 @@ class ListLibraryItems extends ListRecords
                     }
 
                     // At root level, only allow admins
-                    return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user);
+                    return FilamentLibraryPlugin::isLibraryAdmin($user);
                 })
                 ->schema([
                     TextInput::make('name')
@@ -211,13 +213,13 @@ class ListLibraryItems extends ListRecords
                 }
 
                 // At root level, only allow admins
-                return \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin(auth()->user());
+                return FilamentLibraryPlugin::isLibraryAdmin(auth()->user());
             });
 
         return $actions;
     }
 
-    protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
+    protected function getTableQuery(): Builder
     {
         $query = parent::getTableQuery();
 
@@ -231,7 +233,7 @@ class ListLibraryItems extends ListRecords
                     $q->where('general_access', 'anyone_can_view');
 
                     // Admins can see all items (including private/inherit)
-                    if ($user && \Tapp\FilamentLibrary\FilamentLibraryPlugin::isLibraryAdmin($user)) {
+                    if ($user && FilamentLibraryPlugin::isLibraryAdmin($user)) {
                         $q->orWhere(function ($adminQuery) {
                             $adminQuery->whereIn('general_access', ['private', 'inherit']);
                         });

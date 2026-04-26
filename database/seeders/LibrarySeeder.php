@@ -2,6 +2,7 @@
 
 namespace Tapp\FilamentLibrary\Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Models\LibraryItemPermission;
@@ -14,7 +15,7 @@ class LibrarySeeder extends Seeder
     public function run(): void
     {
         // Get the first user as the creator
-        $user = \App\Models\User::first();
+        $user = User::first();
 
         if (! $user) {
             $this->command->warn('No users found. Please create a user first.');
@@ -325,7 +326,7 @@ class LibrarySeeder extends Seeder
         }
 
         // Create some sample permissions if there are other users
-        $otherUsers = \App\Models\User::where('id', '!=', $user->id)->take(2)->get();
+        $otherUsers = User::where('id', '!=', $user->id)->take(2)->get();
 
         if ($otherUsers->count() > 0) {
             $this->command->info('Creating sample permissions...');

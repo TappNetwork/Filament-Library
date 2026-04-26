@@ -2,7 +2,16 @@
 
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Schema;
+use Illuminate\Support\Str;
+use Tapp\FilamentLibrary\Models\LibraryItem;
+use Tapp\FilamentLibrary\Models\LibraryItemTag;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
+use Tapp\FilamentLibrary\Rules\UniqueTagName;
 
 class EditFile extends EditLibraryItemPage
 {
@@ -28,49 +37,49 @@ class EditFile extends EditLibraryItemPage
         return $data;
     }
 
-    public function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+    public function form(Schema $schema): Schema
     {
         return $schema
             ->schema([
-                \Filament\Forms\Components\TextInput::make('name')
+                TextInput::make('name')
                     ->required()
                     ->maxLength(255),
 
-                \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('files')
+                SpatieMediaLibraryFileUpload::make('files')
                     ->label('File')
                     ->maxSize(512000), // 500MB
 
-                \Filament\Forms\Components\Textarea::make('link_description')
+                Textarea::make('link_description')
                     ->label('Description')
                     ->rows(3),
 
-                \Filament\Forms\Components\Select::make('tags')
+                Select::make('tags')
                     ->label('Tags')
                     ->relationship('tags', 'name')
                     ->multiple()
                     ->searchable()
                     ->preload()
                     ->createOptionForm([
-                        \Filament\Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->rules([new \Tapp\FilamentLibrary\Rules\UniqueTagName])
+                            ->rules([new UniqueTagName])
                             ->validationAttribute('tag name'),
                     ])
                     ->createOptionUsing(function (array $data): int {
-                        $tag = \Tapp\FilamentLibrary\Models\LibraryItemTag::create([
+                        $tag = LibraryItemTag::create([
                             'name' => $data['name'],
-                            'slug' => \Illuminate\Support\Str::slug($data['name']),
+                            'slug' => Str::slug($data['name']),
                         ]);
 
                         return $tag->id;
                     }),
 
-                \Filament\Forms\Components\Select::make('general_access')
+                Select::make('general_access')
                     ->label('General Access')
                     ->options(function () {
-                        $options = \Tapp\FilamentLibrary\Models\LibraryItem::getGeneralAccessOptions();
+                        $options = LibraryItem::getGeneralAccessOptions();
 
                         // Remove inherit option if no parent folder
                         if (! $this->getRecord()->parent_id) {

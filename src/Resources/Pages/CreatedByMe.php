@@ -3,6 +3,8 @@
 namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
+use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class CreatedByMe extends ListRecords
@@ -11,13 +13,13 @@ class CreatedByMe extends ListRecords
 
     protected static ?string $title = 'Created by Me';
 
-    protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
+    protected function getTableQuery(): Builder
     {
         $query = parent::getTableQuery();
 
         $user = auth()->user();
         if ($user) {
-            $personalFolder = \Tapp\FilamentLibrary\Models\LibraryItem::getPersonalFolder($user);
+            $personalFolder = LibraryItem::getPersonalFolder($user);
             $query->where('created_by', $user->id);
 
             // Exclude personal folder if it exists
