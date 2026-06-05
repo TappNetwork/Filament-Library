@@ -1,5 +1,7 @@
 <?php
 
+use Tapp\FilamentLibrary\Resources\LibraryItemResource;
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -12,6 +14,38 @@ return [
     |
     */
     'user_model' => env('FILAMENT_LIBRARY_USER_MODEL', 'App\\Models\\User'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filament resource class overrides
+    |--------------------------------------------------------------------------
+    |
+    | Use this option to custom Filament Resource classes
+    |
+    | Example (in your app's config/filament-library.php):
+    |
+    | 'resources' => [
+    |     'LibraryItemResource' => \App\Filament\Resources\Library\LibraryItemResource::class,
+    | ],
+    |
+    */
+    'resources' => [
+        'LibraryItemResource' => LibraryItemResource::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Personal folder provisioning
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, the plugin registers a listener that creates a personal
+    | library folder when a user is created. Disable this when your app
+    | provisions personal folders itself (for example with tenant checks).
+    |
+    */
+    'personal_folder' => [
+        'auto_create_on_user_created' => env('FILAMENT_LIBRARY_AUTO_CREATE_PERSONAL_FOLDER', true),
+    ],
 
     /*
     |--------------------------------------------------------------------------

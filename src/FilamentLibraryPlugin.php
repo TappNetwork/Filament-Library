@@ -14,6 +14,8 @@ class FilamentLibraryPlugin implements Plugin
 {
     protected static $libraryAdminCallback = null;
 
+    protected static bool $personalFolderListenerRegistered = false;
+
     public function getId(): string
     {
         return 'filament-library';
@@ -60,47 +62,64 @@ class FilamentLibraryPlugin implements Plugin
         return false;
     }
 
+    /**
+     * @return class-string<LibraryItemResource>
+     */
+    public static function libraryItemResourceClass(): string
+    {
+        /** @var class-string<LibraryItemResource> $resourceClass */
+        $resourceClass = config(
+            'filament-library.resources.LibraryItemResource',
+            LibraryItemResource::class,
+        );
+
+        return $resourceClass;
+    }
+
     public function register(Panel $panel): void
     {
         $panelId = $panel->getId();
+        $libraryItemResourceClass = static::libraryItemResourceClass();
 
         $panel
-            ->resources([
-                LibraryItemResource::class,
-            ])
+            ->resources(
+                array_values(config('filament-library.resources', [
+                    LibraryItemResource::class,
+                ])),
+            )
             ->navigationItems([
                 NavigationItem::make('Library')
-                    ->url(fn () => LibraryItemResource::getUrl('index'))
+                    ->url(fn () => $libraryItemResourceClass::getUrl('index'))
                     ->icon('heroicon-o-building-library')
                     ->group('Resource Library')
                     ->sort(1)
                     ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.index")),
                 NavigationItem::make('Search All')
-                    ->url(fn () => LibraryItemResource::getUrl('search-all'))
+                    ->url(fn () => $libraryItemResourceClass::getUrl('search-all'))
                     ->icon('heroicon-o-magnifying-glass')
                     ->group('Resource Library')
                     ->sort(2)
                     ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.search-all")),
                 NavigationItem::make('My Documents')
-                    ->url(fn () => LibraryItemResource::getUrl('my-documents'))
+                    ->url(fn () => $libraryItemResourceClass::getUrl('my-documents'))
                     ->icon('heroicon-o-folder')
                     ->group('Resource Library')
                     ->sort(3)
                     ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.my-documents")),
                 NavigationItem::make('Shared with Me')
-                    ->url(fn () => LibraryItemResource::getUrl('shared-with-me'))
+                    ->url(fn () => $libraryItemResourceClass::getUrl('shared-with-me'))
                     ->icon('heroicon-o-share')
                     ->group('Resource Library')
                     ->sort(4)
                     ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.shared-with-me")),
                 NavigationItem::make('Created by Me')
-                    ->url(fn () => LibraryItemResource::getUrl('created-by-me'))
+                    ->url(fn () => $libraryItemResourceClass::getUrl('created-by-me'))
                     ->icon('heroicon-o-user')
                     ->group('Resource Library')
                     ->sort(5)
                     ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.created-by-me")),
                 NavigationItem::make('Favorites')
-                    ->url(fn () => LibraryItemResource::getUrl('favorites'))
+                    ->url(fn () => $libraryItemResourceClass::getUrl('favorites'))
                     ->icon('heroicon-o-star')
                     ->group('Resource Library')
                     ->sort(6)
@@ -110,8 +129,21 @@ class FilamentLibraryPlugin implements Plugin
 
     public function boot(Panel $panel): void
     {
-        // Ensure users have personal folders when they access the library
-        User::created(function ($user) {
+        if (! config('filament-library.personal_folder.auto_create_on_user_created', true)) {
+            return;
+        }
+
+        if (static::$personalFolderListenerRegistered) {
+            return;
+        }
+
+        static::$personalFolderListenerRegistered = true;
+
+        /** @var class-string<User> $userModel */
+        $userModel = config('filament-library.user_model', User::class);
+
+        // Optionally provision a personal folder when a user is created
+        $userModel::created(function ($user): void {
             LibraryItem::ensurePersonalFolder($user);
         });
     }
