@@ -8,6 +8,8 @@ use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Tapp\FilamentLibrary\Models\LibraryItem;
+use Tapp\FilamentLibrary\Models\LibraryItemPermission;
+use Tapp\FilamentLibrary\Models\LibraryItemTag;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class FilamentLibraryPlugin implements Plugin
@@ -15,6 +17,15 @@ class FilamentLibraryPlugin implements Plugin
     protected static $libraryAdminCallback = null;
 
     protected static bool $personalFolderListenerRegistered = false;
+
+    /**
+     * @var array<string, class-string>
+     */
+    protected static array $defaultModels = [
+        'LibraryItem' => LibraryItem::class,
+        'LibraryItemPermission' => LibraryItemPermission::class,
+        'LibraryItemTag' => LibraryItemTag::class,
+    ];
 
     public function getId(): string
     {
@@ -74,6 +85,53 @@ class FilamentLibraryPlugin implements Plugin
         );
 
         return $resourceClass;
+    }
+
+    /**
+     * @return class-string
+     */
+    public static function modelClass(string $model): string
+    {
+        /** @var class-string $modelClass */
+        $modelClass = config(
+            "filament-library.models.{$model}",
+            static::$defaultModels[$model] ?? throw new \InvalidArgumentException("Unknown filament-library model [{$model}]."),
+        );
+
+        return $modelClass;
+    }
+
+    /**
+     * @return class-string<LibraryItem>
+     */
+    public static function libraryItemModelClass(): string
+    {
+        /** @var class-string<LibraryItem> $modelClass */
+        $modelClass = static::modelClass('LibraryItem');
+
+        return $modelClass;
+    }
+
+    /**
+     * @return class-string<LibraryItemPermission>
+     */
+    public static function libraryItemPermissionModelClass(): string
+    {
+        /** @var class-string<LibraryItemPermission> $modelClass */
+        $modelClass = static::modelClass('LibraryItemPermission');
+
+        return $modelClass;
+    }
+
+    /**
+     * @return class-string<LibraryItemTag>
+     */
+    public static function libraryItemTagModelClass(): string
+    {
+        /** @var class-string<LibraryItemTag> $modelClass */
+        $modelClass = static::modelClass('LibraryItemTag');
+
+        return $modelClass;
     }
 
     public function register(Panel $panel): void
@@ -142,9 +200,11 @@ class FilamentLibraryPlugin implements Plugin
         /** @var class-string<User> $userModel */
         $userModel = config('filament-library.user_model', User::class);
 
+        $libraryItemModel = static::libraryItemModelClass();
+
         // Optionally provision a personal folder when a user is created
-        $userModel::created(function ($user): void {
-            LibraryItem::ensurePersonalFolder($user);
+        $userModel::created(function ($user) use ($libraryItemModel): void {
+            $libraryItemModel::ensurePersonalFolder($user);
         });
     }
 

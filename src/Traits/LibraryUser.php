@@ -3,6 +3,7 @@
 namespace Tapp\FilamentLibrary\Traits;
 
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 
 /**
@@ -15,7 +16,7 @@ trait LibraryUser
      */
     public function personalFolder()
     {
-        return $this->belongsTo(LibraryItem::class, 'personal_folder_id');
+        return $this->belongsTo(FilamentLibraryPlugin::libraryItemModelClass(), 'personal_folder_id');
     }
 
     /**
@@ -23,7 +24,7 @@ trait LibraryUser
      */
     public function getPersonalFolder(): LibraryItem
     {
-        return LibraryItem::ensurePersonalFolder($this);
+        return FilamentLibraryPlugin::libraryItemModelClass()::ensurePersonalFolder($this);
     }
 
     /**
@@ -31,7 +32,7 @@ trait LibraryUser
      */
     public function favoriteLibraryItems(): BelongsToMany
     {
-        return $this->belongsToMany(LibraryItem::class, 'library_item_favorites')
+        return $this->belongsToMany(FilamentLibraryPlugin::libraryItemModelClass(), 'library_item_favorites')
             ->withTimestamps();
     }
 

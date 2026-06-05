@@ -28,7 +28,7 @@ class ListLibraryItems extends ListRecords
         $this->parentId = request()->get('parent');
 
         if ($this->parentId) {
-            $this->parentFolder = LibraryItem::find($this->parentId);
+            $this->parentFolder = FilamentLibraryPlugin::libraryItemModelClass()::find($this->parentId);
         }
 
     }
@@ -94,7 +94,7 @@ class ListLibraryItems extends ListRecords
                         ->placeholder('Enter folder name'),
                 ])
                 ->action(function (array $data): void {
-                    LibraryItem::create([
+                    FilamentLibraryPlugin::libraryItemModelClass()::create([
                         'name' => $data['name'],
                         'type' => 'folder',
                         'parent_id' => $this->parentId,
@@ -138,7 +138,7 @@ class ListLibraryItems extends ListRecords
                     $fileName = basename($filePath);
 
                     // Create the library item
-                    $libraryItem = LibraryItem::create([
+                    $libraryItem = FilamentLibraryPlugin::libraryItemModelClass()::create([
                         'name' => $fileName,
                         'type' => 'file',
                         'parent_id' => $this->parentId,
@@ -188,7 +188,7 @@ class ListLibraryItems extends ListRecords
                         ->placeholder('Optional description'),
                 ])
                 ->action(function (array $data): void {
-                    LibraryItem::create([
+                    FilamentLibraryPlugin::libraryItemModelClass()::create([
                         'name' => $data['name'],
                         'type' => 'link',
                         'external_url' => $data['external_url'],

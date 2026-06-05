@@ -1,5 +1,8 @@
 <?php
 
+use Tapp\FilamentLibrary\Models\LibraryItem;
+use Tapp\FilamentLibrary\Models\LibraryItemPermission;
+use Tapp\FilamentLibrary\Models\LibraryItemTag;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 return [
@@ -14,6 +17,30 @@ return [
     |
     */
     'user_model' => env('FILAMENT_LIBRARY_USER_MODEL', 'App\\Models\\User'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Model class overrides
+    |--------------------------------------------------------------------------
+    |
+    | Extend package models in your application and register the classes here
+    | when you need custom behavior. Each class must extend the corresponding
+    | Tapp\FilamentLibrary\Models\* model.
+    |
+    | Example (in your app's config/filament-library.php):
+    |
+    | 'models' => [
+    |     'LibraryItem' => \App\Models\LibraryItem::class,
+    |     'LibraryItemPermission' => \App\Models\LibraryItemPermission::class,
+    |     'LibraryItemTag' => \App\Models\LibraryItemTag::class,
+    | ],
+    |
+    */
+    'models' => [
+        'LibraryItem' => LibraryItem::class,
+        'LibraryItemPermission' => LibraryItemPermission::class,
+        'LibraryItemTag' => LibraryItemTag::class,
+    ],
 
     /*
     |--------------------------------------------------------------------------

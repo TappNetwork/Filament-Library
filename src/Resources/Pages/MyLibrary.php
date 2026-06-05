@@ -8,7 +8,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
-use Tapp\FilamentLibrary\Models\LibraryItem;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class MyLibrary extends ListRecords
@@ -24,7 +24,7 @@ class MyLibrary extends ListRecords
         // Show only the current user's personal folder and its contents
         $user = auth()->user();
         if ($user) {
-            $personalFolder = LibraryItem::getPersonalFolder($user);
+            $personalFolder = FilamentLibraryPlugin::libraryItemModelClass()::getPersonalFolder($user);
 
             if ($personalFolder) {
                 $query->where('parent_id', $personalFolder->id);
@@ -75,9 +75,9 @@ class MyLibrary extends ListRecords
                 ])
                 ->action(function (array $data): void {
                     $user = auth()->user();
-                    $personalFolder = LibraryItem::ensurePersonalFolder($user);
+                    $personalFolder = FilamentLibraryPlugin::libraryItemModelClass()::ensurePersonalFolder($user);
 
-                    LibraryItem::create([
+                    FilamentLibraryPlugin::libraryItemModelClass()::create([
                         'name' => $data['name'],
                         'type' => 'folder',
                         'parent_id' => $personalFolder->id,
@@ -103,11 +103,11 @@ class MyLibrary extends ListRecords
                 ])
                 ->action(function (array $data): void {
                     $user = auth()->user();
-                    $personalFolder = LibraryItem::ensurePersonalFolder($user);
+                    $personalFolder = FilamentLibraryPlugin::libraryItemModelClass()::ensurePersonalFolder($user);
                     $filePath = $data['file'];
                     $fileName = basename($filePath);
 
-                    $libraryItem = LibraryItem::create([
+                    $libraryItem = FilamentLibraryPlugin::libraryItemModelClass()::create([
                         'name' => $fileName,
                         'type' => 'file',
                         'parent_id' => $personalFolder->id,
@@ -140,9 +140,9 @@ class MyLibrary extends ListRecords
                 ])
                 ->action(function (array $data): void {
                     $user = auth()->user();
-                    $personalFolder = LibraryItem::ensurePersonalFolder($user);
+                    $personalFolder = FilamentLibraryPlugin::libraryItemModelClass()::ensurePersonalFolder($user);
 
-                    LibraryItem::create([
+                    FilamentLibraryPlugin::libraryItemModelClass()::create([
                         'name' => $data['name'],
                         'type' => 'link',
                         'url' => $data['url'],

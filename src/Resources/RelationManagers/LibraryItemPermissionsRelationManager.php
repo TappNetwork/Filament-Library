@@ -15,8 +15,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Models\LibraryItem;
-use Tapp\FilamentLibrary\Models\LibraryItemPermission;
 
 class LibraryItemPermissionsRelationManager extends RelationManager
 {
@@ -118,7 +118,7 @@ class LibraryItemPermissionsRelationManager extends RelationManager
 
                 Forms\Components\Select::make('role')
                     ->label('Role')
-                    ->options(LibraryItemPermission::getRoleOptions())
+                    ->options(FilamentLibraryPlugin::libraryItemPermissionModelClass()::getRoleOptions())
                     ->required(),
             ]);
     }
@@ -169,7 +169,7 @@ class LibraryItemPermissionsRelationManager extends RelationManager
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('role')
-                    ->options(LibraryItemPermission::getRoleOptions()),
+                    ->options(FilamentLibraryPlugin::libraryItemPermissionModelClass()::getRoleOptions()),
             ])
             ->headerActions([
                 CreateAction::make()

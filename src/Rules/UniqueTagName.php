@@ -5,7 +5,7 @@ namespace Tapp\FilamentLibrary\Rules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Str;
 use Illuminate\Translation\PotentiallyTranslatedString;
-use Tapp\FilamentLibrary\Models\LibraryItemTag;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 
 class UniqueTagName implements ValidationRule
 {
@@ -21,7 +21,8 @@ class UniqueTagName implements ValidationRule
         }
 
         $slug = Str::slug($value);
-        $existingTag = LibraryItemTag::where('slug', $slug)->first();
+        $libraryItemTagModel = FilamentLibraryPlugin::libraryItemTagModelClass();
+        $existingTag = $libraryItemTagModel::where('slug', $slug)->first();
 
         if ($existingTag) {
             $fail('A tag with this name already exists.');

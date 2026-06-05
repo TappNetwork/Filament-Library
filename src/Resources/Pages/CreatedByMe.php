@@ -4,7 +4,7 @@ namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
-use Tapp\FilamentLibrary\Models\LibraryItem;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class CreatedByMe extends ListRecords
@@ -19,7 +19,7 @@ class CreatedByMe extends ListRecords
 
         $user = auth()->user();
         if ($user) {
-            $personalFolder = LibraryItem::getPersonalFolder($user);
+            $personalFolder = FilamentLibraryPlugin::libraryItemModelClass()::getPersonalFolder($user);
             $query->where('created_by', $user->id);
 
             // Exclude personal folder if it exists
