@@ -11,6 +11,22 @@ parameters:
 			count: 1
 			path: database/seeders/LibrarySeeder.php
 
+		# FilamentLibraryPlugin - App\Models\User is application-specific (default user model)
+		-
+			message: "#^Class App\\\\Models\\\\User not found\\.$#"
+			count: 1
+			path: src/FilamentLibraryPlugin.php
+
+		-
+			message: "#^PHPDoc tag @var for variable \\$userModel contains unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/FilamentLibraryPlugin.php
+
+		-
+			message: "#^Call to an undefined static method App\\\\Models\\\\User\\:\\:created\\(\\)\\.$#"
+			count: 1
+			path: src/FilamentLibraryPlugin.php
+
 		# Config file - env() is allowed in config files
 		-
 			message: "#^Called 'env' outside of the config directory which returns null when the config is cached, use 'config'\\.$#"
