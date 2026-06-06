@@ -2,6 +2,14 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.2.1 - 2026-06-06
+
+### What's Changed
+
+* Add configurable resources and personal folder by @andreia in https://github.com/TappNetwork/Filament-Library/pull/24
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.2.0...v1.2.1
+
 ## v1.2.0 - 2026-04-26
 
 ### What's Changed
