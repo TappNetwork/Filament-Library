@@ -116,7 +116,9 @@ class LibraryItem extends Model implements HasMedia
      */
     public function parent(): BelongsTo
     {
-        return $this->belongsTo(LibraryItem::class, 'parent_id');
+        $libraryItemModel = config('filament-library.models.LibraryItem', static::class);
+
+        return $this->belongsTo($libraryItemModel, 'parent_id');
     }
 
     /**
@@ -124,7 +126,9 @@ class LibraryItem extends Model implements HasMedia
      */
     public function children(): HasMany
     {
-        return $this->hasMany(LibraryItem::class, 'parent_id');
+        $libraryItemModel = config('filament-library.models.LibraryItem', static::class);
+
+        return $this->hasMany($libraryItemModel, 'parent_id');
     }
 
     /**
@@ -163,7 +167,7 @@ class LibraryItem extends Model implements HasMedia
      */
     public function permissions(): HasMany
     {
-        return $this->hasMany(LibraryItemPermission::class);
+        return $this->hasMany(config('filament-library.models.LibraryItemPermission', LibraryItemPermission::class));
     }
 
     /**
@@ -637,7 +641,7 @@ class LibraryItem extends Model implements HasMedia
      */
     public function tags(): BelongsToMany
     {
-        return $this->belongsToMany(LibraryItemTag::class, 'library_item_tag_pivot')
+        return $this->belongsToMany(config('filament-library.models.LibraryItemTag', LibraryItemTag::class), 'library_item_tag_pivot')
             ->withTimestamps();
     }
 

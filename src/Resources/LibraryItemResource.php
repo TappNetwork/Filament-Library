@@ -20,12 +20,21 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Resources\RelationManagers\LibraryItemPermissionsRelationManager;
 
 class LibraryItemResource extends Resource
 {
     protected static ?string $model = LibraryItem::class;
+
+    /**
+     * @return class-string<LibraryItem>
+     */
+    public static function getModel(): string
+    {
+        return FilamentLibraryPlugin::libraryItemModelClass();
+    }
 
     protected static ?int $deletedParentId = null;
 
@@ -48,7 +57,7 @@ class LibraryItemResource extends Resource
             return 'tenant';
         }
 
-        return LibraryItem::getTenantRelationshipName();
+        return static::getModel()::getTenantRelationshipName();
     }
 
     public static function getNavigationIcon(): ?string
@@ -318,7 +327,7 @@ class LibraryItemResource extends Resource
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('deleteAny', LibraryItem::class))
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('deleteAny', static::getModel()))
                         ->successRedirectUrl(function () {
                             // For bulk actions, redirect to current folder (maintain current location)
                             $currentParent = request()->get('parent');
@@ -326,9 +335,9 @@ class LibraryItemResource extends Resource
                             return static::getUrl('index', $currentParent ? ['parent' => $currentParent] : []);
                         }),
                     RestoreBulkAction::make()
-                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('restoreAny', LibraryItem::class)),
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('restoreAny', static::getModel())),
                     ForceDeleteBulkAction::make()
-                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('forceDeleteAny', LibraryItem::class))
+                        ->visible(fn (): bool => auth()->user() && auth()->user()->can('forceDeleteAny', static::getModel()))
                         ->successRedirectUrl(function () {
                             // For bulk actions, redirect to current folder (maintain current location)
                             $currentParent = request()->get('parent');

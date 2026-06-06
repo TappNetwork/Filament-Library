@@ -41,7 +41,7 @@ class LibraryItemPermission extends Model
      */
     public function libraryItem(): BelongsTo
     {
-        return $this->belongsTo(LibraryItem::class);
+        return $this->belongsTo(config('filament-library.models.LibraryItem', LibraryItem::class));
     }
 
     /**

@@ -5,8 +5,8 @@ namespace Tapp\FilamentLibrary\Services;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Models\LibraryItem;
-use Tapp\FilamentLibrary\Models\LibraryItemPermission;
 
 class PermissionService
 {
@@ -53,7 +53,7 @@ class PermissionService
             default => 'viewer',
         };
 
-        LibraryItemPermission::updateOrCreate(
+        FilamentLibraryPlugin::libraryItemPermissionModelClass()::updateOrCreate(
             [
                 'library_item_id' => $item->id,
                 'user_id' => $user->id,
@@ -73,7 +73,7 @@ class PermissionService
      */
     public function removePermission($user, LibraryItem $item, string $permission): void
     {
-        LibraryItemPermission::where([
+        FilamentLibraryPlugin::libraryItemPermissionModelClass()::where([
             'library_item_id' => $item->id,
             'user_id' => $user->id,
         ])->delete();

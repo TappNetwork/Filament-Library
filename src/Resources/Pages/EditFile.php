@@ -8,8 +8,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
-use Tapp\FilamentLibrary\Models\LibraryItem;
-use Tapp\FilamentLibrary\Models\LibraryItemTag;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 use Tapp\FilamentLibrary\Rules\UniqueTagName;
 
@@ -68,7 +67,7 @@ class EditFile extends EditLibraryItemPage
                             ->validationAttribute('tag name'),
                     ])
                     ->createOptionUsing(function (array $data): int {
-                        $tag = LibraryItemTag::create([
+                        $tag = FilamentLibraryPlugin::libraryItemTagModelClass()::create([
                             'name' => $data['name'],
                             'slug' => Str::slug($data['name']),
                         ]);
@@ -79,7 +78,7 @@ class EditFile extends EditLibraryItemPage
                 Select::make('general_access')
                     ->label('General Access')
                     ->options(function () {
-                        $options = LibraryItem::getGeneralAccessOptions();
+                        $options = FilamentLibraryPlugin::libraryItemModelClass()::getGeneralAccessOptions();
 
                         // Remove inherit option if no parent folder
                         if (! $this->getRecord()->parent_id) {

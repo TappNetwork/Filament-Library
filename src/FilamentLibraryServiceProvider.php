@@ -80,8 +80,11 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
         // Register middleware
         $this->app['router']->pushMiddlewareToGroup('web', RedirectToCorrectEditPage::class);
 
-        // Register the policy
-        $this->app['Illuminate\Contracts\Auth\Access\Gate']->policy(LibraryItem::class, LibraryItemPolicy::class);
+        // Register the policy for the default package model only; host apps
+        // provide their own policy when overriding models.LibraryItem.
+        if (FilamentLibraryPlugin::libraryItemModelClass() === LibraryItem::class) {
+            $this->app['Illuminate\Contracts\Auth\Access\Gate']->policy(LibraryItem::class, LibraryItemPolicy::class);
+        }
 
         // Handle Stubs
         if (app()->runningInConsole()) {
@@ -180,10 +183,13 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
 
         Media::created(function (Media $media): void {
             $model = $media->model;
-            if (! $model instanceof LibraryItem) {
+            $libraryItemModel = FilamentLibraryPlugin::libraryItemModelClass();
+
+            if (! is_object($model) || ! is_a($model, $libraryItemModel)) {
                 return;
             }
 
+            /** @var LibraryItem $item */
             $item = $model;
 
             if ($item->type !== 'file') {

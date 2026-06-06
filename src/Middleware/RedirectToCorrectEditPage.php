@@ -5,7 +5,7 @@ namespace Tapp\FilamentLibrary\Middleware;
 use Closure;
 use Filament\Facades\Filament;
 use Illuminate\Http\Request;
-use Tapp\FilamentLibrary\Models\LibraryItem;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 
 class RedirectToCorrectEditPage
 {
@@ -27,7 +27,7 @@ class RedirectToCorrectEditPage
             $recordId = $request->route('record');
 
             if ($recordId) {
-                $libraryItem = LibraryItem::find($recordId);
+                $libraryItem = FilamentLibraryPlugin::libraryItemModelClass()::find($recordId);
 
                 if ($libraryItem) {
                     // Redirect to the correct edit page based on type

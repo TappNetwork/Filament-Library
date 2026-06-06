@@ -3,7 +3,7 @@
 namespace Tapp\FilamentLibrary\Traits;
 
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Tapp\FilamentLibrary\Models\LibraryItem;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 
 trait HasLibraryFavorites
 {
@@ -12,7 +12,7 @@ trait HasLibraryFavorites
      */
     public function favoriteLibraryItems(): BelongsToMany
     {
-        return $this->belongsToMany(LibraryItem::class, 'library_item_favorites')
+        return $this->belongsToMany(FilamentLibraryPlugin::libraryItemModelClass(), 'library_item_favorites')
             ->withTimestamps();
     }
 }
