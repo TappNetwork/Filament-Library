@@ -7,7 +7,7 @@
         <div class="filament-library-unpreviewable-button">
             <x-filament::button
                 tag="a"
-                href="{{ $fileUrl }}"
+                :href="$fileUrl"
                 target="_blank"
                 icon="heroicon-o-arrow-down-tray"
                 color="primary"

@@ -193,3 +193,15 @@ it('renders markdown preview blade with formatted html', function (): void {
     expect($html)->toContain('<h1')
         ->and($html)->toContain('Paragraph text.');
 });
+
+it('renders download preview button with unescaped signed url query params', function (): void {
+    $signedUrl = 'https://example.test/file.txt?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc123';
+
+    $html = view('filament-library::infolists.components.previews.download', [
+        'fileUrl' => $signedUrl,
+        'message' => 'This file type cannot be previewed. Please download to view.',
+    ])->render();
+
+    expect($html)->toContain('href="' . $signedUrl . '"')
+        ->and($html)->not->toContain('&amp;amp;');
+});
