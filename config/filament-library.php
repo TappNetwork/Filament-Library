@@ -144,4 +144,22 @@ return [
         'column' => null,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | File Preview Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure text-based file previews for markdown and JSON exports.
+    |
+    */
+    'preview' => [
+        'text_max_bytes' => 2 * 1024 * 1024,
+        'markdown_extensions' => ['md', 'markdown', 'mdown'],
+        'json_filename_patterns' => [
+            'quiz' => ['quiz'],
+            'flashcards' => ['flashcard', 'flashcards'],
+            'mindmap' => ['mindmap', 'mind-map', 'mind_map'],
+        ],
+    ],
+
 ];
