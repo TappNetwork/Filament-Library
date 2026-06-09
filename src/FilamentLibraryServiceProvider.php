@@ -7,12 +7,14 @@ use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Schema;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Tapp\FilamentLibrary\Commands\FilamentLibraryCommand;
 use Tapp\FilamentLibrary\Commands\SeedLibraryCommand;
+use Tapp\FilamentLibrary\Events\LibraryFileRestored;
 use Tapp\FilamentLibrary\Events\LibraryFileStored;
 use Tapp\FilamentLibrary\Middleware\RedirectToCorrectEditPage;
 use Tapp\FilamentLibrary\Models\LibraryItem;
@@ -99,6 +101,7 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
         $this->loadViewsFrom(__DIR__ . '/Resources/views', static::$viewNamespace);
 
         $this->registerLibraryFileStoredEvent();
+        $this->registerLibraryFileRestoredEvent();
 
         // Publish views manually (optional)
         $this->publishes([
@@ -197,6 +200,29 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
             }
 
             event(new LibraryFileStored($item, $media));
+        });
+    }
+
+    /**
+     * When a soft-deleted library file is restored, notify host apps (e.g. for RAG re-ingestion).
+     */
+    protected function registerLibraryFileRestoredEvent(): void
+    {
+        $libraryItemModel = FilamentLibraryPlugin::libraryItemModelClass();
+
+        $libraryItemModel::restored(function (LibraryItem $item): void {
+            if ($item->type !== 'file') {
+                return;
+            }
+
+            $media = null;
+
+            if (class_exists(Media::class) && Schema::hasTable('media')) {
+                $firstMedia = $item->getFirstMedia();
+                $media = $firstMedia instanceof Media ? $firstMedia : null;
+            }
+
+            event(new LibraryFileRestored($item, $media));
         });
     }
 

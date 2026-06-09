@@ -233,6 +233,29 @@ public function boot(): void
 }
 ```
 
+### `LibraryFileRestored`
+
+[`Tapp\FilamentLibrary\Events\LibraryFileRestored`](src/Events/LibraryFileRestored.php) is fired after a soft-deleted `LibraryItem` of type `file` is restored (for example via Filament's Restore action).
+
+The event exposes:
+
+- `$libraryItem` — the restored [`LibraryItem`](src/Models/LibraryItem.php)
+- `$media` — the item's first [`Media`](https://github.com/spatie/laravel-medialibrary) record, or `null` if none is attached
+
+Example listener registration in `AppServiceProvider`:
+
+```php
+use Illuminate\Support\Facades\Event;
+use Tapp\FilamentLibrary\Events\LibraryFileRestored;
+
+public function boot(): void
+{
+    Event::listen(LibraryFileRestored::class, function (LibraryFileRestored $event): void {
+        // e.g. re-index or re-ingest RAG chunks here
+    });
+}
+```
+
 ## Testing
 
 ```bash
