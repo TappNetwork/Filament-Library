@@ -1,0 +1,22 @@
+name: PHP Linting (Pint)
+
+on:
+  push:
+    paths:
+          - '**.php'
+          - '.github/workflows/pint.yml'
+          - 'pint.json'
+    branches-ignore:
+      - 'dependabot/npm_and_yarn/*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pint:
+    uses: TappNetwork/workflows/.github/workflows/pint.yml@main
+    with:
+      preset: 'laravel'
+      pint_config: 'pint.json'
+      commit_message: 'PHP Linting (Pint)'

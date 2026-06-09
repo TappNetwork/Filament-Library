@@ -13,6 +13,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Tapp\FilamentLibrary\Infolists\Components\VideoEmbed;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
+use Tapp\FilamentLibrary\Support\LibraryFolderBreadcrumbPath;
 
 class ViewLibraryItem extends ViewRecord
 {
@@ -110,25 +111,10 @@ class ViewLibraryItem extends ViewRecord
         $record = $this->getRecord();
 
         if ($record->parent_id) {
-            // Cache the breadcrumb path to avoid repeated computation
-            $cacheKey = 'breadcrumbs_' . $record->parent_id;
-            $cacheTtl = config('filament-library.cache.breadcrumbs_ttl_seconds', 300);
-            $path = cache()->remember($cacheKey, $cacheTtl, function () use ($record) {
-                $current = $record->parent;
-                $path = [];
-
-                while ($current) {
-                    array_unshift($path, $current);
-                    $current = $current->parent;
-                }
-
-                return $path;
-            });
-
-            // Generate URLs more efficiently
             $baseUrl = static::getResource()::getUrl('index');
-            foreach ($path as $folder) {
-                $breadcrumbs[$baseUrl . '?parent=' . $folder->id] = $folder->name;
+
+            foreach (LibraryFolderBreadcrumbPath::ancestorsForParentId($record->parent_id) as $folder) {
+                $breadcrumbs[$baseUrl . '?parent=' . $folder['id']] = $folder['name'];
             }
         }
 
