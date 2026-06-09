@@ -2,6 +2,14 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.3.1 - 2026-06-09
+
+### What's Changed
+
+* Fix download preview test for Filament href escaping by @swilla in https://github.com/TappNetwork/Filament-Library/pull/26
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.3.0...v1.3.1
+
 ## v1.3.0 - 2026-06-09
 
 ### What's Changed
