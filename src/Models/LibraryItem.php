@@ -545,11 +545,19 @@ class LibraryItem extends Model implements HasMedia
     }
 
     /**
+     * Get the media item used for file previews and downloads.
+     */
+    public function getPreviewMedia(): ?Media
+    {
+        return $this->getFirstMedia('files') ?? $this->getFirstMedia();
+    }
+
+    /**
      * Get a secure URL for the file with temporary URL fallback.
      */
     public function getSecureUrl(?int $expirationMinutes = null): string
     {
-        $media = $this->getFirstMedia();
+        $media = $this->getPreviewMedia();
 
         if (! $media) {
             return '';

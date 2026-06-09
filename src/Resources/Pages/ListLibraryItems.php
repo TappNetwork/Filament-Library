@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
+use Tapp\FilamentLibrary\Support\LibraryFolderBreadcrumbPath;
 
 class ListLibraryItems extends ListRecords
 {
@@ -279,26 +280,10 @@ class ListLibraryItems extends ListRecords
         ];
 
         if ($this->parentFolder) {
-            // Cache the breadcrumb path to avoid repeated computation
-            $cacheKey = 'breadcrumbs_' . $this->parentFolder->id;
-            $path = cache()->remember($cacheKey, 300, function () { // 5 minute cache
-                $current = $this->parentFolder;
-                $path = [];
-
-                while ($current) {
-                    array_unshift($path, $current);
-                    $current = $current->parent;
-                }
-
-                return $path;
-            });
-
-            // Generate URLs more efficiently
             $baseUrl = static::getResource()::getUrl('index');
-            foreach ($path as $folder) {
-                if (isset($folder->id) && isset($folder->name)) {
-                    $breadcrumbs[$baseUrl . '?parent=' . $folder->id] = $folder->name;
-                }
+
+            foreach (LibraryFolderBreadcrumbPath::ancestorsForFolder($this->parentFolder) as $folder) {
+                $breadcrumbs[$baseUrl . '?parent=' . $folder['id']] = $folder['name'];
             }
         }
 

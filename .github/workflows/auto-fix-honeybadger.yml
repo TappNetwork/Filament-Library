@@ -1,0 +1,49 @@
+name: Auto-fix HoneyBadger Exception
+
+on:
+  repository_dispatch:
+    types: [honeybadger-exception]
+  workflow_dispatch:
+    inputs:
+      id:
+        description: 'Exception ID'
+        required: true
+      class:
+        description: 'Exception class'
+        required: true
+      message:
+        description: 'Exception message'
+        required: true
+      backtrace:
+        description: 'Backtrace as JSON string'
+        required: true
+      environment:
+        description: 'Environment name'
+        required: false
+        default: 'production'
+      url:
+        description: 'Exception tracking URL'
+        required: false
+        default: ''
+      pr_reviewers:
+        description: 'PR reviewers (comma-separated usernames or team slugs)'
+        required: false
+        default: 'TappNetwork/developers'
+
+jobs:
+  call-reusable-workflow:
+    uses: TappNetwork/workflows/.github/workflows/auto-fix-honeybadger.yml@main
+    with:
+      id: ${{ github.event.client_payload.id || github.event.inputs.id }}
+      class: ${{ github.event.client_payload.class || github.event.inputs.class }}
+      message: ${{ github.event.client_payload.message || github.event.inputs.message }}
+      backtrace: ${{ github.event.client_payload.backtrace || github.event.inputs.backtrace }}
+      environment: ${{ github.event.client_payload.environment || github.event.inputs.environment }}
+      url: ${{ github.event.client_payload.url || github.event.inputs.url }}
+      pr_reviewers: ${{ github.event.client_payload.pr_reviewers || github.event.inputs.pr_reviewers }}
+    secrets:
+      CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+      GH_PAT: ${{ secrets.GH_PAT }}
+      COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
+      FILAMENT_ADVANCED_TABLES_USER: ${{ secrets.FILAMENT_ADVANCED_TABLES_USER }}
+      FILAMENT_ADVANCED_TABLES_PASSWORD: ${{ secrets.FILAMENT_ADVANCED_TABLES_PASSWORD }}
