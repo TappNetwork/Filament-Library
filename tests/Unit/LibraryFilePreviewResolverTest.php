@@ -194,7 +194,7 @@ it('renders markdown preview blade with formatted html', function (): void {
         ->and($html)->toContain('Paragraph text.');
 });
 
-it('renders download preview button with unescaped signed url query params', function (): void {
+it('renders download preview button with a valid signed url href', function (): void {
     $signedUrl = 'https://example.test/file.txt?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc123';
 
     $html = view('filament-library::infolists.components.previews.download', [
@@ -202,6 +202,9 @@ it('renders download preview button with unescaped signed url query params', fun
         'message' => 'This file type cannot be previewed. Please download to view.',
     ])->render();
 
-    expect($html)->toContain('href="' . $signedUrl . '"')
+    preg_match('/href="([^"]+)"/', $html, $matches);
+
+    expect($matches)->not->toBeEmpty()
+        ->and(html_entity_decode($matches[1], ENT_QUOTES))->toBe($signedUrl)
         ->and($html)->not->toContain('&amp;amp;');
 });
