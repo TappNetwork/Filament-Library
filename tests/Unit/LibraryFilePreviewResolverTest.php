@@ -117,6 +117,140 @@ it('detects flashcards json from schema heuristics', function (): void {
     expect($preview->type)->toBe(LibraryFilePreviewType::JsonFlashcards);
 });
 
+it('renders flashcards preview with theme-aware layout', function (): void {
+    $content = json_encode([
+        'title' => 'Study Flashcards',
+        'cards' => [
+            ['front' => 'Term', 'back' => 'Definition'],
+        ],
+    ], JSON_THROW_ON_ERROR);
+
+    $media = previewMedia([
+        'file_name' => 'flashcard-set.json',
+        'name' => 'Flashcard Set',
+        'mime_type' => 'application/json',
+        'size' => strlen($content),
+    ], 'library/flashcard-set.json', $content);
+
+    $preview = LibraryFilePreviewResolver::resolve($media);
+
+    $html = view('filament-library::infolists.components.previews.json-flashcards', [
+        'media' => $media,
+        'fileUrl' => 'https://example.test/flashcard-set.json',
+        'preview' => $preview,
+    ])->render();
+
+    expect($html)
+        ->toContain('Study Flashcards')
+        ->toContain('Term')
+        ->toContain('Definition')
+        ->toContain('lg:grid-cols-3')
+        ->toContain('flex-1')
+        ->toContain('bg-white')
+        ->toContain('dark:bg-gray-900');
+});
+
+it('detects mind map json from branches and leaves schema', function (): void {
+    $content = json_encode([
+        'root_topic' => 'Product Overview',
+        'branches' => [
+            [
+                'title' => 'Getting Started',
+                'leaves' => [
+                    [
+                        'title' => 'Installation',
+                        'elaboration' => 'Install dependencies with Composer before running the application.',
+                    ],
+                ],
+            ],
+        ],
+    ], JSON_THROW_ON_ERROR);
+
+    $media = previewMedia([
+        'file_name' => 'product-overview.json',
+        'name' => 'Product Overview Mind Map',
+        'mime_type' => 'application/json',
+        'size' => strlen($content),
+    ], 'library/product-overview.json', $content);
+
+    $preview = LibraryFilePreviewResolver::resolve($media);
+
+    expect($preview->type)->toBe(LibraryFilePreviewType::JsonMindmap);
+});
+
+it('renders branch mind map preview with interactive concept panel', function (): void {
+    $content = json_encode([
+        'root_topic' => 'Product Overview',
+        'branches' => [
+            [
+                'title' => 'Getting Started',
+                'leaves' => [
+                    [
+                        'title' => 'Installation',
+                        'elaboration' => 'Install dependencies with Composer before running the application.',
+                    ],
+                ],
+            ],
+        ],
+    ], JSON_THROW_ON_ERROR);
+
+    $media = previewMedia([
+        'file_name' => 'product-overview.json',
+        'name' => 'Product Overview Mind Map',
+        'mime_type' => 'application/json',
+        'size' => strlen($content),
+    ], 'library/product-overview.json', $content);
+
+    $preview = LibraryFilePreviewResolver::resolve($media);
+
+    $html = view('filament-library::infolists.components.previews.json-mindmap', [
+        'media' => $media,
+        'fileUrl' => 'https://example.test/product-overview.json',
+        'preview' => $preview,
+    ])->render();
+
+    expect($html)
+        ->toContain('Product Overview')
+        ->toContain('Getting Started')
+        ->toContain('Installation')
+        ->toContain('Install dependencies with Composer before running the application.')
+        ->toContain('selectedId')
+        ->toContain('bg-white')
+        ->toContain('dark:bg-gray-900');
+});
+
+it('renders legacy mind map preview with nested children', function (): void {
+    $content = json_encode([
+        'title' => 'Sales Process Map',
+        'label' => 'Sales Process',
+        'children' => [
+            ['label' => 'Discovery', 'children' => [['label' => 'Needs analysis']]],
+        ],
+    ], JSON_THROW_ON_ERROR);
+
+    $media = previewMedia([
+        'file_name' => 'topic-mindmap.json',
+        'name' => 'Topic Map',
+        'mime_type' => 'application/json',
+        'size' => strlen($content),
+    ], 'library/topic-mindmap.json', $content);
+
+    $preview = LibraryFilePreviewResolver::resolve($media);
+
+    $html = view('filament-library::infolists.components.previews.json-mindmap', [
+        'media' => $media,
+        'fileUrl' => 'https://example.test/topic-mindmap.json',
+        'preview' => $preview,
+    ])->render();
+
+    expect($html)
+        ->toContain('Sales Process Map')
+        ->toContain('Sales Process')
+        ->toContain('Discovery')
+        ->toContain('Needs analysis')
+        ->toContain('dark:bg-gray-900');
+});
+
 it('detects mind map json from nested children', function (): void {
     $content = json_encode([
         'title' => 'Topic Map',
@@ -191,7 +325,84 @@ it('renders markdown preview blade with formatted html', function (): void {
     ])->render();
 
     expect($html)->toContain('<h1')
-        ->and($html)->toContain('Paragraph text.');
+        ->and($html)->toContain('Paragraph text.')
+        ->and($html)->toContain('filament-library-prose');
+});
+
+it('renders quiz preview with legacy correct answer keys', function (): void {
+    $content = json_encode([
+        'title' => 'Product Quiz',
+        'questions' => [
+            [
+                'stem' => 'What is Laravel?',
+                'options' => ['A framework', 'A database'],
+                'correct' => 'A framework',
+                'explanation' => 'Laravel is a PHP web framework.',
+            ],
+        ],
+    ], JSON_THROW_ON_ERROR);
+
+    $media = previewMedia([
+        'file_name' => 'topic-quiz.json',
+        'name' => 'Topic Quiz',
+        'mime_type' => 'application/json',
+        'size' => strlen($content),
+    ], 'library/topic-quiz.json', $content);
+
+    $preview = LibraryFilePreviewResolver::resolve($media);
+
+    $html = view('filament-library::infolists.components.previews.json-quiz', [
+        'media' => $media,
+        'fileUrl' => 'https://example.test/topic-quiz.json',
+        'preview' => $preview,
+    ])->render();
+
+    expect($html)
+        ->toContain('A framework')
+        ->toContain('Laravel is a PHP web framework.')
+        ->toContain('Correct!')
+        ->toContain('bg-white')
+        ->toContain('dark:bg-gray-900');
+});
+
+it('renders quiz preview with correct_index and explanation', function (): void {
+    $content = json_encode([
+        'title' => 'Platform Knowledge Quiz',
+        'questions' => [
+            [
+                'question' => 'Which language powers this backend?',
+                'options' => [
+                    'PHP',
+                    'Python',
+                    'Ruby',
+                    'Java',
+                ],
+                'correct_index' => 0,
+                'explanation' => 'PHP is the primary language used by Laravel applications.',
+            ],
+        ],
+    ], JSON_THROW_ON_ERROR);
+
+    $media = previewMedia([
+        'file_name' => 'platform-quiz.json',
+        'name' => 'Platform Quiz',
+        'mime_type' => 'application/json',
+        'size' => strlen($content),
+    ], 'library/platform-quiz.json', $content);
+
+    $preview = LibraryFilePreviewResolver::resolve($media);
+
+    $html = view('filament-library::infolists.components.previews.json-quiz', [
+        'media' => $media,
+        'fileUrl' => 'https://example.test/platform-quiz.json',
+        'preview' => $preview,
+    ])->render();
+
+    expect($html)
+        ->toContain('PHP')
+        ->toContain('PHP is the primary language used by Laravel applications.')
+        ->toContain('border-emerald-300')
+        ->toContain('Correct!');
 });
 
 it('renders download preview button with a valid signed url href', function (): void {

@@ -280,6 +280,10 @@ final class LibraryFilePreviewResolver
      */
     private static function looksLikeMindmap(array $decoded): bool
     {
+        if (self::looksLikeBranchMindmap($decoded)) {
+            return true;
+        }
+
         if (isset($decoded['nodes'], $decoded['edges']) && is_array($decoded['nodes'])) {
             return true;
         }
@@ -293,6 +297,28 @@ final class LibraryFilePreviewResolver
         }
 
         return isset($decoded['children']) && is_array($decoded['children']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $decoded
+     */
+    private static function looksLikeBranchMindmap(array $decoded): bool
+    {
+        if (! isset($decoded['branches']) || ! is_array($decoded['branches'])) {
+            return false;
+        }
+
+        foreach ($decoded['branches'] as $branch) {
+            if (! is_array($branch)) {
+                continue;
+            }
+
+            if (isset($branch['leaves']) && is_array($branch['leaves']) && $branch['leaves'] !== []) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
