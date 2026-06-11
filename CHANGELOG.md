@@ -2,6 +2,14 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.3.3 - 2026-06-11
+
+### What's Changed
+
+* Update JSON types preview by @andreia in https://github.com/TappNetwork/Filament-Library/pull/28
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.3.2...v1.3.3
+
 ## v1.3.2 - 2026-06-10
 
 ### What's Changed
