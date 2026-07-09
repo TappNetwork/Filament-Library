@@ -2,6 +2,14 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.3.4 - 2026-07-09
+
+### What's Changed
+
+* feat: show shared items in main Library view by @scottgrayson in https://github.com/TappNetwork/Filament-Library/pull/19
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.3.3...v1.3.4
+
 ## v1.3.3 - 2026-06-11
 
 ### What's Changed
