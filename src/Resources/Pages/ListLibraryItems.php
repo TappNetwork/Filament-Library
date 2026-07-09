@@ -243,6 +243,11 @@ class ListLibraryItems extends ListRecords
                     // Creators can see their own items (even if private)
                     if ($user) {
                         $q->orWhere('created_by', $user->id);
+
+                        // Users can see items explicitly shared with them
+                        $q->orWhereHas('permissions', function ($pq) use ($user) {
+                            $pq->where('user_id', $user->id);
+                        });
                     }
                 })
                 ->where('name', 'not like', "%'s Personal Folder");

@@ -181,6 +181,18 @@ class LibraryItemResource extends Resource
                     })
                     ->icon(fn (?LibraryItem $record): string => $record?->getDisplayIcon() ?? 'heroicon-o-document')
                     ->iconPosition('before')
+                    ->description(function (?LibraryItem $record): ?string {
+                        $user = auth()->user();
+                        if (! $user || ! $record) {
+                            return null;
+                        }
+
+                        if ($record->created_by !== $user->id && $record->permissions()->where('user_id', $user->id)->exists()) {
+                            return 'Shared with you';
+                        }
+
+                        return null;
+                    })
                     ->url(function (?LibraryItem $record): ?string {
                         if (! $record) {
                             return null;
