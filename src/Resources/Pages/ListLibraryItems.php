@@ -227,30 +227,37 @@ class ListLibraryItems extends ListRecords
         if ($this->parentId) {
             $query->where('parent_id', $this->parentId);
         } else {
-            // Show items at root level based on user permissions
             $user = auth()->user();
-            $query->whereNull('parent_id')
-                ->where(function ($q) use ($user) {
-                    $q->where('general_access', 'anyone_can_view');
+            $showNestedShared = (bool) config('filament-library.sharing.show_nested_shared_in_library', false);
 
-                    // Admins can see all items (including private/inherit)
-                    if ($user && FilamentLibraryPlugin::isLibraryAdmin($user)) {
-                        $q->orWhere(function ($adminQuery) {
-                            $adminQuery->whereIn('general_access', ['private', 'inherit']);
+            $query->where(function (Builder $visibility) use ($user, $showNestedShared): void {
+                $visibility->where(function (Builder $root) use ($user): void {
+                    $root->whereNull('parent_id')
+                        ->where(function (Builder $access) use ($user): void {
+                            $access->where('general_access', 'anyone_can_view');
+
+                            if ($user && FilamentLibraryPlugin::isLibraryAdmin($user)) {
+                                $access->orWhereIn('general_access', ['private', 'inherit']);
+                            }
+
+                            if ($user) {
+                                $access->orWhere('created_by', $user->id)
+                                    ->orWhereHas('permissions', function (Builder $permissions) use ($user): void {
+                                        $permissions->where('user_id', $user->id);
+                                    });
+                            }
                         });
-                    }
+                });
 
-                    // Creators can see their own items (even if private)
-                    if ($user) {
-                        $q->orWhere('created_by', $user->id);
-
-                        // Users can see items explicitly shared with them
-                        $q->orWhereHas('permissions', function ($pq) use ($user) {
-                            $pq->where('user_id', $user->id);
-                        });
-                    }
-                })
-                ->where('name', 'not like', "%'s Personal Folder");
+                if ($user && $showNestedShared) {
+                    $visibility->orWhere(function (Builder $sharedNested) use ($user): void {
+                        $sharedNested->whereNotNull('parent_id')
+                            ->whereHas('permissions', function (Builder $permissions) use ($user): void {
+                                $permissions->where('user_id', $user->id);
+                            });
+                    });
+                }
+            })->where('name', 'not like', "%'s Personal Folder");
         }
 
         return $query;

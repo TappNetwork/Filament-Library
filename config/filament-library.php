@@ -20,6 +20,79 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Sharing behavior
+    |--------------------------------------------------------------------------
+    |
+    | Defaults preserve the classic package UX. Host apps can opt into the
+    | newer "shared items live in the main library" workflow.
+    |
+    */
+    'sharing' => [
+        /*
+        | Show the Shared with Me navigation item and page.
+        */
+        'shared_with_me' => env('FILAMENT_LIBRARY_SHARED_WITH_ME', true),
+
+        /*
+        | When true, nested (non-root) items with explicit per-user permissions
+        | also appear in the main Library view. Root-level shared items already
+        | appear there regardless of this setting.
+        */
+        'show_nested_shared_in_library' => env('FILAMENT_LIBRARY_SHOW_NESTED_SHARED', false),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Permission assignment UI
+    |--------------------------------------------------------------------------
+    |
+    | Defaults keep the classic single-user permission form and hide the
+    | library-table bulk Manage Permissions action.
+    |
+    */
+    'permissions' => [
+        /*
+        | Show Manage Permissions as a table bulk action.
+        */
+        'bulk_manage_action' => env('FILAMENT_LIBRARY_BULK_MANAGE_PERMISSIONS', false),
+
+        /*
+        | When true, the permissions relation manager uses filter-based
+        | multi-user assignment. When false, it uses the classic single-user form.
+        */
+        'filter_based_assignment' => env('FILAMENT_LIBRARY_FILTER_BASED_ASSIGNMENT', false),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | User assignment filters
+    |--------------------------------------------------------------------------
+    |
+    | Optional filters shown when filter-based assignment (or the bulk manage
+    | action) is enabled. Host apps can enable community and role filters by
+    | pointing these options at their own models.
+    |
+    */
+    'user_filters' => [
+        'community' => [
+            'enabled' => false,
+            'model' => null,
+            'title_attribute' => 'name',
+            'user_foreign_key' => 'community_id',
+        ],
+        'role' => [
+            'enabled' => false,
+            'model' => null,
+            'title_attribute' => 'name',
+        ],
+        'signup_date' => [
+            'enabled' => false,
+            'column' => 'created_at',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Model class overrides
     |--------------------------------------------------------------------------
     |
