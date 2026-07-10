@@ -122,16 +122,6 @@ parameters:
 			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
 
 		-
-			message: "#^Call to static method find\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
-			count: 1
-			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
-
-		-
-			message: "#^Call to static method where\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
-			count: 1
-			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php
-
-		-
 			message: "#^Static call to instance method Filament\\\\Resources\\\\RelationManagers\\\\RelationManager\\:\\:getOwnerRecord\\(\\)\\.$#"
 			count: 1
 			path: src/Resources/RelationManagers/LibraryItemPermissionsRelationManager.php

@@ -2,13 +2,13 @@
 
 namespace Tapp\FilamentLibrary\Resources\RelationManagers;
 
-use App\Models\User;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
 use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Models\LibraryItem;
+use Tapp\FilamentLibrary\Services\PermissionService;
+use Tapp\FilamentLibrary\Support\UserAssignmentFilters;
 
 class LibraryItemPermissionsRelationManager extends RelationManager
 {
@@ -35,12 +37,10 @@ class LibraryItemPermissionsRelationManager extends RelationManager
             return false;
         }
 
-        // Admins can always access
         if ($user->hasRole('Admin')) {
             return true;
         }
 
-        // For non-admins, check if they have share permission on the current record
         $record = static::getOwnerRecord();
 
         /** @var LibraryItem $record */
@@ -62,12 +62,10 @@ class LibraryItemPermissionsRelationManager extends RelationManager
             return 'Unknown User';
         }
 
-        // Check if user has a name accessor or name field with a value
         if ($user->name) {
             return $user->name . ' (' . $user->email . ')';
         }
 
-        // Fall back to first_name/last_name if available
         if (SchemaFacade::hasColumn('users', 'first_name') && SchemaFacade::hasColumn('users', 'last_name')) {
             $firstName = $user->first_name ?? '';
             $lastName = $user->last_name ?? '';
@@ -78,12 +76,13 @@ class LibraryItemPermissionsRelationManager extends RelationManager
             }
         }
 
-        // Fall back to email only
         return $user->email;
     }
 
     public function form(Schema $schema): Schema
     {
+        $userModel = UserAssignmentFilters::userModel();
+
         return $schema
             ->components([
                 Forms\Components\Select::make('user_id')
@@ -91,28 +90,25 @@ class LibraryItemPermissionsRelationManager extends RelationManager
                     ->searchable()
                     ->preload()
                     ->getSearchResultsUsing(
-                        fn (string $search): array => User::where(function ($query) use ($search) {
-                            // Search first_name and last_name fields if they exist
+                        fn (string $search): array => $userModel::where(function ($query) use ($search): void {
                             if (SchemaFacade::hasColumn('users', 'first_name') && SchemaFacade::hasColumn('users', 'last_name')) {
                                 $query->orWhere('first_name', 'like', "%{$search}%")
                                     ->orWhere('last_name', 'like', "%{$search}%");
-                            }
-                            // Search name field if it exists and first/last don't
-                            elseif (SchemaFacade::hasColumn('users', 'name')) {
+                            } elseif (SchemaFacade::hasColumn('users', 'name')) {
                                 $query->orWhere('name', 'like', "%{$search}%");
                             }
-                            // Always search email
+
                             $query->orWhere('email', 'like', "%{$search}%");
                         })
                             ->limit(50)
                             ->get()
                             ->mapWithKeys(fn ($user) => [
-                                $user->id => $this->getUserDisplayName($user),
+                                $user->getKey() => $this->getUserDisplayName($user),
                             ])
                             ->toArray()
                     )
                     ->getOptionLabelUsing(
-                        fn ($value): ?string => $this->getUserDisplayName(User::find($value))
+                        fn ($value): ?string => $this->getUserDisplayName($userModel::find($value))
                     )
                     ->required(),
 
@@ -125,6 +121,8 @@ class LibraryItemPermissionsRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
+        $filterBased = (bool) config('filament-library.permissions.filter_based_assignment', false);
+
         return $table
             ->recordTitleAttribute('role')
             ->columns([
@@ -132,17 +130,14 @@ class LibraryItemPermissionsRelationManager extends RelationManager
                     ->label('User')
                     ->formatStateUsing(fn ($record) => $this->getUserDisplayName($record->user))
                     ->searchable(function ($query, $search) {
-                        return $query->where(function ($query) use ($search) {
-                            // Search first_name and last_name fields if they exist
+                        return $query->where(function ($query) use ($search): void {
                             if (SchemaFacade::hasColumn('users', 'first_name') && SchemaFacade::hasColumn('users', 'last_name')) {
                                 $query->orWhere('first_name', 'like', "%{$search}%")
                                     ->orWhere('last_name', 'like', "%{$search}%");
-                            }
-                            // Search name field if it exists and first/last don't
-                            elseif (SchemaFacade::hasColumn('users', 'name')) {
+                            } elseif (SchemaFacade::hasColumn('users', 'name')) {
                                 $query->orWhere('name', 'like', "%{$search}%");
                             }
-                            // Always search email
+
                             $query->orWhere('email', 'like', "%{$search}%");
                         });
                     }),
@@ -172,54 +167,97 @@ class LibraryItemPermissionsRelationManager extends RelationManager
                     ->options(FilamentLibraryPlugin::libraryItemPermissionModelClass()::getRoleOptions()),
             ])
             ->headerActions([
-                CreateAction::make()
-                    ->visible(function () {
-                        /** @var LibraryItem $ownerRecord */
-                        $ownerRecord = $this->ownerRecord;
-
-                        return $ownerRecord->hasPermission(auth()->user(), 'share');
-                    }),
+                $filterBased
+                    ? $this->filterBasedCreateAction()
+                    : $this->classicCreateAction(),
             ])
             ->heading('User Permissions')
-            ->description('Owner: Share and edit. Editor/Viewer: Standard permissions.')
+            ->description(
+                $filterBased
+                    ? 'Filter and assign users in bulk. Owner: Share and edit. Editor/Viewer: Standard permissions.'
+                    : 'Owner: Share and edit. Editor/Viewer: Standard permissions.'
+            )
             ->recordActions([
                 EditAction::make()
-                    ->visible(function () {
-                        /** @var LibraryItem $ownerRecord */
-                        $ownerRecord = $this->ownerRecord;
-
-                        return $ownerRecord->hasPermission(auth()->user(), 'share');
-                    }),
+                    ->visible(fn (): bool => $this->canShareOwnerRecord()),
                 DeleteAction::make()
-                    ->visible(function () {
-                        /** @var LibraryItem $ownerRecord */
-                        $ownerRecord = $this->ownerRecord;
-
-                        return $ownerRecord->hasPermission(auth()->user(), 'share');
-                    }),
+                    ->visible(fn (): bool => $this->canShareOwnerRecord()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->visible(function () {
-                            /** @var LibraryItem $ownerRecord */
-                            $ownerRecord = $this->ownerRecord;
-
-                            return $ownerRecord->hasPermission(auth()->user(), 'share');
-                        }),
+                        ->visible(fn (): bool => $this->canShareOwnerRecord()),
                 ]),
             ])
             ->emptyStateHeading('No permissions assigned')
-            ->emptyStateDescription('Add users to grant them specific permissions on this item.')
+            ->emptyStateDescription(
+                $filterBased
+                    ? 'Filter users and assign permissions to grant access to this item.'
+                    : 'Add users to grant them specific permissions on this item.'
+            )
             ->emptyStateActions([
-                CreateAction::make()
-                    ->label('Add Permission')
-                    ->visible(function () {
-                        /** @var LibraryItem $ownerRecord */
-                        $ownerRecord = $this->ownerRecord;
-
-                        return $ownerRecord->hasPermission(auth()->user(), 'share');
-                    }),
+                $filterBased
+                    ? $this->filterBasedCreateAction()->label('Assign Users')
+                    : $this->classicCreateAction()->label('Add Permission'),
             ]);
+    }
+
+    protected function classicCreateAction(): CreateAction
+    {
+        return CreateAction::make()
+            ->visible(fn (): bool => $this->canShareOwnerRecord());
+    }
+
+    protected function filterBasedCreateAction(): CreateAction
+    {
+        return CreateAction::make()
+            ->label('Assign Users')
+            ->modalHeading('Assign User Permissions')
+            ->modalDescription('Filter users by community, user level, and sign-up date, then assign permissions in bulk.')
+            ->schema([
+                ...UserAssignmentFilters::schema('user_ids'),
+                Forms\Components\Select::make('role')
+                    ->label('Permission Role')
+                    ->options(FilamentLibraryPlugin::libraryItemPermissionModelClass()::getRoleOptions())
+                    ->required()
+                    ->default('viewer'),
+            ])
+            ->using(function (array $data, string $model): Model {
+                /** @var LibraryItem $ownerRecord */
+                $ownerRecord = $this->getOwnerRecord();
+                $permissionService = app(PermissionService::class);
+                $permission = match ($data['role'] ?? 'viewer') {
+                    'owner' => 'owner',
+                    'editor' => 'edit',
+                    default => 'view',
+                };
+
+                $permissionService->bulkAssignPermissions([$ownerRecord], [
+                    'user_ids' => $data['user_ids'] ?? [],
+                    'permission' => $permission,
+                    'general_access' => $ownerRecord->general_access ?? 'private',
+                ]);
+
+                $firstUserId = collect($data['user_ids'] ?? [])->first();
+
+                return $ownerRecord->permissions()
+                    ->where('user_id', $firstUserId)
+                    ->firstOrFail();
+            })
+            ->successNotification(
+                Notification::make()
+                    ->success()
+                    ->title('Permissions assigned')
+                    ->body('Selected users were granted access to this item.')
+            )
+            ->visible(fn (): bool => $this->canShareOwnerRecord());
+    }
+
+    protected function canShareOwnerRecord(): bool
+    {
+        /** @var LibraryItem $ownerRecord */
+        $ownerRecord = $this->ownerRecord;
+
+        return $ownerRecord->hasPermission(auth()->user(), 'share');
     }
 }

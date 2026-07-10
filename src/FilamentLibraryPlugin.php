@@ -164,12 +164,7 @@ class FilamentLibraryPlugin implements Plugin
                     ->group('Resource Library')
                     ->sort(3)
                     ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.my-documents")),
-                NavigationItem::make('Shared with Me')
-                    ->url(fn () => $libraryItemResourceClass::getUrl('shared-with-me'))
-                    ->icon('heroicon-o-share')
-                    ->group('Resource Library')
-                    ->sort(4)
-                    ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.shared-with-me")),
+                ...static::sharedWithMeNavigationItem($panelId, $libraryItemResourceClass),
                 NavigationItem::make('Created by Me')
                     ->url(fn () => $libraryItemResourceClass::getUrl('created-by-me'))
                     ->icon('heroicon-o-user')
@@ -206,6 +201,26 @@ class FilamentLibraryPlugin implements Plugin
         $userModel::created(function ($user) use ($libraryItemModel): void {
             $libraryItemModel::ensurePersonalFolder($user);
         });
+    }
+
+    /**
+     * @param  class-string<LibraryItemResource>  $libraryItemResourceClass
+     * @return array<int, NavigationItem>
+     */
+    protected static function sharedWithMeNavigationItem(string $panelId, string $libraryItemResourceClass): array
+    {
+        if (! config('filament-library.sharing.shared_with_me', true)) {
+            return [];
+        }
+
+        return [
+            NavigationItem::make('Shared with Me')
+                ->url(fn () => $libraryItemResourceClass::getUrl('shared-with-me'))
+                ->icon('heroicon-o-share')
+                ->group('Resource Library')
+                ->sort(4)
+                ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.shared-with-me")),
+        ];
     }
 
     public static function make(): static

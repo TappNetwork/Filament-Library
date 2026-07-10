@@ -2,6 +2,19 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.3.5 - 2026-07-10
+
+### What's Changed
+
+* Opt-in sharing/permission UX for host apps (defaults preserve classic behavior):
+  * `sharing.shared_with_me` (default `true`)
+  * `sharing.show_nested_shared_in_library` (default `false`)
+  * `permissions.bulk_manage_action` (default `false`)
+  * `permissions.filter_based_assignment` (default `false`)
+  * optional `user_filters` for community / role / signup date
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.3.4...v1.3.5
+
 ## v1.3.4 - 2026-07-09
 
 ### What's Changed

@@ -2,19 +2,13 @@
 
 namespace Tapp\FilamentLibrary\Tables\Actions;
 
-/**
- * NOTE: This bulk action is currently unused in the LibraryItemResource.
- * It was removed from the toolbar actions but kept for potential future use.
- */
-
 use Filament\Actions\BulkAction;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Collection;
 use Tapp\FilamentLibrary\FilamentLibraryPlugin;
-use Tapp\FilamentLibrary\Forms\Components\UserSearchSelect;
 use Tapp\FilamentLibrary\Services\PermissionService;
+use Tapp\FilamentLibrary\Support\UserAssignmentFilters;
 
 class BulkManagePermissionsAction extends BulkAction
 {
@@ -41,16 +35,7 @@ class BulkManagePermissionsAction extends BulkAction
                     ->default('private')
                     ->required()
                     ->helperText('This determines who can see these items by default'),
-                Placeholder::make('user_permissions_section')
-                    ->label('User Permissions')
-                    ->content('Grant specific permissions to selected users'),
-
-                UserSearchSelect::make('user_ids')
-                    ->label('Users')
-                    ->placeholder('Search for users by name or email...')
-                    ->required()
-                    ->helperText('Select users to grant permissions to'),
-
+                ...UserAssignmentFilters::schema('user_ids'),
                 Select::make('permission')
                     ->label('Permission Level for Selected Users')
                     ->options([
@@ -62,7 +47,7 @@ class BulkManagePermissionsAction extends BulkAction
                     ->required()
                     ->helperText('Choose the permission level to grant to the selected users above'),
             ])
-            ->action(function (Collection $records, array $data) {
+            ->action(function (Collection $records, array $data): void {
                 $permissionService = app(PermissionService::class);
                 $permissionService->bulkAssignPermissions($records, $data);
 
@@ -71,7 +56,7 @@ class BulkManagePermissionsAction extends BulkAction
             ->deselectRecordsAfterCompletion()
             ->requiresConfirmation()
             ->modalHeading('Manage Permissions')
-            ->modalDescription('Grant permissions to selected users for the chosen items.')
+            ->modalDescription('Filter users, then grant permissions for the selected items.')
             ->modalSubmitActionLabel('Grant Permissions');
     }
 

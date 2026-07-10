@@ -16,6 +16,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Resources\Pages\PageRegistration;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -23,6 +24,7 @@ use Filament\Tables\Table;
 use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Resources\RelationManagers\LibraryItemPermissionsRelationManager;
+use Tapp\FilamentLibrary\Tables\Actions\BulkManagePermissionsAction;
 
 class LibraryItemResource extends Resource
 {
@@ -165,7 +167,6 @@ class LibraryItemResource extends Resource
         // - PublicLibrary (public files)
         // - MyLibrary (personal documents)
         // - CreatedByMe (user's created items)
-        // - SharedWithMe (shared items)
         // - SearchAll (search results)
         // The list pages only override getTableQuery() for filtering, not the columns
         return $table
@@ -338,6 +339,7 @@ class LibraryItemResource extends Resource
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    ...static::bulkManagePermissionsActions(),
                     DeleteBulkAction::make()
                         ->visible(fn (): bool => auth()->user() && auth()->user()->can('deleteAny', static::getModel()))
                         ->successRedirectUrl(function () {
@@ -382,7 +384,7 @@ class LibraryItemResource extends Resource
         return [
             'index' => Pages\ListLibraryItems::route('/'),
             'my-documents' => Pages\MyLibrary::route('/my-documents'),
-            'shared-with-me' => Pages\SharedWithMe::route('/shared-with-me'),
+            ...static::sharedWithMePage(),
             'created-by-me' => Pages\CreatedByMe::route('/created-by-me'),
             'favorites' => Pages\Favorites::route('/favorites'),
             'public' => Pages\PublicLibrary::route('/public'),
@@ -395,6 +397,34 @@ class LibraryItemResource extends Resource
             'edit-folder' => Pages\EditFolder::route('/{record}/edit-folder'),
             'edit-file' => Pages\EditFile::route('/{record}/edit-file'),
             'edit-link' => Pages\EditLink::route('/{record}/edit-link'),
+        ];
+    }
+
+    /**
+     * @return array<string, PageRegistration>
+     */
+    protected static function sharedWithMePage(): array
+    {
+        if (! config('filament-library.sharing.shared_with_me', true)) {
+            return [];
+        }
+
+        return [
+            'shared-with-me' => Pages\SharedWithMe::route('/shared-with-me'),
+        ];
+    }
+
+    /**
+     * @return array<int, BulkManagePermissionsAction>
+     */
+    protected static function bulkManagePermissionsActions(): array
+    {
+        if (! config('filament-library.permissions.bulk_manage_action', false)) {
+            return [];
+        }
+
+        return [
+            BulkManagePermissionsAction::make(),
         ];
     }
 
