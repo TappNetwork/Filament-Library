@@ -2,8 +2,8 @@
 
 namespace Tapp\FilamentLibrary\Support;
 
-use Filament\Forms\Components\Component;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,7 +14,7 @@ use Tapp\FilamentLibrary\Forms\Components\UserSearchSelect;
 class UserAssignmentFilters
 {
     /**
-     * @return array<int, Component>
+     * @return array<int, Field>
      */
     public static function schema(string $usersField = 'user_ids'): array
     {
@@ -25,7 +25,7 @@ class UserAssignmentFilters
     }
 
     /**
-     * @return array<int, Component>
+     * @return array<int, Field>
      */
     public static function filterFields(): array
     {

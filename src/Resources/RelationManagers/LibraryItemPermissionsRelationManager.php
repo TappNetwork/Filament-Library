@@ -103,7 +103,7 @@ class LibraryItemPermissionsRelationManager extends RelationManager
                             ->limit(50)
                             ->get()
                             ->mapWithKeys(fn ($user) => [
-                                $user->id => $this->getUserDisplayName($user),
+                                $user->getKey() => $this->getUserDisplayName($user),
                             ])
                             ->toArray()
                     )
