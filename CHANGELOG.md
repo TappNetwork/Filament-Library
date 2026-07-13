@@ -2,6 +2,14 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.3.6 - 2026-07-13
+
+### What's Changed
+
+* Fix `sharing.show_nested_shared_in_library` so it also gates root-level shared items in the main Library view (classic default `false` restores pre-v1.3.4 behavior)
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.3.5...v1.3.6
+
 ## v1.3.5 - 2026-07-10
 
 ### What's Changed

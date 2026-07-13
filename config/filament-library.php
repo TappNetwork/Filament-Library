@@ -34,9 +34,9 @@ return [
         'shared_with_me' => env('FILAMENT_LIBRARY_SHARED_WITH_ME', true),
 
         /*
-        | When true, nested (non-root) items with explicit per-user permissions
-        | also appear in the main Library view. Root-level shared items already
-        | appear there regardless of this setting.
+        | When true, items with explicit per-user permissions appear in the main
+        | Library view (root-level shared folders/files and nested shared items).
+        | When false, those items only appear on the Shared with Me page.
         */
         'show_nested_shared_in_library' => env('FILAMENT_LIBRARY_SHOW_NESTED_SHARED', false),
     ],
