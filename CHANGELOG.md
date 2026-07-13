@@ -2,13 +2,15 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
-## v1.3.6 - 2026-07-13
+## v1.3.7 - 2026-07-13
 
 ### What's Changed
 
+* Assign Users / Manage Permissions: add **Select all matching users** toggle to select every user matching the current filters (not just the first 50 search results)
+* Replace built-in `user_filters` config with host-owned `assignment.filter_provider` contract for domain-specific assignment filters
 * Fix `sharing.show_nested_shared_in_library` so it also gates root-level shared items in the main Library view (classic default `false` restores pre-v1.3.4 behavior)
 
-**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.3.5...v1.3.6
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.3.5...v1.3.7
 
 ## v1.3.5 - 2026-07-10
 
