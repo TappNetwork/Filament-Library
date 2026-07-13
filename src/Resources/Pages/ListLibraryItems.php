@@ -228,12 +228,12 @@ class ListLibraryItems extends ListRecords
             $query->where('parent_id', $this->parentId);
         } else {
             $user = auth()->user();
-            $showNestedShared = (bool) config('filament-library.sharing.show_nested_shared_in_library', false);
+            $showSharedInLibrary = (bool) config('filament-library.sharing.show_nested_shared_in_library', false);
 
-            $query->where(function (Builder $visibility) use ($user, $showNestedShared): void {
-                $visibility->where(function (Builder $root) use ($user): void {
+            $query->where(function (Builder $visibility) use ($user, $showSharedInLibrary): void {
+                $visibility->where(function (Builder $root) use ($user, $showSharedInLibrary): void {
                     $root->whereNull('parent_id')
-                        ->where(function (Builder $access) use ($user): void {
+                        ->where(function (Builder $access) use ($user, $showSharedInLibrary): void {
                             $access->where('general_access', 'anyone_can_view');
 
                             if ($user && FilamentLibraryPlugin::isLibraryAdmin($user)) {
@@ -241,15 +241,18 @@ class ListLibraryItems extends ListRecords
                             }
 
                             if ($user) {
-                                $access->orWhere('created_by', $user->id)
-                                    ->orWhereHas('permissions', function (Builder $permissions) use ($user): void {
+                                $access->orWhere('created_by', $user->id);
+
+                                if ($showSharedInLibrary) {
+                                    $access->orWhereHas('permissions', function (Builder $permissions) use ($user): void {
                                         $permissions->where('user_id', $user->id);
                                     });
+                                }
                             }
                         });
                 });
 
-                if ($user && $showNestedShared) {
+                if ($user && $showSharedInLibrary) {
                     $visibility->orWhere(function (Builder $sharedNested) use ($user): void {
                         $sharedNested->whereNotNull('parent_id')
                             ->whereHas('permissions', function (Builder $permissions) use ($user): void {
