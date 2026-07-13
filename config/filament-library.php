@@ -65,30 +65,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | User assignment filters
+    | User assignment filters (host-provided)
     |--------------------------------------------------------------------------
     |
-    | Optional filters shown when filter-based assignment (or the bulk manage
-    | action) is enabled. Host apps can enable community and role filters by
-    | pointing these options at their own models.
+    | When filter-based assignment is enabled, register a class that implements
+    | Tapp\FilamentLibrary\Contracts\UserAssignmentFilterProvider. The host app
+    | owns domain-specific filters (e.g. community, role, signup date).
+    |
+    | Example (in your app's config/filament-library.php):
+    |
+    | 'assignment' => [
+    |     'filter_provider' => \App\Library\LibraryUserAssignmentFilterProvider::class,
+    | ],
     |
     */
-    'user_filters' => [
-        'community' => [
-            'enabled' => false,
-            'model' => null,
-            'title_attribute' => 'name',
-            'user_foreign_key' => 'community_id',
-        ],
-        'role' => [
-            'enabled' => false,
-            'model' => null,
-            'title_attribute' => 'name',
-        ],
-        'signup_date' => [
-            'enabled' => false,
-            'column' => 'created_at',
-        ],
+    'assignment' => [
+        'filter_provider' => null,
     ],
 
     /*

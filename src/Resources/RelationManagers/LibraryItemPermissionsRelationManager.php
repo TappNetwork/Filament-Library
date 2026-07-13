@@ -213,7 +213,7 @@ class LibraryItemPermissionsRelationManager extends RelationManager
         return CreateAction::make()
             ->label('Assign Users')
             ->modalHeading('Assign User Permissions')
-            ->modalDescription('Filter users by community, user level, and sign-up date, then assign permissions in bulk.')
+            ->modalDescription('Filter users, then assign permissions in bulk.')
             ->schema([
                 ...UserAssignmentFilters::schema('user_ids'),
                 Forms\Components\Select::make('role')

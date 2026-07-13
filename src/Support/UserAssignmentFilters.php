@@ -2,13 +2,14 @@
 
 namespace Tapp\FilamentLibrary\Support;
 
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Field;
-use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
+use Tapp\FilamentLibrary\Contracts\UserAssignmentFilterProvider;
 use Tapp\FilamentLibrary\Forms\Components\UserSearchSelect;
 
 class UserAssignmentFilters
@@ -19,7 +20,8 @@ class UserAssignmentFilters
     public static function schema(string $usersField = 'user_ids'): array
     {
         return [
-            ...static::filterFields(),
+            ...static::filterFields($usersField),
+            static::selectAllMatchingToggle($usersField),
             static::usersSelect($usersField),
         ];
     }
@@ -27,43 +29,38 @@ class UserAssignmentFilters
     /**
      * @return array<int, Field>
      */
-    public static function filterFields(): array
+    public static function filterFields(string $usersField = 'user_ids'): array
     {
-        $fields = [];
+        $provider = static::provider();
 
-        if (static::communityFilterEnabled()) {
-            $fields[] = Select::make('community_id')
-                ->label('Community')
-                ->options(fn (): array => static::communityOptions())
-                ->searchable()
-                ->preload()
-                ->live()
-                ->placeholder('All communities');
+        if (! $provider instanceof UserAssignmentFilterProvider) {
+            return [];
         }
 
-        if (static::roleFilterEnabled()) {
-            $fields[] = Select::make('role_name')
-                ->label('User Level')
-                ->options(fn (): array => static::roleOptions())
-                ->searchable()
-                ->preload()
-                ->live()
-                ->placeholder('All user levels');
-        }
+        return collect($provider->schema())
+            ->map(function (Field $field) use ($usersField): Field {
+                return $field
+                    ->live()
+                    ->afterStateUpdated(fn (Get $get, Set $set): mixed => static::refreshSelectedUsersIfSelectingAll($get, $set, $usersField));
+            })
+            ->all();
+    }
 
-        if (static::signupDateFilterEnabled()) {
-            $fields[] = DatePicker::make('signed_up_from')
-                ->label('Signed Up From')
-                ->live()
-                ->native(false);
+    public static function selectAllMatchingToggle(string $usersField = 'user_ids'): Toggle
+    {
+        return Toggle::make('select_all_matching')
+            ->label('Select all matching users')
+            ->helperText('Selects every user matching the filters above, not just the first 50 search results. With no filters, this selects all users.')
+            ->live()
+            ->afterStateUpdated(function (Get $get, Set $set, mixed $state) use ($usersField): void {
+                if ($state) {
+                    $set($usersField, static::filteredUserIds($get));
 
-            $fields[] = DatePicker::make('signed_up_until')
-                ->label('Signed Up Until')
-                ->live()
-                ->native(false);
-        }
+                    return;
+                }
 
-        return $fields;
+                $set($usersField, []);
+            });
     }
 
     public static function usersSelect(string $name = 'user_ids'): UserSearchSelect
@@ -72,7 +69,7 @@ class UserAssignmentFilters
             ->label('Users')
             ->placeholder('Search for users by name or email...')
             ->required()
-            ->helperText('Select one or more users matching the filters above.')
+            ->helperText('Select one or more users matching the filters above, or use “Select all matching users”.')
             ->options(fn (Get $get): array => static::filteredUserOptions($get))
             ->getSearchResultsUsing(fn (string $search, Get $get): array => static::filteredUserOptions($get, $search))
             ->getOptionLabelsUsing(fn (array $values): array => static::labelsForIds($values));
@@ -98,25 +95,10 @@ class UserAssignmentFilters
             });
         }
 
-        if (static::communityFilterEnabled() && filled($filters['community_id'] ?? null)) {
-            $foreignKey = config('filament-library.user_filters.community.user_foreign_key', 'community_id');
-            $query->where($foreignKey, $filters['community_id']);
-        }
+        $provider = static::provider();
 
-        if (static::roleFilterEnabled() && filled($filters['role_name'] ?? null)) {
-            $query->whereHas('roles', function (Builder $roleQuery) use ($filters): void {
-                $roleQuery->where('name', $filters['role_name']);
-            });
-        }
-
-        $signupColumn = config('filament-library.user_filters.signup_date.column', 'created_at');
-
-        if (static::signupDateFilterEnabled() && filled($filters['signed_up_from'] ?? null)) {
-            $query->whereDate($signupColumn, '>=', $filters['signed_up_from']);
-        }
-
-        if (static::signupDateFilterEnabled() && filled($filters['signed_up_until'] ?? null)) {
-            $query->whereDate($signupColumn, '<=', $filters['signed_up_until']);
+        if ($provider instanceof UserAssignmentFilterProvider) {
+            $query = $provider->apply($query, $filters);
         }
 
         return $query;
@@ -127,12 +109,7 @@ class UserAssignmentFilters
      */
     public static function filteredUserOptions(Get $get, ?string $search = null): array
     {
-        $filters = [
-            'community_id' => $get('community_id'),
-            'role_name' => $get('role_name'),
-            'signed_up_from' => $get('signed_up_from'),
-            'signed_up_until' => $get('signed_up_until'),
-        ];
+        $filters = static::filtersFromGet($get);
 
         $userModel = static::userModel();
 
@@ -142,6 +119,19 @@ class UserAssignmentFilters
 
         return $query
             ->mapWithKeys(fn (Model $user): array => [$user->getKey() => static::displayLabel($user)])
+            ->all();
+    }
+
+    /**
+     * @return list<int|string>
+     */
+    public static function filteredUserIds(Get $get): array
+    {
+        $filters = static::filtersFromGet($get);
+        $userModel = static::userModel();
+
+        return static::applyFilters($userModel::query(), $filters)
+            ->pluck((new $userModel)->getKeyName())
             ->all();
     }
 
@@ -182,50 +172,45 @@ class UserAssignmentFilters
         return config('filament-library.user_model', config('auth.providers.users.model', 'App\\Models\\User'));
     }
 
-    public static function communityFilterEnabled(): bool
+    public static function provider(): ?UserAssignmentFilterProvider
     {
-        return (bool) config('filament-library.user_filters.community.enabled', false)
-            && filled(config('filament-library.user_filters.community.model'));
-    }
+        $class = config('filament-library.assignment.filter_provider');
 
-    public static function roleFilterEnabled(): bool
-    {
-        return (bool) config('filament-library.user_filters.role.enabled', false)
-            && filled(config('filament-library.user_filters.role.model'));
-    }
+        if (! filled($class)) {
+            return null;
+        }
 
-    public static function signupDateFilterEnabled(): bool
-    {
-        return (bool) config('filament-library.user_filters.signup_date.enabled', true);
-    }
+        $provider = app($class);
 
-    /**
-     * @return array<int|string, string>
-     */
-    protected static function communityOptions(): array
-    {
-        /** @var class-string<Model> $model */
-        $model = config('filament-library.user_filters.community.model');
-        $title = config('filament-library.user_filters.community.title_attribute', 'name');
+        if (! $provider instanceof UserAssignmentFilterProvider) {
+            return null;
+        }
 
-        return $model::query()
-            ->orderBy($title)
-            ->pluck($title, (new $model)->getKeyName())
-            ->all();
+        return $provider;
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
-    protected static function roleOptions(): array
+    protected static function filtersFromGet(Get $get): array
     {
-        /** @var class-string<Model> $model */
-        $model = config('filament-library.user_filters.role.model');
-        $title = config('filament-library.user_filters.role.title_attribute', 'name');
+        $provider = static::provider();
 
-        return $model::query()
-            ->orderBy($title)
-            ->pluck($title, $title)
+        if (! $provider instanceof UserAssignmentFilterProvider) {
+            return [];
+        }
+
+        return collect($provider->filterKeys())
+            ->mapWithKeys(fn (string $key): array => [$key => $get($key)])
             ->all();
+    }
+
+    protected static function refreshSelectedUsersIfSelectingAll(Get $get, Set $set, string $usersField): void
+    {
+        if (! $get('select_all_matching')) {
+            return;
+        }
+
+        $set($usersField, static::filteredUserIds($get));
     }
 }
