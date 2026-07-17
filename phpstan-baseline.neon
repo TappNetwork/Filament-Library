@@ -94,10 +94,6 @@ parameters:
 			path: src/Resources/Pages
 
 		-
-			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:hasPermission\\(\\)\\.$#"
-			path: src/Resources/Pages
-
-		-
 			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:getSecureUrl\\(\\)\\.$#"
 			path: src/Resources/Pages
 

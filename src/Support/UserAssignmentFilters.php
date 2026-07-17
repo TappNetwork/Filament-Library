@@ -41,7 +41,9 @@ class UserAssignmentFilters
             ->map(function (Field $field) use ($usersField): Field {
                 return $field
                     ->live()
-                    ->afterStateUpdated(fn (Get $get, Set $set): mixed => static::refreshSelectedUsersIfSelectingAll($get, $set, $usersField));
+                    ->afterStateUpdated(function (Get $get, Set $set) use ($usersField): void {
+                        static::refreshSelectedUsersIfSelectingAll($get, $set, $usersField);
+                    });
             })
             ->all();
     }
