@@ -44,9 +44,11 @@ trait LibraryUser
      * - Edit any library item
      * - Delete any library item
      * - Manage permissions on any item
+     * - Change general access (e.g. make items visible to everyone)
      * - Access all library functionality
      *
-     * Override this method to add role-based logic.
+     * Prefer FilamentLibraryPlugin::isLibraryAdmin() / setLibraryAdminCallback() for
+     * authorization. Override this method when host-app code calls it directly.
      */
     public function isLibraryAdmin(): bool
     {

@@ -90,11 +90,16 @@ class PermissionService
     {
         $userIds = $data['user_ids'] ?? [];
         $permission = $data['permission'] ?? 'view';
-        $generalAccess = $data['general_access'] ?? 'private';
+        $canManageGeneralAccess = FilamentLibraryPlugin::isLibraryAdmin(auth()->user());
+        $generalAccess = $canManageGeneralAccess && array_key_exists('general_access', $data)
+            ? $data['general_access']
+            : null;
 
         foreach ($items as $item) {
-            // Update the general access level for the item
-            $item->update(['general_access' => $generalAccess]);
+            // Only library admins may change general access (e.g. anyone_can_view).
+            if ($generalAccess !== null) {
+                $item->update(['general_access' => $generalAccess]);
+            }
 
             // Assign permissions to users
             foreach ($userIds as $userId) {

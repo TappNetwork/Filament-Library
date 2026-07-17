@@ -79,6 +79,11 @@ abstract class EditLibraryItemPage extends EditRecord
         // Set the updated_by field
         $data['updated_by'] = auth()->user()?->id;
 
+        // Only library admins may change general access (e.g. anyone_can_view).
+        if (! FilamentLibraryPlugin::isLibraryAdmin(auth()->user())) {
+            unset($data['general_access']);
+        }
+
         return $data;
     }
 

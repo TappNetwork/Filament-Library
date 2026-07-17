@@ -35,9 +35,11 @@ class FilamentLibraryPlugin implements Plugin
     /**
      * Set a custom callback to determine if a user is a library admin.
      *
-     * @param  callable  $callback  Function that receives a user and returns bool
+     * Pass null to clear a previously registered callback.
+     *
+     * @param  (callable(Authenticatable): bool)|null  $callback
      */
-    public static function setLibraryAdminCallback(callable $callback): void
+    public static function setLibraryAdminCallback(?callable $callback): void
     {
         static::$libraryAdminCallback = $callback;
     }

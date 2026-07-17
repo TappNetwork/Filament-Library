@@ -82,7 +82,7 @@ class EditLink extends EditLibraryItemPage
                         $record = $this->getRecord();
                         $inherited = $record->getInheritedGeneralAccessDisplay();
 
-                        $baseText = 'Set the baseline access level for this link. User-level permissions can override this setting.';
+                        $baseText = 'Only library admins can change general access (e.g. make an item visible to everyone). Share with specific users via User Permissions instead.';
 
                         if ($inherited) {
                             return $baseText . "\n\nCurrently inheriting: {$inherited}";
@@ -90,7 +90,7 @@ class EditLink extends EditLibraryItemPage
 
                         return $baseText;
                     })
-                    ->visible(fn () => $this->getRecord()->hasPermission(auth()->user(), 'share')),
+                    ->visible(fn () => FilamentLibraryPlugin::isLibraryAdmin(auth()->user())),
 
                 // Creator select field
                 $this->getCreatorSelectField(),
