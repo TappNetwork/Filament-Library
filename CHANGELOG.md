@@ -2,6 +2,14 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.3.8 - 2026-07-22
+
+### What's Changed
+
+* Restricts Library General Access settings to admin by @andreia in https://github.com/TappNetwork/Filament-Library/pull/35
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.3.7...v1.3.8
+
 ## v1.3.7 - 2026-07-13
 
 ### What's Changed
@@ -22,6 +30,7 @@ All notable changes to `:package_name` will be documented in this file.
   * `permissions.bulk_manage_action` (default `false`)
   * `permissions.filter_based_assignment` (default `false`)
   * optional `user_filters` for community / role / signup date
+  
 
 **Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.3.4...v1.3.5
 
