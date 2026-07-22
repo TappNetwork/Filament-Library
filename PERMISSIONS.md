@@ -23,6 +23,8 @@ You can assign permissions to users in several ways:
 4. Choose users and permission level (view/edit)
 5. Optionally cascade permissions to child items
 
+**General Access** (`private` / `inherit` / `anyone_can_view`) can only be changed by library admins. Owners and creators can still share items with specific users via User Permissions.
+
 #### Via Code
 ```php
 use Tapp\FilamentLibrary\Services\PermissionService;
@@ -59,23 +61,37 @@ if ($libraryItem->hasPermission($user, 'edit')) {
 
 ## Advanced Configuration
 
-### Custom User Model Integration
+### Library Admin Access
 
-If you want to use the `HasLibraryAccess` trait for additional functionality:
+Library admin checks go through `FilamentLibraryPlugin::isLibraryAdmin()`. Configure them with a callback (recommended) or via config:
 
 ```php
-// In your User model
-use Tapp\FilamentLibrary\Traits\HasLibraryAccess;
+// In your AppServiceProvider
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
+
+public function boot(): void
+{
+    FilamentLibraryPlugin::setLibraryAdminCallback(function ($user): bool {
+        return $user->hasRole('admin') || $user->hasRole('library-admin');
+    });
+}
+```
+
+Or in `config/filament-library.php`:
+
+```php
+'admin_role' => 'Admin',
+'admin_callback' => null, // or a callable
+```
+
+Add the `LibraryUser` trait to your User model for personal folders and favorites (it does not control admin authorization):
+
+```php
+use Tapp\FilamentLibrary\Traits\LibraryUser;
 
 class User extends Authenticatable
 {
-    use HasLibraryAccess;
-    
-    // Override to add role-based logic
-    public function isLibraryAdmin(): bool
-    {
-        return $this->hasRole('admin') || $this->hasRole('library-admin');
-    }
+    use LibraryUser;
 }
 ```
 
@@ -124,7 +140,7 @@ The library items table includes a toggleable "Permissions" column that shows:
 
 - All permission checks go through Laravel's authorization system
 - Policies ensure consistent permission enforcement
-- Fallback implementations work even without the `HasLibraryAccess` trait
+- Fallback implementations work even without the `LibraryUser` trait
 - Creator permissions are always respected
 
 ## Troubleshooting

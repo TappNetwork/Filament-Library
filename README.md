@@ -204,8 +204,6 @@ public function boot()
 }
 ```
 
-**Note:** By default, users have an `isLibraryAdmin()` method that returns `false`. You can override this in your User model for custom logic.
-
 ## Events
 
 The package dispatches events your application can listen for to extend behavior (for example, search indexing, webhooks after uploads, ...).

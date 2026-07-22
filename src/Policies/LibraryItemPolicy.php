@@ -3,6 +3,7 @@
 namespace Tapp\FilamentLibrary\Policies;
 
 use Illuminate\Foundation\Auth\User;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 
 class LibraryItemPolicy
@@ -12,8 +13,7 @@ class LibraryItemPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Check if user is library admin
-        if (method_exists($user, 'isLibraryAdmin') && $user->isLibraryAdmin()) {
+        if (FilamentLibraryPlugin::isLibraryAdmin($user)) {
             return true;
         }
 
@@ -26,8 +26,7 @@ class LibraryItemPolicy
      */
     public function view(User $user, LibraryItem $libraryItem): bool
     {
-        // Check if user is library admin
-        if (method_exists($user, 'isLibraryAdmin') && $user->isLibraryAdmin()) {
+        if (FilamentLibraryPlugin::isLibraryAdmin($user)) {
             return true;
         }
 
@@ -50,8 +49,7 @@ class LibraryItemPolicy
      */
     public function update(User $user, LibraryItem $libraryItem): bool
     {
-        // Check if user is library admin
-        if (method_exists($user, 'isLibraryAdmin') && $user->isLibraryAdmin()) {
+        if (FilamentLibraryPlugin::isLibraryAdmin($user)) {
             return true;
         }
 
@@ -64,8 +62,7 @@ class LibraryItemPolicy
      */
     public function delete(User $user, LibraryItem $libraryItem): bool
     {
-        // Check if user is library admin
-        if (method_exists($user, 'isLibraryAdmin') && $user->isLibraryAdmin()) {
+        if (FilamentLibraryPlugin::isLibraryAdmin($user)) {
             return true;
         }
 
@@ -87,8 +84,7 @@ class LibraryItemPolicy
      */
     public function forceDelete(User $user, LibraryItem $libraryItem): bool
     {
-        // Check if user is library admin
-        if (method_exists($user, 'isLibraryAdmin') && $user->isLibraryAdmin()) {
+        if (FilamentLibraryPlugin::isLibraryAdmin($user)) {
             return true;
         }
 
@@ -110,8 +106,7 @@ class LibraryItemPolicy
      */
     public function restore(User $user, LibraryItem $libraryItem): bool
     {
-        // Check if user is library admin
-        if (method_exists($user, 'isLibraryAdmin') && $user->isLibraryAdmin()) {
+        if (FilamentLibraryPlugin::isLibraryAdmin($user)) {
             return true;
         }
 
@@ -133,8 +128,7 @@ class LibraryItemPolicy
      */
     public function replicate(User $user, LibraryItem $libraryItem): bool
     {
-        // Check if user is library admin
-        if (method_exists($user, 'isLibraryAdmin') && $user->isLibraryAdmin()) {
+        if (FilamentLibraryPlugin::isLibraryAdmin($user)) {
             return true;
         }
 
@@ -155,8 +149,7 @@ class LibraryItemPolicy
      */
     public function managePermissions(User $user, LibraryItem $libraryItem): bool
     {
-        // Check if user is library admin
-        if (method_exists($user, 'isLibraryAdmin') && $user->isLibraryAdmin()) {
+        if (FilamentLibraryPlugin::isLibraryAdmin($user)) {
             return true;
         }
 

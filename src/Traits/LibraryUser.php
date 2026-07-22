@@ -35,23 +35,4 @@ trait LibraryUser
         return $this->belongsToMany(FilamentLibraryPlugin::libraryItemModelClass(), 'library_item_favorites')
             ->withTimestamps();
     }
-
-    /**
-     * Check if the user is a library admin.
-     *
-     * Library admins can:
-     * - View all library items (including root items)
-     * - Edit any library item
-     * - Delete any library item
-     * - Manage permissions on any item
-     * - Access all library functionality
-     *
-     * Override this method to add role-based logic.
-     */
-    public function isLibraryAdmin(): bool
-    {
-        // Default implementation - override this method to add role-based logic
-        // For example: return $this->hasRole('admin') || $this->hasRole('library-admin');
-        return false;
-    }
 }
