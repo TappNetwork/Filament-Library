@@ -35,25 +35,4 @@ trait LibraryUser
         return $this->belongsToMany(FilamentLibraryPlugin::libraryItemModelClass(), 'library_item_favorites')
             ->withTimestamps();
     }
-
-    /**
-     * Check if the user is a library admin.
-     *
-     * Library admins can:
-     * - View all library items (including root items)
-     * - Edit any library item
-     * - Delete any library item
-     * - Manage permissions on any item
-     * - Change general access (e.g. make items visible to everyone)
-     * - Access all library functionality
-     *
-     * Prefer FilamentLibraryPlugin::isLibraryAdmin() / setLibraryAdminCallback() for
-     * authorization. Override this method when host-app code calls it directly.
-     */
-    public function isLibraryAdmin(): bool
-    {
-        // Default implementation - override this method to add role-based logic
-        // For example: return $this->hasRole('admin') || $this->hasRole('library-admin');
-        return false;
-    }
 }
