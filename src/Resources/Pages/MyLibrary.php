@@ -132,7 +132,7 @@ class MyLibrary extends ListRecords
                         ->required()
                         ->maxLength(255)
                         ->placeholder('Enter link name'),
-                    TextInput::make('url')
+                    TextInput::make('external_url')
                         ->label('URL')
                         ->required()
                         ->url()
@@ -145,7 +145,7 @@ class MyLibrary extends ListRecords
                     FilamentLibraryPlugin::libraryItemModelClass()::create([
                         'name' => $data['name'],
                         'type' => 'link',
-                        'url' => $data['url'],
+                        'external_url' => $data['external_url'],
                         'parent_id' => $personalFolder->id,
                         'created_by' => $user->id,
                         'updated_by' => $user->id,

@@ -2,6 +2,12 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.3.9 - 2026-07-26
+
+### Fixed
+
+* Save My Documents "Add External Link" to `external_url` instead of the non-existent `url` column.
+
 ## v1.3.8 - 2026-07-22
 
 ### What's Changed
