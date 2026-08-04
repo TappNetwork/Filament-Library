@@ -99,6 +99,23 @@ The plugin automatically adds navigation items under "Resource Library":
 - **Created by Me** - Items you created
 - **Favorites** - Items you've marked as favorites
 
+To hide those links for some users (for example roles that may enter the panel but should not see the library), use `navigationVisibleUsing()`:
+
+```php
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
+
+public function panel(Panel $panel): Panel
+{
+    return $panel
+        ->plugins([
+            FilamentLibraryPlugin::make()
+                ->navigationVisibleUsing(fn (): bool => auth()->user()?->can('view-any library-item') ?? false),
+        ]);
+}
+```
+
+When unset, navigation items remain visible (backward compatible). Direct library URLs are still authorized by your library item policies.
+
 ## Permissions System
 
 The plugin features a sophisticated permissions system inspired by Google Drive.

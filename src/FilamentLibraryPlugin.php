@@ -3,6 +3,7 @@
 namespace Tapp\FilamentLibrary;
 
 use App\Models\User;
+use Closure;
 use Filament\Contracts\Plugin;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
@@ -19,6 +20,11 @@ class FilamentLibraryPlugin implements Plugin
     protected static bool $personalFolderListenerRegistered = false;
 
     /**
+     * @var (Closure(): bool)|bool|null
+     */
+    protected Closure | bool | null $navigationVisibleUsing = null;
+
+    /**
      * @var array<string, class-string>
      */
     protected static array $defaultModels = [
@@ -30,6 +36,20 @@ class FilamentLibraryPlugin implements Plugin
     public function getId(): string
     {
         return 'filament-library';
+    }
+
+    /**
+     * Control whether Resource Library navigation items are shown.
+     *
+     * Defaults to always visible when unset (backward compatible).
+     *
+     * @param  (Closure(): bool)|bool  $condition
+     */
+    public function navigationVisibleUsing(Closure | bool $condition): static
+    {
+        $this->navigationVisibleUsing = $condition;
+
+        return $this;
     }
 
     /**
@@ -147,7 +167,7 @@ class FilamentLibraryPlugin implements Plugin
                     LibraryItemResource::class,
                 ])),
             )
-            ->navigationItems([
+            ->navigationItems($this->applyNavigationVisibility([
                 NavigationItem::make('Library')
                     ->url(fn () => $libraryItemResourceClass::getUrl('index'))
                     ->icon('heroicon-o-building-library')
@@ -179,7 +199,7 @@ class FilamentLibraryPlugin implements Plugin
                     ->group('Resource Library')
                     ->sort(6)
                     ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.favorites")),
-            ]);
+            ]));
     }
 
     public function boot(Panel $panel): void
@@ -223,6 +243,31 @@ class FilamentLibraryPlugin implements Plugin
                 ->sort(4)
                 ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.shared-with-me")),
         ];
+    }
+
+    public function isNavigationVisible(): bool
+    {
+        if ($this->navigationVisibleUsing === null) {
+            return true;
+        }
+
+        if (is_bool($this->navigationVisibleUsing)) {
+            return $this->navigationVisibleUsing;
+        }
+
+        return (bool) ($this->navigationVisibleUsing)();
+    }
+
+    /**
+     * @param  list<NavigationItem>  $items
+     * @return list<NavigationItem>
+     */
+    protected function applyNavigationVisibility(array $items): array
+    {
+        return array_map(
+            fn (NavigationItem $item): NavigationItem => $item->visible(fn (): bool => $this->isNavigationVisible()),
+            $items,
+        );
     }
 
     public static function make(): static

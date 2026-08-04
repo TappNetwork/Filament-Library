@@ -25,4 +25,32 @@ test('library item resource uses configured model class', function (): void {
     expect(LibraryItemResource::getModel())->toBe(CustomLibraryItemStub::class);
 });
 
+test('navigation is visible by default', function (): void {
+    $plugin = FilamentLibraryPlugin::make();
+
+    expect($plugin->isNavigationVisible())->toBeTrue();
+});
+
+test('navigationVisibleUsing accepts a boolean', function (): void {
+    $plugin = FilamentLibraryPlugin::make()
+        ->navigationVisibleUsing(false);
+
+    expect($plugin->isNavigationVisible())->toBeFalse();
+});
+
+test('navigationVisibleUsing accepts a closure', function (): void {
+    $visible = false;
+
+    $plugin = FilamentLibraryPlugin::make()
+        ->navigationVisibleUsing(function () use (&$visible): bool {
+            return $visible;
+        });
+
+    expect($plugin->isNavigationVisible())->toBeFalse();
+
+    $visible = true;
+
+    expect($plugin->isNavigationVisible())->toBeTrue();
+});
+
 final class CustomLibraryItemStub extends LibraryItem {}
