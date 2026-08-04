@@ -2,6 +2,15 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.4.0 - 2026-08-04
+
+### What's Changed
+
+* Bump actions/checkout from 6 to 7 by @dependabot[bot] in https://github.com/TappNetwork/Filament-Library/pull/30
+* Add ability to show/hide navigation items by @andreia in https://github.com/TappNetwork/Filament-Library/pull/39
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.3.9...v1.4.0
+
 ## v1.3.9 - 2026-07-26
 
 ### Fixed
