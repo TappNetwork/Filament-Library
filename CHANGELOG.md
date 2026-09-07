@@ -2,6 +2,12 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.4.1 - 2026-09-07
+
+Fix User column searchable() callback for Filament 5.7.8 — pass custom search via named query: argument so Filament does not treat the closure as isSearchable.
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.4.0...v1.4.1
+
 ## v1.4.0 - 2026-08-04
 
 ### What's Changed
