@@ -129,7 +129,7 @@ class LibraryItemPermissionsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('user')
                     ->label('User')
                     ->formatStateUsing(fn ($record) => $this->getUserDisplayName($record->user))
-                    ->searchable(function ($query, $search) {
+                    ->searchable(query: function ($query, $search) {
                         return $query->where(function ($query) use ($search): void {
                             if (SchemaFacade::hasColumn('users', 'first_name') && SchemaFacade::hasColumn('users', 'last_name')) {
                                 $query->orWhere('first_name', 'like', "%{$search}%")
