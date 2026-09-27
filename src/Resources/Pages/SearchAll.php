@@ -4,6 +4,7 @@ namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
+use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class SearchAll extends ListRecords
@@ -40,7 +41,11 @@ class SearchAll extends ListRecords
                 ->where('name', 'not like', "%'s Personal Folder");
         }
 
-        return $query;
+        if (! $query instanceof Builder) {
+            return LibraryItem::query()->whereRaw('1 = 0');
+        }
+
+        return LibraryItem::limitToPublished($query);
     }
 
     public function getTitle(): string

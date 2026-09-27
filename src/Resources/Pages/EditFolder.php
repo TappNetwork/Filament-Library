@@ -34,6 +34,8 @@ class EditFolder extends EditLibraryItemPage
                     ->label('Description')
                     ->rows(3),
 
+                ...LibraryItemResource::firmMetadataComponents(includeProjectTags: false),
+
                 Select::make('tags')
                     ->label('Tags')
                     ->relationship('tags', 'name')

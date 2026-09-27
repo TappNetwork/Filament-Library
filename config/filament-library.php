@@ -226,6 +226,25 @@ return [
     | Configure text-based file previews for markdown and JSON exports.
     |
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Publication
+    |--------------------------------------------------------------------------
+    |
+    | Imports land as draft or pending and stay out of search until a
+    | gatekeeper publishes them. Rejected items stay out of search.
+    |
+    | Existing items and ordinary creates stay published unless
+    | new_items_require_approval is turned on. committees restricts the
+    | committee values an import will accept. Leave it empty to allow any
+    | committee name. Example: ['Design', 'Technical'].
+    |
+    */
+    'publication' => [
+        'new_items_require_approval' => env('FILAMENT_LIBRARY_NEW_ITEMS_REQUIRE_APPROVAL', false),
+        'committees' => [],
+    ],
+
     'preview' => [
         'text_max_bytes' => 2 * 1024 * 1024,
         'markdown_extensions' => ['md', 'markdown', 'mdown'],

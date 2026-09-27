@@ -13,6 +13,8 @@ use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Tapp\FilamentLibrary\Commands\FilamentLibraryCommand;
+use Tapp\FilamentLibrary\Commands\ImportLibraryCommand;
+use Tapp\FilamentLibrary\Commands\ReviewLibraryItemCommand;
 use Tapp\FilamentLibrary\Commands\SeedLibraryCommand;
 use Tapp\FilamentLibrary\Events\LibraryFileRestored;
 use Tapp\FilamentLibrary\Events\LibraryFileStored;
@@ -147,6 +149,8 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
     {
         return [
             FilamentLibraryCommand::class,
+            ImportLibraryCommand::class,
+            ReviewLibraryItemCommand::class,
             SeedLibraryCommand::class,
         ];
     }
@@ -236,6 +240,7 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
             'create_library_item_permissions_table',
             'create_library_item_tags_table',
             'create_library_item_favorites_table',
+            'add_publication_metadata_to_library_items_table',
         ];
     }
 }
