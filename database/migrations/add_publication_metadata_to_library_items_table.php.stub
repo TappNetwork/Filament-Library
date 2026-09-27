@@ -1,0 +1,48 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('library_items', function (Blueprint $table) {
+            $table->string('firm_path', 1024)->nullable();
+            $table->string('library_area')->nullable();
+            $table->string('committee')->nullable();
+            $table->json('project_tags')->nullable();
+            $table->string('publication_status')->default('published')->index();
+            $table->timestamp('published_at')->nullable();
+            $table->foreignId('published_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('rejected_at')->nullable();
+            $table->foreignId('rejected_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->text('rejection_reason')->nullable();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('library_items', function (Blueprint $table) {
+            $table->dropConstrainedForeignId('published_by');
+            $table->dropConstrainedForeignId('rejected_by');
+            $table->dropColumn([
+                'firm_path',
+                'library_area',
+                'committee',
+                'project_tags',
+                'publication_status',
+                'published_at',
+                'rejected_at',
+                'rejection_reason',
+            ]);
+        });
+    }
+};

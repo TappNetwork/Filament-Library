@@ -14,6 +14,7 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\PageRegistration;
@@ -21,6 +22,8 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
+use Tapp\FilamentLibrary\Enums\LibraryPublicationStatus;
 use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Resources\RelationManagers\LibraryItemPermissionsRelationManager;
@@ -145,7 +148,51 @@ class LibraryItemResource extends Resource
                     ->label('Description')
                     ->visible(fn (callable $get) => $get('type') === 'link')
                     ->rows(3),
+
+                ...static::firmMetadataComponents(),
             ]);
+    }
+
+    /**
+     * Firm path and manifest metadata carried by a library item.
+     *
+     * Project tags are omitted on edit screens that already manage the tags
+     * relationship, so an empty tags input does not clear tags that were
+     * attached at import.
+     *
+     * @return array<int, TextInput|Select|TagsInput>
+     */
+    public static function firmMetadataComponents(bool $includeProjectTags = true): array
+    {
+        $committees = config('filament-library.publication.committees', []);
+        $committee = is_array($committees) && $committees !== []
+            ? Select::make('committee')
+                ->label('Committee')
+                ->options(array_combine($committees, $committees))
+                ->native(false)
+            : TextInput::make('committee')
+                ->label('Committee')
+                ->maxLength(255);
+
+        $components = [
+            TextInput::make('firm_path')
+                ->label('Firm path')
+                ->maxLength(1024)
+                ->helperText('Path to the real file. Copy Path uses this value.'),
+            TextInput::make('library_area')
+                ->label('Library area')
+                ->maxLength(255)
+                ->helperText('Folder or Library area from the manifest.'),
+            $committee,
+        ];
+
+        if ($includeProjectTags) {
+            $components[] = TagsInput::make('project_tags')
+                ->label('Project tags')
+                ->placeholder('Add a project tag');
+        }
+
+        return $components;
     }
 
     public static function folderForm(Schema $schema): Schema
@@ -236,6 +283,39 @@ class LibraryItemResource extends Resource
                     ->limit(50)
                     ->tooltip(fn (?LibraryItem $record) => $record?->external_url)
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('firm_path')
+                    ->label('Firm path')
+                    ->limit(40)
+                    ->tooltip(fn (?LibraryItem $record) => $record?->firm_path)
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('library_area')
+                    ->label('Library area')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('committee')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('publication_status')
+                    ->label('Publication')
+                    ->badge()
+                    ->formatStateUsing(function (LibraryPublicationStatus | string | null $state): string {
+                        $status = $state instanceof LibraryPublicationStatus
+                            ? $state
+                            : LibraryPublicationStatus::tryFrom((string) $state);
+
+                        return $status?->label() ?? (string) $state;
+                    })
+                    ->color(function (LibraryPublicationStatus | string | null $state): string {
+                        $status = $state instanceof LibraryPublicationStatus
+                            ? $state
+                            : LibraryPublicationStatus::tryFrom((string) $state);
+
+                        return match ($status) {
+                            LibraryPublicationStatus::Published => 'success',
+                            LibraryPublicationStatus::Pending => 'warning',
+                            LibraryPublicationStatus::Rejected => 'danger',
+                            default => 'gray',
+                        };
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('general_access')
                     ->label('Permissions')
                     ->badge()
@@ -275,6 +355,9 @@ class LibraryItemResource extends Resource
                         'file' => 'File',
                         'link' => 'External Link',
                     ]),
+                Tables\Filters\SelectFilter::make('publication_status')
+                    ->label('Publication')
+                    ->options(LibraryPublicationStatus::options()),
                 Tables\Filters\SelectFilter::make('tags')
                     ->label('Tags')
                     ->relationship('tags', 'name')
@@ -285,6 +368,42 @@ class LibraryItemResource extends Resource
             ])
             ->recordActions([
                 ActionGroup::make([
+                    Action::make('publish')
+                        ->label('Publish')
+                        ->icon('heroicon-o-check')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->visible(fn (LibraryItem $record): bool => static::gatekeeperCanReview() && ! $record->isSearchable())
+                        ->action(function (LibraryItem $record): void {
+                            $user = auth()->user();
+                            $record->publish($user instanceof Model ? $user : null);
+                        }),
+                    Action::make('reject')
+                        ->label('Reject')
+                        ->icon('heroicon-o-x-mark')
+                        ->color('danger')
+                        ->visible(fn (LibraryItem $record): bool => static::gatekeeperCanReview() && $record->publication_status !== LibraryPublicationStatus::Rejected)
+                        ->schema([
+                            Textarea::make('reason')
+                                ->label('Reason')
+                                ->rows(3),
+                        ])
+                        ->action(function (LibraryItem $record, array $data): void {
+                            $user = auth()->user();
+                            $reason = $data['reason'] ?? null;
+                            $record->reject(
+                                $user instanceof Model ? $user : null,
+                                is_string($reason) ? $reason : null,
+                            );
+                        }),
+                    Action::make('return_to_draft')
+                        ->label('Return')
+                        ->icon('heroicon-o-arrow-uturn-left')
+                        ->visible(fn (LibraryItem $record): bool => static::gatekeeperCanReview() && $record->publication_status === LibraryPublicationStatus::Pending)
+                        ->action(function (LibraryItem $record): void {
+                            $user = auth()->user();
+                            $record->returnToDraft($user instanceof Model ? $user : null);
+                        }),
                     Action::make('view')
                         ->label('View')
                         ->icon('heroicon-o-eye')
@@ -389,6 +508,7 @@ class LibraryItemResource extends Resource
             'favorites' => Pages\Favorites::route('/favorites'),
             'public' => Pages\PublicLibrary::route('/public'),
             'search-all' => Pages\SearchAll::route('/search-all'),
+            'gatekeeper-queue' => Pages\GatekeeperQueue::route('/gatekeeper-queue'),
             'create-folder' => Pages\CreateFolder::route('/create-folder'),
             'create-file' => Pages\CreateFile::route('/create-file'),
             'create-link' => Pages\CreateLink::route('/create-link'),
@@ -426,6 +546,11 @@ class LibraryItemResource extends Resource
         return [
             BulkManagePermissionsAction::make(),
         ];
+    }
+
+    public static function gatekeeperCanReview(): bool
+    {
+        return FilamentLibraryPlugin::isLibraryAdmin(auth()->user());
     }
 
     public static function getEditUrl($record): string

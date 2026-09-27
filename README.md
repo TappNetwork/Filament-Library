@@ -248,6 +248,14 @@ public function boot(): void
 }
 ```
 
+### `LibraryItemPublished`
+
+[`Tapp\FilamentLibrary\Events\LibraryItemPublished`](src/Events/LibraryItemPublished.php) is fired when a gatekeeper publishes an item. Listen here to update a search index. Imports do not fire this event.
+
+### `LibraryItemRejected`
+
+[`Tapp\FilamentLibrary\Events\LibraryItemRejected`](src/Events/LibraryItemRejected.php) is fired when a gatekeeper rejects an item. The item stays out of search.
+
 ### `LibraryFileRestored`
 
 [`Tapp\FilamentLibrary\Events\LibraryFileRestored`](src/Events/LibraryFileRestored.php) is fired after a soft-deleted `LibraryItem` of type `file` is restored (for example via Filament's Restore action).
@@ -270,6 +278,23 @@ public function boot(): void
     });
 }
 ```
+
+## Publication and firm metadata
+
+Library items can carry the path to the real file and the metadata that arrives with a manifest:
+
+- `firm_path` — path to the real file (Copy Path reads this)
+- `library_area` — folder or Library area
+- `committee` — committee that owns the item
+- `project_tags` — project tags from the manifest
+
+Imports do not publish themselves. `php artisan filament-library:import {manifest.csv} --user={id}` creates each row as `pending` (or `--status=draft`). A `published` value in the file is ignored. Draft, pending, and rejected items are excluded from Search All and from the main Library and Public Library lists. `LibraryItem::query()->searchable()` is the same rule for Ask or any other search.
+
+A gatekeeper publishes or rejects an item with `php artisan filament-library:review {id} publish` or `reject`, or from the Gatekeeper Queue when the library admin check passes. Publishing dispatches `LibraryItemPublished`. Rejecting dispatches `LibraryItemRejected` and keeps the item out of search. `return` sends a pending item back to draft, which is also excluded from search.
+
+Ordinary creates stay published so existing libraries keep working. Set `publication.new_items_require_approval` to `true` when new items should wait for a gatekeeper too. Set `publication.committees` to the allowed committee names (for example `['Design', 'Technical']`) when imports should reject any other committee. Leave it empty to accept any committee name.
+
+Manifest columns: `name`, `firm_path`, `library_area` (or `folder`), `committee`, `project_tags` (split on `|`, `;`, or `,`), `type` (`file`, `folder`, or `link`), `url`, and `status` (`draft` or `pending`).
 
 ## Testing
 

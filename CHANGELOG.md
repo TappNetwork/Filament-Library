@@ -2,6 +2,13 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## Unreleased
+
+* Library items can store firm path, library area, committee, and project tags
+* Manifest import lands each row as draft or pending and never auto-publishes
+* Search and library browse exclude draft, pending, and rejected items until a gatekeeper publishes them
+* Gatekeeper queue, review command, and publish / reject events
+
 ## v1.4.1 - 2026-09-07
 
 Fix User column searchable() callback for Filament 5.7.8 — pass custom search via named query: argument so Filament does not treat the closure as isSearchable.

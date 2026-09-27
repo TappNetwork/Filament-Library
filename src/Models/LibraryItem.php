@@ -2,6 +2,7 @@
 
 namespace Tapp\FilamentLibrary\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,9 @@ use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Tapp\FilamentLibrary\Enums\LibraryPublicationStatus;
+use Tapp\FilamentLibrary\Events\LibraryItemPublished;
+use Tapp\FilamentLibrary\Events\LibraryItemRejected;
 use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Models\Traits\BelongsToTenant;
 
@@ -29,6 +33,16 @@ use Tapp\FilamentLibrary\Models\Traits\BelongsToTenant;
  * @property string|null $external_url
  * @property string|null $link_description
  * @property string|null $general_access
+ * @property string|null $firm_path
+ * @property string|null $library_area
+ * @property string|null $committee
+ * @property array<int, string>|null $project_tags
+ * @property LibraryPublicationStatus|null $publication_status
+ * @property Carbon|null $published_at
+ * @property int|null $published_by
+ * @property Carbon|null $rejected_at
+ * @property int|null $rejected_by
+ * @property string|null $rejection_reason
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
@@ -46,6 +60,8 @@ class LibraryItem extends Model implements HasMedia
     use InteractsWithMedia;
     use SoftDeletes;
 
+    protected static bool $syncingProjectTags = false;
+
     protected $fillable = [
         'name',
         'slug',
@@ -56,12 +72,21 @@ class LibraryItem extends Model implements HasMedia
         'external_url',
         'link_description',
         'general_access',
+        'firm_path',
+        'library_area',
+        'committee',
+        'project_tags',
+        'publication_status',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'project_tags' => 'array',
+        'publication_status' => LibraryPublicationStatus::class,
+        'published_at' => 'datetime',
+        'rejected_at' => 'datetime',
     ];
 
     /**
@@ -74,6 +99,12 @@ class LibraryItem extends Model implements HasMedia
         static::creating(function (self $item) {
             if (empty($item->slug)) {
                 $item->slug = static::generateUniqueSlug($item->name, $item->parent_id);
+            }
+
+            if ($item->publication_status === null) {
+                $item->publication_status = config('filament-library.publication.new_items_require_approval', false)
+                    ? LibraryPublicationStatus::Pending
+                    : LibraryPublicationStatus::Published;
             }
 
             // Set created_by and updated_by on creation (like Laravel does with timestamps)
@@ -107,6 +138,23 @@ class LibraryItem extends Model implements HasMedia
             // Set updated_by on updates
             if (auth()->check()) {
                 $item->updated_by = auth()->id();
+            }
+        });
+
+        static::saved(function (self $item): void {
+            $shouldSync = is_array($item->project_tags)
+                && ($item->wasRecentlyCreated || $item->wasChanged('project_tags'));
+
+            if (static::$syncingProjectTags || ! $shouldSync) {
+                return;
+            }
+
+            static::$syncingProjectTags = true;
+
+            try {
+                $item->syncProjectTagRecords();
+            } finally {
+                static::$syncingProjectTags = false;
             }
         });
     }
@@ -708,5 +756,195 @@ class LibraryItem extends Model implements HasMedia
     public function getIsFavoriteAttribute(): bool
     {
         return $this->isFavorite();
+    }
+
+    /**
+     * Split a manifest tag list into unique names.
+     *
+     * @return list<string>
+     */
+    public static function normalizeProjectTags(array | string | null $tags): array
+    {
+        if (is_string($tags)) {
+            $tags = preg_split('/[|,;]/', $tags) ?: [];
+        }
+
+        if ($tags === null) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach ($tags as $tag) {
+            $tag = trim((string) $tag);
+
+            if ($tag !== '') {
+                $normalized[] = $tag;
+            }
+        }
+
+        return array_values(array_unique($normalized));
+    }
+
+    /**
+     * Mirror project_tags onto library item tag records.
+     */
+    public function syncProjectTagRecords(): void
+    {
+        $names = self::normalizeProjectTags($this->project_tags);
+        $tagModel = FilamentLibraryPlugin::libraryItemTagModelClass();
+        $ids = [];
+
+        foreach ($names as $name) {
+            $ids[] = $this->findOrCreateProjectTag($tagModel, $name)->getKey();
+        }
+
+        $this->tags()->sync($ids);
+    }
+
+    public function isSearchable(): bool
+    {
+        return $this->publication_status === LibraryPublicationStatus::Published;
+    }
+
+    /**
+     * Published items only. Draft, pending, and rejected items stay out of search.
+     */
+    public function scopeSearchable(Builder $query): Builder
+    {
+        return static::limitToPublished($query);
+    }
+
+    /**
+     * Items still waiting on a gatekeeper, including rejections.
+     */
+    public function scopeUnpublished(Builder $query): Builder
+    {
+        return static::limitToUnpublished($query);
+    }
+
+    public static function limitToPublished(Builder $query): Builder
+    {
+        return $query->where(
+            $query->getModel()->qualifyColumn('publication_status'),
+            LibraryPublicationStatus::Published->value,
+        );
+    }
+
+    public static function limitToUnpublished(Builder $query): Builder
+    {
+        return $query->where(
+            $query->getModel()->qualifyColumn('publication_status'),
+            '!=',
+            LibraryPublicationStatus::Published->value,
+        );
+    }
+
+    public function scopeInLibraryArea(Builder $query, string $libraryArea): Builder
+    {
+        return $query->where($query->getModel()->qualifyColumn('library_area'), $libraryArea);
+    }
+
+    public function scopeForCommittee(Builder $query, string $committee): Builder
+    {
+        return $query->where($query->getModel()->qualifyColumn('committee'), $committee);
+    }
+
+    public function scopeWithProjectTag(Builder $query, string $tag): Builder
+    {
+        return $query->whereJsonContains(
+            $query->getModel()->qualifyColumn('project_tags'),
+            $tag,
+        );
+    }
+
+    public function publish(Model | int | null $gatekeeper = null): void
+    {
+        if ($this->publication_status === LibraryPublicationStatus::Published) {
+            return;
+        }
+
+        $this->forceFill([
+            'publication_status' => LibraryPublicationStatus::Published,
+            'published_at' => now(),
+            'published_by' => $this->gatekeeperId($gatekeeper),
+            'rejected_at' => null,
+            'rejected_by' => null,
+            'rejection_reason' => null,
+        ])->save();
+
+        event(new LibraryItemPublished($this));
+    }
+
+    public function reject(Model | int | null $gatekeeper = null, ?string $reason = null): void
+    {
+        $reason = $reason !== null ? trim($reason) : null;
+        $reason = $reason === '' ? null : $reason;
+
+        $this->forceFill([
+            'publication_status' => LibraryPublicationStatus::Rejected,
+            'rejected_at' => now(),
+            'rejected_by' => $this->gatekeeperId($gatekeeper),
+            'rejection_reason' => $reason,
+            'published_at' => null,
+            'published_by' => null,
+        ])->save();
+
+        event(new LibraryItemRejected($this, $reason));
+    }
+
+    public function returnToDraft(Model | int | null $gatekeeper = null): void
+    {
+        $this->forceFill([
+            'publication_status' => LibraryPublicationStatus::Draft,
+            'published_at' => null,
+            'published_by' => null,
+            'updated_by' => $this->gatekeeperId($gatekeeper) ?? $this->updated_by,
+        ])->save();
+    }
+
+    protected function gatekeeperId(Model | int | null $gatekeeper): ?int
+    {
+        if ($gatekeeper instanceof Model) {
+            return $gatekeeper->getKey() !== null ? (int) $gatekeeper->getKey() : null;
+        }
+
+        if (is_int($gatekeeper)) {
+            return $gatekeeper;
+        }
+
+        $authId = auth()->id();
+
+        return $authId !== null ? (int) $authId : null;
+    }
+
+    /**
+     * @param  class-string<LibraryItemTag>  $tagModel
+     */
+    protected function findOrCreateProjectTag(string $tagModel, string $name): LibraryItemTag
+    {
+        $existing = $tagModel::query()->where('name', $name)->first();
+
+        if ($existing instanceof LibraryItemTag) {
+            return $existing;
+        }
+
+        $baseSlug = Str::slug($name);
+        $baseSlug = $baseSlug !== '' ? $baseSlug : 'tag';
+        $slug = $baseSlug;
+        $counter = 1;
+
+        while ($tagModel::query()->where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        /** @var LibraryItemTag $tag */
+        $tag = $tagModel::query()->create([
+            'name' => $name,
+            'slug' => $slug,
+        ]);
+
+        return $tag;
     }
 }

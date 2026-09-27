@@ -5,6 +5,7 @@ namespace Tapp\FilamentLibrary\Resources\Pages;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 use Tapp\FilamentLibrary\FilamentLibraryPlugin;
+use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 
 class PublicLibrary extends ListRecords
@@ -41,7 +42,11 @@ class PublicLibrary extends ListRecords
                     ->whereNotNull('personal_folder_id');
             }); // Exclude personal folders
 
-        return $query;
+        if (! $query instanceof Builder) {
+            return LibraryItem::query()->whereRaw('1 = 0');
+        }
+
+        return LibraryItem::limitToPublished($query);
     }
 
     public function getTitle(): string

@@ -263,7 +263,11 @@ class ListLibraryItems extends ListRecords
             })->where('name', 'not like', "%'s Personal Folder");
         }
 
-        return $query;
+        if (! $query instanceof Builder) {
+            return LibraryItem::query()->whereRaw('1 = 0');
+        }
+
+        return LibraryItem::limitToPublished($query);
     }
 
     public function getTitle(): string

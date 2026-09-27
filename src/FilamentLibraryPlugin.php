@@ -161,45 +161,55 @@ class FilamentLibraryPlugin implements Plugin
         $panelId = $panel->getId();
         $libraryItemResourceClass = static::libraryItemResourceClass();
 
+        $navigationItems = $this->applyNavigationVisibility([
+            NavigationItem::make('Library')
+                ->url(fn () => $libraryItemResourceClass::getUrl('index'))
+                ->icon('heroicon-o-building-library')
+                ->group('Resource Library')
+                ->sort(1)
+                ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.index")),
+            NavigationItem::make('Search All')
+                ->url(fn () => $libraryItemResourceClass::getUrl('search-all'))
+                ->icon('heroicon-o-magnifying-glass')
+                ->group('Resource Library')
+                ->sort(2)
+                ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.search-all")),
+            NavigationItem::make('My Documents')
+                ->url(fn () => $libraryItemResourceClass::getUrl('my-documents'))
+                ->icon('heroicon-o-folder')
+                ->group('Resource Library')
+                ->sort(3)
+                ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.my-documents")),
+            ...static::sharedWithMeNavigationItem($panelId, $libraryItemResourceClass),
+            NavigationItem::make('Created by Me')
+                ->url(fn () => $libraryItemResourceClass::getUrl('created-by-me'))
+                ->icon('heroicon-o-user')
+                ->group('Resource Library')
+                ->sort(5)
+                ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.created-by-me")),
+            NavigationItem::make('Favorites')
+                ->url(fn () => $libraryItemResourceClass::getUrl('favorites'))
+                ->icon('heroicon-o-star')
+                ->group('Resource Library')
+                ->sort(6)
+                ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.favorites")),
+        ]);
+
+        $navigationItems[] = NavigationItem::make('Gatekeeper Queue')
+            ->url(fn () => $libraryItemResourceClass::getUrl('gatekeeper-queue'))
+            ->icon('heroicon-o-clipboard-document-check')
+            ->group('Resource Library')
+            ->sort(7)
+            ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.gatekeeper-queue"))
+            ->visible(fn (): bool => $this->isNavigationVisible() && static::isLibraryAdmin(auth()->user()));
+
         $panel
             ->resources(
                 array_values(config('filament-library.resources', [
                     LibraryItemResource::class,
                 ])),
             )
-            ->navigationItems($this->applyNavigationVisibility([
-                NavigationItem::make('Library')
-                    ->url(fn () => $libraryItemResourceClass::getUrl('index'))
-                    ->icon('heroicon-o-building-library')
-                    ->group('Resource Library')
-                    ->sort(1)
-                    ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.index")),
-                NavigationItem::make('Search All')
-                    ->url(fn () => $libraryItemResourceClass::getUrl('search-all'))
-                    ->icon('heroicon-o-magnifying-glass')
-                    ->group('Resource Library')
-                    ->sort(2)
-                    ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.search-all")),
-                NavigationItem::make('My Documents')
-                    ->url(fn () => $libraryItemResourceClass::getUrl('my-documents'))
-                    ->icon('heroicon-o-folder')
-                    ->group('Resource Library')
-                    ->sort(3)
-                    ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.my-documents")),
-                ...static::sharedWithMeNavigationItem($panelId, $libraryItemResourceClass),
-                NavigationItem::make('Created by Me')
-                    ->url(fn () => $libraryItemResourceClass::getUrl('created-by-me'))
-                    ->icon('heroicon-o-user')
-                    ->group('Resource Library')
-                    ->sort(5)
-                    ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.created-by-me")),
-                NavigationItem::make('Favorites')
-                    ->url(fn () => $libraryItemResourceClass::getUrl('favorites'))
-                    ->icon('heroicon-o-star')
-                    ->group('Resource Library')
-                    ->sort(6)
-                    ->isActiveWhen(fn () => request()->routeIs("filament.{$panelId}.resources.library.favorites")),
-            ]));
+            ->navigationItems($navigationItems);
     }
 
     public function boot(Panel $panel): void
