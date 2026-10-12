@@ -4,12 +4,12 @@ namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
+use Tapp\FilamentLibrary\Support\LibraryStorage;
 
 class MyLibrary extends ListRecords
 {
@@ -92,14 +92,7 @@ class MyLibrary extends ListRecords
                 ->label('Upload File')
                 ->icon('heroicon-o-document-plus')
                 ->schema([
-                    FileUpload::make('file')
-                        ->label('Upload File')
-                        ->required()
-                        ->maxSize(512000) // 500MB
-                        ->disk('public')
-                        ->directory('library-files')
-                        ->visibility('private')
-                        ->preserveFilenames(),
+                    LibraryStorage::uploadField(),
                 ])
                 ->action(function (array $data): void {
                     $user = auth()->user();
@@ -116,10 +109,7 @@ class MyLibrary extends ListRecords
                         'general_access' => 'private',
                     ]);
 
-                    $libraryItem->addMediaFromDisk($filePath, 'public')
-                        ->usingName($fileName)
-                        ->usingFileName($fileName)
-                        ->toMediaCollection();
+                    LibraryStorage::attachUploadedFile($libraryItem, $filePath);
 
                     $this->redirect(static::getResource()::getUrl('my-documents'));
                 }),
