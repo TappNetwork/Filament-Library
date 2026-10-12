@@ -7,6 +7,7 @@ use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
@@ -18,6 +19,7 @@ use Tapp\FilamentLibrary\Commands\ReviewLibraryItemCommand;
 use Tapp\FilamentLibrary\Commands\SeedLibraryCommand;
 use Tapp\FilamentLibrary\Events\LibraryFileRestored;
 use Tapp\FilamentLibrary\Events\LibraryFileStored;
+use Tapp\FilamentLibrary\Http\Controllers\LibraryFileController;
 use Tapp\FilamentLibrary\Middleware\RedirectToCorrectEditPage;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Policies\LibraryItemPolicy;
@@ -101,6 +103,11 @@ class FilamentLibraryServiceProvider extends PackageServiceProvider
 
         // Load views manually from src directory
         $this->loadViewsFrom(__DIR__ . '/Resources/views', static::$viewNamespace);
+
+        Route::middleware(['web', 'auth'])->group(function (): void {
+            Route::get('/library/files/{media}', [LibraryFileController::class, 'show'])
+                ->name('filament-library.files.show');
+        });
 
         $this->registerLibraryFileStoredEvent();
         $this->registerLibraryFileRestoredEvent();
