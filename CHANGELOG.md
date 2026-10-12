@@ -4,6 +4,8 @@ All notable changes to `:package_name` will be documented in this file.
 
 ## Unreleased
 
+* Preview and download private library files through an authenticated route instead of a public `/storage` URL
+* Store new uploads on the configured private disk and never on the public disk
 * Library items can store firm path, library area, committee, and project tags
 * Manifest import lands each row as draft or pending and never auto-publishes
 * Search and library browse exclude draft, pending, and rejected items until a gatekeeper publishes them
