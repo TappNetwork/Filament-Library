@@ -160,6 +160,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Filesystem disk
+    |--------------------------------------------------------------------------
+    |
+    | Personal and firm files are private. Store them on the default disk,
+    | which Laravel Cloud sets to the attached private bucket. The public
+    | disk is never used: its /storage URLs 404 when the symlink is absent
+    | and would expose files when it is present.
+    |
+    */
+    'filesystem_disk' => env('FILAMENT_LIBRARY_FILESYSTEM_DISK', env('FILESYSTEM_DISK')),
+
+    /*
+    |--------------------------------------------------------------------------
     | URL Configuration
     |--------------------------------------------------------------------------
     |
