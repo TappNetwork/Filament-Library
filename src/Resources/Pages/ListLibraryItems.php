@@ -4,7 +4,6 @@ namespace Tapp\FilamentLibrary\Resources\Pages;
 
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\ListRecords;
@@ -13,6 +12,7 @@ use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Resources\LibraryItemResource;
 use Tapp\FilamentLibrary\Support\LibraryFolderBreadcrumbPath;
+use Tapp\FilamentLibrary\Support\LibraryStorage;
 
 class ListLibraryItems extends ListRecords
 {
@@ -123,14 +123,7 @@ class ListLibraryItems extends ListRecords
                     return FilamentLibraryPlugin::isLibraryAdmin($user);
                 })
                 ->schema([
-                    FileUpload::make('file')
-                        ->label('Upload File')
-                        ->required()
-                        ->maxSize(512000) // 500MB
-                        ->disk('public')
-                        ->directory('library-files')
-                        ->visibility('private')
-                        ->preserveFilenames(),
+                    LibraryStorage::uploadField(),
                 ])
                 ->action(function (array $data): void {
                     $filePath = $data['file'];
@@ -147,11 +140,7 @@ class ListLibraryItems extends ListRecords
                         'updated_by' => auth()->user()?->id,
                     ]);
 
-                    // Associate the uploaded file with the library item using Spatie Media Library
-                    $libraryItem->addMediaFromDisk($filePath, 'public')
-                        ->usingName($fileName)
-                        ->usingFileName($fileName)
-                        ->toMediaCollection();
+                    LibraryStorage::attachUploadedFile($libraryItem, $filePath);
 
                     $this->redirect(static::getResource()::getUrl('index', $this->parentId ? ['parent' => $this->parentId] : []));
                 }),
