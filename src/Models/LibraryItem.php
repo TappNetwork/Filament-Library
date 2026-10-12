@@ -21,6 +21,7 @@ use Tapp\FilamentLibrary\Events\LibraryItemPublished;
 use Tapp\FilamentLibrary\Events\LibraryItemRejected;
 use Tapp\FilamentLibrary\FilamentLibraryPlugin;
 use Tapp\FilamentLibrary\Models\Traits\BelongsToTenant;
+use Tapp\FilamentLibrary\Support\LibraryStorage;
 
 /**
  * @property int $id
@@ -579,7 +580,8 @@ class LibraryItem extends Model implements HasMedia
      */
     public function registerMediaCollections(): void
     {
-        // Using default collection - no need to register custom collection
+        $this->addMediaCollection('default')
+            ->useDisk(LibraryStorage::disk());
     }
 
     /**
@@ -601,30 +603,23 @@ class LibraryItem extends Model implements HasMedia
     }
 
     /**
-     * Get a secure URL for the file with temporary URL fallback.
+     * URL for an authenticated inline preview.
+     *
+     * Private files are streamed by the application after the library policy
+     * allows the view. A public disk URL is not used: it 404s without a
+     * storage symlink and would be world-readable with one.
+     *
+     * @param  int|null  $expirationMinutes  Kept for existing callers. The preview is session-scoped.
      */
     public function getSecureUrl(?int $expirationMinutes = null): string
     {
         $media = $this->getPreviewMedia();
 
-        if (! $media) {
+        if (! $media || ($expirationMinutes !== null && $expirationMinutes < 1)) {
             return '';
         }
 
-        $expirationMinutes = $expirationMinutes ?? config('filament-library.url.temporary_expiration_minutes', 60);
-
-        try {
-            return $media->getTemporaryUrl(now()->addMinutes($expirationMinutes));
-        } catch (\Exception $e) {
-            $url = $media->getUrl();
-
-            // Ensure HTTPS for security
-            if (str_starts_with($url, 'http://')) {
-                $url = str_replace('http://', 'https://', $url);
-            }
-
-            return $url;
-        }
+        return route('filament-library.files.show', ['media' => $media]);
     }
 
     /**
