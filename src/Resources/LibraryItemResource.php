@@ -169,7 +169,7 @@ class LibraryItemResource extends Resource
         // - CreatedByMe (user's created items)
         // - SearchAll (search results)
         // The list pages only override getTableQuery() for filtering, not the columns
-        return $table
+        return FilamentLibraryPlugin::current()->configureTableSort($table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
@@ -369,7 +369,7 @@ class LibraryItemResource extends Resource
                         ? static::getUrl('index', ['parent' => $record->id])
                         : static::getUrl('view', ['record' => $record]);
                 });
-            });
+            }));
     }
 
     public static function getRelations(): array
