@@ -2,6 +2,16 @@
 
 All notable changes to `:package_name` will be documented in this file.
 
+## v1.4.2 - 2026-10-30
+
+### What's Changed
+
+* Bump source-map-js from 1.2.1 to 1.2.2 by @dependabot[bot] in https://github.com/TappNetwork/Filament-Library/pull/42
+* Bump shell-quote from 1.10.0 to 1.12.0 by @dependabot[bot] in https://github.com/TappNetwork/Filament-Library/pull/43
+* Add configurable sorting by @andreia in https://github.com/TappNetwork/Filament-Library/pull/45
+
+**Full Changelog**: https://github.com/TappNetwork/Filament-Library/compare/v1.4.1...v1.4.2
+
 ## v1.4.1 - 2026-09-07
 
 Fix User column searchable() callback for Filament 5.7.8 — pass custom search via named query: argument so Filament does not treat the closure as isSearchable.
