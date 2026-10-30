@@ -116,6 +116,27 @@ public function panel(Panel $panel): Panel
 
 When unset, navigation items remain visible (backward compatible). Direct library URLs are still authorized by your library item policies.
 
+### 4. Listing order
+
+Library listings default to folders first, then files and links. Each group is alphabetical, including inside every folder. People can still click a column to choose a different order for that table.
+
+```php
+use Tapp\FilamentLibrary\Enums\LibrarySort;
+use Tapp\FilamentLibrary\FilamentLibraryPlugin;
+
+public function panel(Panel $panel): Panel
+{
+    return $panel
+        ->plugins([
+            FilamentLibraryPlugin::make()
+                ->defaultSort(LibrarySort::FoldersThenName),
+                // ->defaultSort(LibrarySort::Name)
+                // ->defaultSort('created_at', 'desc')
+                // ->defaultSort(fn ($query, string $direction) => $query->orderBy('name', $direction)),
+        ]);
+}
+```
+
 ## Permissions System
 
 The plugin features a sophisticated permissions system inspired by Google Drive.

@@ -5,9 +5,14 @@ namespace Tapp\FilamentLibrary;
 use App\Models\User;
 use Closure;
 use Filament\Contracts\Plugin;
+use Filament\Facades\Filament;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
+use Filament\Tables\Table;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Builder;
+use InvalidArgumentException;
+use Tapp\FilamentLibrary\Enums\LibrarySort;
 use Tapp\FilamentLibrary\Models\LibraryItem;
 use Tapp\FilamentLibrary\Models\LibraryItemPermission;
 use Tapp\FilamentLibrary\Models\LibraryItemTag;
@@ -23,6 +28,13 @@ class FilamentLibraryPlugin implements Plugin
      * @var (Closure(): bool)|bool|null
      */
     protected Closure | bool | null $navigationVisibleUsing = null;
+
+    /**
+     * @var (Closure(Builder<LibraryItem>, string): Builder<LibraryItem>)|LibrarySort|string
+     */
+    protected LibrarySort | Closure | string $defaultSort = LibrarySort::FoldersThenName;
+
+    protected string $defaultSortDirection = 'asc';
 
     /**
      * @var array<string, class-string>
@@ -50,6 +62,98 @@ class FilamentLibraryPlugin implements Plugin
         $this->navigationVisibleUsing = $condition;
 
         return $this;
+    }
+
+    /**
+     * Default order for every library listing.
+     *
+     * Folders come first, then files and links, and each group is alphabetical.
+     * Pass a column name (`name`, `created_at`, `updated_at`), a {@see LibrarySort}
+     * case, or a closure that receives the query and direction.
+     *
+     * People can still pick another column in the table. That choice replaces this default.
+     *
+     * @param  (Closure(Builder<LibraryItem>, string): Builder<LibraryItem>)|LibrarySort|string  $sort
+     */
+    public function defaultSort(LibrarySort | Closure | string $sort, string $direction = 'asc'): static
+    {
+        if (is_string($sort) && trim($sort) === '') {
+            throw new InvalidArgumentException('Library sort column cannot be empty.');
+        }
+
+        $this->defaultSort = $sort;
+        $this->defaultSortDirection = $direction === 'desc' ? 'desc' : 'asc';
+
+        return $this;
+    }
+
+    public function getDefaultSort(): LibrarySort | Closure | string
+    {
+        return $this->defaultSort;
+    }
+
+    public function getDefaultSortDirection(): string
+    {
+        return $this->defaultSortDirection;
+    }
+
+    /**
+     * @param  Builder<LibraryItem>  $query
+     * @return Builder<LibraryItem>
+     */
+    public function applySort(Builder $query, ?string $direction = null): Builder
+    {
+        $direction = ($direction ?? $this->defaultSortDirection) === 'desc' ? 'desc' : 'asc';
+        $sort = $this->defaultSort;
+
+        if ($sort instanceof Closure) {
+            return $sort($query, $direction);
+        }
+
+        if ($sort instanceof LibrarySort) {
+            return $sort->apply($query, $direction);
+        }
+
+        return $query->orderBy($sort, $direction);
+    }
+
+    public function configureTableSort(Table $table): Table
+    {
+        $sort = $this->defaultSort;
+        $direction = $this->defaultSortDirection;
+
+        if (is_string($sort)) {
+            return $table->defaultSort($sort, $direction);
+        }
+
+        if ($sort instanceof LibrarySort && $sort->column() !== null) {
+            return $table->defaultSort($sort->column(), $direction);
+        }
+
+        $table = $table->defaultSort(
+            fn (Builder $query, string $direction): Builder => static::current()->applySort($query, $direction),
+            $direction,
+        );
+
+        if ($sort === LibrarySort::FoldersThenName) {
+            $table->defaultSortOptionLabel('Folders, then name');
+        }
+
+        return $table;
+    }
+
+    public static function current(): static
+    {
+        $panel = Filament::getCurrentPanel();
+
+        if ($panel?->hasPlugin('filament-library')) {
+            /** @var static $plugin */
+            $plugin = $panel->getPlugin('filament-library');
+
+            return $plugin;
+        }
+
+        return static::make();
     }
 
     /**
@@ -117,7 +221,7 @@ class FilamentLibraryPlugin implements Plugin
         /** @var class-string $modelClass */
         $modelClass = config(
             "filament-library.models.{$model}",
-            static::$defaultModels[$model] ?? throw new \InvalidArgumentException("Unknown filament-library model [{$model}]."),
+            static::$defaultModels[$model] ?? throw new InvalidArgumentException("Unknown filament-library model [{$model}]."),
         );
 
         return $modelClass;

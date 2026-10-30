@@ -47,6 +47,11 @@ jobs:
 
       - name: Install dependencies
         run: |
+          # Laravel 11 is end of life, and Composer blocks every 11.x release
+          # for security advisories. This job still checks that constraint.
+          if [ "${{ matrix.laravel }}" = "11.*" ]; then
+            composer config policy.advisories.block false
+          fi
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction
 
