@@ -29,6 +29,9 @@ class FilamentLibraryPlugin implements Plugin
      */
     protected Closure | bool | null $navigationVisibleUsing = null;
 
+    /**
+     * @var (Closure(Builder<LibraryItem>, string): Builder<LibraryItem>)|LibrarySort|string
+     */
     protected LibrarySort | Closure | string $defaultSort = LibrarySort::FoldersThenName;
 
     protected string $defaultSortDirection = 'asc';
@@ -70,7 +73,7 @@ class FilamentLibraryPlugin implements Plugin
      *
      * People can still pick another column in the table. That choice replaces this default.
      *
-     * @param  (Closure(Builder, string): Builder)|LibrarySort|string  $sort
+     * @param  (Closure(Builder<LibraryItem>, string): Builder<LibraryItem>)|LibrarySort|string  $sort
      */
     public function defaultSort(LibrarySort | Closure | string $sort, string $direction = 'asc'): static
     {
@@ -104,9 +107,7 @@ class FilamentLibraryPlugin implements Plugin
         $sort = $this->defaultSort;
 
         if ($sort instanceof Closure) {
-            $sorted = $sort($query, $direction);
-
-            return $sorted instanceof Builder ? $sorted : $query;
+            return $sort($query, $direction);
         }
 
         if ($sort instanceof LibrarySort) {
@@ -152,7 +153,7 @@ class FilamentLibraryPlugin implements Plugin
             return $plugin;
         }
 
-        return new static;
+        return static::make();
     }
 
     /**
