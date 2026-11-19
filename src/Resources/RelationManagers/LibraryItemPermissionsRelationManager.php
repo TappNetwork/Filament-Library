@@ -129,16 +129,20 @@ class LibraryItemPermissionsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('user')
                     ->label('User')
                     ->formatStateUsing(fn ($record) => $this->getUserDisplayName($record->user))
-                    ->searchable(query: function ($query, $search) {
-                        return $query->where(function ($query) use ($search): void {
-                            if (SchemaFacade::hasColumn('users', 'first_name') && SchemaFacade::hasColumn('users', 'last_name')) {
-                                $query->orWhere('first_name', 'like', "%{$search}%")
-                                    ->orWhere('last_name', 'like', "%{$search}%");
-                            } elseif (SchemaFacade::hasColumn('users', 'name')) {
-                                $query->orWhere('name', 'like', "%{$search}%");
-                            }
+                    ->searchable(query: function ($query, string $search) {
+                        // The callback receives the permissions query. Name and email
+                        // columns live on the related user, not on library_item_permissions.
+                        return $query->whereHas('user', function ($userQuery) use ($search): void {
+                            $userQuery->where(function ($userQuery) use ($search): void {
+                                if (SchemaFacade::hasColumn('users', 'first_name') && SchemaFacade::hasColumn('users', 'last_name')) {
+                                    $userQuery->orWhere('first_name', 'like', "%{$search}%")
+                                        ->orWhere('last_name', 'like', "%{$search}%");
+                                } elseif (SchemaFacade::hasColumn('users', 'name')) {
+                                    $userQuery->orWhere('name', 'like', "%{$search}%");
+                                }
 
-                            $query->orWhere('email', 'like', "%{$search}%");
+                                $userQuery->orWhere('email', 'like', "%{$search}%");
+                            });
                         });
                     }),
 
