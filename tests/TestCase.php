@@ -67,6 +67,8 @@ class TestCase extends Orchestra
 
     public function getEnvironmentSetUp($app)
     {
+        $app['config']->set('app.key', 'base64:' . base64_encode(str_repeat('a', 32)));
+
         config()->set('database.default', 'testing');
 
         // Create users table first (required by library migrations)
