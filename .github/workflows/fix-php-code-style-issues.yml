@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "**.php"
+      - ".github/workflows/fix-php-code-style-issues.yml"
 
 permissions:
   contents: write
@@ -18,8 +19,20 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring
+          coverage: none
+
+      # The Pint Docker action uses composer:latest. That image is PHP 8.5
+      # without mbstring, and Pint's summary then dies on mb_strimwidth().
+      - name: Install Pint
+        run: composer global require laravel/pint --no-interaction --no-progress
+
       - name: Fix PHP code style issues
-        uses: aglipanci/laravel-pint-action@2.6
+        run: "$(composer global config home)/vendor/bin/pint"
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v7
